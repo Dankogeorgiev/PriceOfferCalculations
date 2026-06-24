@@ -14,6 +14,7 @@ function showView(session) {
     loginView.classList.add("hidden");
     appView.classList.remove("hidden");
     userEmail.textContent = session.user.email;
+    loadWorkshops();
     loadMaterials();
   } else {
     appView.classList.add("hidden");
@@ -35,6 +36,47 @@ document.getElementById("logout-btn").addEventListener("click", async () => {
 });
 
 db.auth.onAuthStateChange((_event, session) => showView(session));
+
+// --- Цехове (CRUD) ---
+const workshopsBody = document.getElementById("workshops-body");
+const workshopForm = document.getElementById("workshop-form");
+const workshopError = document.getElementById("workshop-error");
+
+async function loadWorkshops() {
+  workshopError.textContent = "";
+  const { data, error } = await db.from("workshops").select("*").order("created_at", { ascending: true });
+  if (error) { workshopError.textContent = "Грешка при зареждане: " + error.message; return; }
+  if (!data.length) {
+    workshopsBody.innerHTML = '<tr><td colspan="2" class="muted">Още няма цехове. Добави първия отгоре.</td></tr>';
+    return;
+  }
+  workshopsBody.innerHTML = data.map(workshopRowHtml).join("");
+}
+
+function workshopRowHtml(w) {
+  return `<tr>
+    <td>${esc(w.name)}</td>
+    <td><button class="ghost danger" data-del-workshop="${w.id}">Изтрий</button></td>
+  </tr>`;
+}
+
+workshopForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  workshopError.textContent = "";
+  const { error } = await db.from("workshops").insert({ name: val("w-name") });
+  if (error) { workshopError.textContent = "Грешка при запис: " + error.message; return; }
+  workshopForm.reset();
+  loadWorkshops();
+});
+
+workshopsBody.addEventListener("click", async (e) => {
+  const id = e.target.getAttribute("data-del-workshop");
+  if (!id) return;
+  if (!confirm("Да изтрия ли този цех?")) return;
+  const { error } = await db.from("workshops").delete().eq("id", id);
+  if (error) { workshopError.textContent = "Грешка при триене: " + error.message; return; }
+  loadWorkshops();
+});
 
 // --- Материали (CRUD) ---
 const materialsBody = document.getElementById("materials-body");
