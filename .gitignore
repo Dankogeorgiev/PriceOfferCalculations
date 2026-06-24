@@ -1,0 +1,10 @@
+# Excel интейк файл — реалните данни живеят в Supabase, не в репото
+DankoSystems_Vaprosnik_Razhodi.xlsx
+~$*.xlsx
+
+# Локални Claude Code настройки
+.claude/
+
+# OS / редактор
+Thumbs.db
+.DS_Store

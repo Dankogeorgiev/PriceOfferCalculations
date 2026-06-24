@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DankoSystems · Оферти</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ВХОД -->
+  <div id="login-view" class="centered hidden">
+    <form id="login-form" class="card login-card">
+      <h1>DankoSystems</h1>
+      <p class="muted">Калкулатор за оферти — вход</p>
+      <label>Имейл
+        <input type="email" id="login-email" required autocomplete="username" />
+      </label>
+      <label>Парола
+        <input type="password" id="login-password" required autocomplete="current-password" />
+      </label>
+      <button type="submit" id="login-btn">Вход</button>
+      <p id="login-error" class="error"></p>
+    </form>
+  </div>
+
+  <!-- ПРИЛОЖЕНИЕ -->
+  <div id="app-view" class="hidden">
+    <header class="topbar">
+      <div class="brand">DankoSystems · Оферти</div>
+      <div class="user">
+        <span id="user-email" class="muted"></span>
+        <button id="logout-btn" class="ghost">Изход</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="card">
+        <h2>Материали</h2>
+        <form id="material-form" class="row-form">
+          <input type="text" id="m-name" placeholder="Материал" required />
+          <input type="text" id="m-unit" placeholder="Мярка (кг/бр/м)" />
+          <input type="number" step="any" id="m-price" placeholder="Цена" />
+          <input type="text" id="m-supplier" placeholder="Доставчик" />
+          <input type="number" step="any" id="m-waste" placeholder="% отпадък" />
+          <button type="submit">+ Добави</button>
+        </form>
+        <p id="material-error" class="error"></p>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Материал</th><th>Мярка</th><th>Цена</th><th>Доставчик</th><th>% отпадък</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="materials-body">
+            <tr><td colspan="6" class="muted">Зареждане…</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
