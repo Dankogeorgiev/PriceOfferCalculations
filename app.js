@@ -17,6 +17,7 @@ function showView(session) {
     loadWorkshops();
     populateWorkshopSelect();
     loadMachines();
+    loadOperationRates();
     loadMaterials();
   } else {
     appView.classList.add("hidden");
@@ -191,6 +192,56 @@ materialsBody.addEventListener("click", async (e) => {
   const { error } = await db.from("materials").delete().eq("id", id);
   if (error) { materialError.textContent = "Грешка при триене: " + error.message; return; }
   loadMaterials();
+});
+
+// --- Ставки по операция (CRUD) ---
+const opratesBody = document.getElementById("oprates-body");
+const oprateForm = document.getElementById("oprate-form");
+const oprateError = document.getElementById("oprate-error");
+
+async function loadOperationRates() {
+  oprateError.textContent = "";
+  const { data, error } = await db.from("operation_rates").select("*").order("operation", { ascending: true });
+  if (error) { oprateError.textContent = "Грешка при зареждане: " + error.message; return; }
+  if (!data.length) {
+    opratesBody.innerHTML = '<tr><td colspan="5" class="muted">Още няма ставки.</td></tr>';
+    return;
+  }
+  opratesBody.innerHTML = data.map(oprateRowHtml).join("");
+}
+
+function oprateRowHtml(r) {
+  return `<tr>
+    <td>${esc(r.operation)}</td>
+    <td>${esc(r.machine)}</td>
+    <td>${r.rate ?? ""}</td>
+    <td>${esc(r.unit)}</td>
+    <td><button class="ghost danger" data-del-oprate="${r.id}">Изтрий</button></td>
+  </tr>`;
+}
+
+oprateForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  oprateError.textContent = "";
+  const payload = {
+    operation: val("op-operation"),
+    machine: val("op-machine") || null,
+    rate: num("op-rate"),
+    unit: val("op-unit") || null,
+  };
+  const { error } = await db.from("operation_rates").insert(payload);
+  if (error) { oprateError.textContent = "Грешка при запис: " + error.message; return; }
+  oprateForm.reset();
+  loadOperationRates();
+});
+
+opratesBody.addEventListener("click", async (e) => {
+  const id = e.target.getAttribute("data-del-oprate");
+  if (!id) return;
+  if (!confirm("Да изтрия ли тази ставка?")) return;
+  const { error } = await db.from("operation_rates").delete().eq("id", id);
+  if (error) { oprateError.textContent = "Грешка при триене: " + error.message; return; }
+  loadOperationRates();
 });
 
 // --- помощни ---

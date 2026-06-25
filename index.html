@@ -101,6 +101,28 @@
           </tbody>
         </table>
       </section>
+      <section class="card">
+        <h2>Ставки по операция</h2>
+        <form id="oprate-form" class="row-form">
+          <input type="text" id="op-operation" placeholder="Операция" required />
+          <input type="text" id="op-machine" placeholder="Машина" />
+          <input type="number" step="any" id="op-rate" placeholder="Ставка (лв)" />
+          <input type="text" id="op-unit" placeholder="Мярка (лв/оп, лв/мин)" />
+          <button type="submit">+ Добави</button>
+        </form>
+        <p id="oprate-error" class="error"></p>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Операция</th><th>Машина</th><th>Ставка</th><th>Мярка</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="oprates-body">
+            <tr><td colspan="5" class="muted">Зареждане…</td></tr>
+          </tbody>
+        </table>
+      </section>
     </main>
   </div>
 
