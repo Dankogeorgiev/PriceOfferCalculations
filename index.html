@@ -55,6 +55,30 @@
       </section>
 
       <section class="card">
+        <h2>Машини</h2>
+        <form id="machine-form" class="row-form">
+          <input type="text" id="mac-name" placeholder="Машина" required />
+          <select id="mac-workshop"><option value="">— цех —</option></select>
+          <input type="number" step="any" id="mac-power" placeholder="Мощност kW" />
+          <input type="number" step="any" id="mac-energy" placeholder="Ток kWh/час" />
+          <input type="number" step="1" id="mac-operators" placeholder="Оператори" />
+          <button type="submit">+ Добави</button>
+        </form>
+        <p id="machine-error" class="error"></p>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Машина</th><th>Цех</th><th>Мощност kW</th><th>Ток kWh/час</th><th>Оператори</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="machines-body">
+            <tr><td colspan="6" class="muted">Зареждане…</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card">
         <h2>Материали</h2>
         <form id="material-form" class="row-form">
           <input type="text" id="m-name" placeholder="Материал" required />

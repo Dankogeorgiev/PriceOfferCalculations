@@ -15,6 +15,8 @@ function showView(session) {
     appView.classList.remove("hidden");
     userEmail.textContent = session.user.email;
     loadWorkshops();
+    populateWorkshopSelect();
+    loadMachines();
     loadMaterials();
   } else {
     appView.classList.add("hidden");
@@ -76,6 +78,67 @@ workshopsBody.addEventListener("click", async (e) => {
   const { error } = await db.from("workshops").delete().eq("id", id);
   if (error) { workshopError.textContent = "Грешка при триене: " + error.message; return; }
   loadWorkshops();
+});
+
+// --- Машини (CRUD) ---
+const machinesBody = document.getElementById("machines-body");
+const machineForm = document.getElementById("machine-form");
+const machineError = document.getElementById("machine-error");
+const macWorkshopSelect = document.getElementById("mac-workshop");
+
+async function populateWorkshopSelect() {
+  const { data, error } = await db.from("workshops").select("id,name").order("name", { ascending: true });
+  if (error || !data) return;
+  macWorkshopSelect.innerHTML =
+    '<option value="">— цех —</option>' +
+    data.map((w) => `<option value="${w.id}">${esc(w.name)}</option>`).join("");
+}
+
+async function loadMachines() {
+  machineError.textContent = "";
+  const { data, error } = await db.from("machines").select("*, workshops(name)").order("name", { ascending: true });
+  if (error) { machineError.textContent = "Грешка при зареждане: " + error.message; return; }
+  if (!data.length) {
+    machinesBody.innerHTML = '<tr><td colspan="6" class="muted">Още няма машини.</td></tr>';
+    return;
+  }
+  machinesBody.innerHTML = data.map(machineRowHtml).join("");
+}
+
+function machineRowHtml(m) {
+  return `<tr>
+    <td>${esc(m.name)}</td>
+    <td>${esc(m.workshops?.name)}</td>
+    <td>${m.power_kw ?? ""}</td>
+    <td>${m.energy_kwh_per_hour ?? ""}</td>
+    <td>${m.operators_needed ?? ""}</td>
+    <td><button class="ghost danger" data-del-machine="${m.id}">Изтрий</button></td>
+  </tr>`;
+}
+
+machineForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  machineError.textContent = "";
+  const payload = {
+    name: val("mac-name"),
+    workshop_id: val("mac-workshop") || null,
+    power_kw: num("mac-power"),
+    energy_kwh_per_hour: num("mac-energy"),
+    operators_needed: num("mac-operators"),
+  };
+  const { error } = await db.from("machines").insert(payload);
+  if (error) { machineError.textContent = "Грешка при запис: " + error.message; return; }
+  machineForm.reset();
+  loadMachines();
+});
+
+machinesBody.addEventListener("click", async (e) => {
+  const id = e.target.getAttribute("data-del-machine");
+  if (!id) return;
+  if (!confirm("Да изтрия ли тази машина?")) return;
+  const { error } = await db.from("machines").delete().eq("id", id);
+  if (error) { machineError.textContent = "Грешка при триене: " + error.message; return; }
+  loadMachines();
 });
 
 // --- Материали (CRUD) ---
