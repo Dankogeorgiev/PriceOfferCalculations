@@ -34,6 +34,62 @@
     </header>
 
     <main class="container">
+      <nav class="tabs">
+        <button class="tab-btn active" data-tab="calc">Калкулатор</button>
+        <button class="tab-btn" data-tab="data">Справочни данни</button>
+      </nav>
+
+      <div id="tab-calc">
+        <section class="card">
+          <h2>Калкулатор на изделие</h2>
+          <div class="row-form">
+            <input type="text" id="calc-name" placeholder="Име на изделие" />
+            <input type="number" id="calc-qty" placeholder="Брой изделия" value="1" min="1" style="max-width:140px" />
+          </div>
+        </section>
+
+        <section class="card">
+          <h3>Материали</h3>
+          <p class="calc-sub">Избери профил и размер — теглото се смята автоматично.</p>
+          <table class="data-table">
+            <thead><tr>
+              <th>Профил</th><th>Размер</th><th>Кол-во (m/m²)</th><th>Бр.</th><th>Цена/кг</th><th class="right">Тегло кг</th><th class="right">лв</th><th></th>
+            </tr></thead>
+            <tbody id="calc-mat-body"></tbody>
+          </table>
+          <button type="button" class="ghost add-row" id="calc-mat-add">+ Материал</button>
+        </section>
+
+        <section class="card">
+          <h3>Лазерно рязане</h3>
+          <table class="data-table">
+            <thead><tr>
+              <th>Материал</th><th>Дебелина</th><th>Дължина m</th><th>Контури</th><th>Бр.</th><th class="right">лв</th><th></th>
+            </tr></thead>
+            <tbody id="calc-laser-body"></tbody>
+          </table>
+          <button type="button" class="ghost add-row" id="calc-laser-add">+ Лазер</button>
+        </section>
+
+        <section class="card">
+          <h3>Операции (труд)</h3>
+          <table class="data-table">
+            <thead><tr>
+              <th>Операция</th><th class="right">Ставка</th><th>Бр. операции</th><th>Бр. детайли</th><th class="right">лв</th><th></th>
+            </tr></thead>
+            <tbody id="calc-op-body"></tbody>
+          </table>
+          <button type="button" class="ghost add-row" id="calc-op-add">+ Операция</button>
+        </section>
+
+        <section class="card">
+          <h3>Резултат</h3>
+          <div id="calc-breakdown" class="muted">Добави редове и натисни „Изчисли цена".</div>
+          <button type="button" id="calc-compute" style="margin-top:14px">Изчисли цена</button>
+        </section>
+      </div>
+
+      <div id="tab-data" class="hidden">
       <section class="card">
         <h2>Цехове</h2>
         <form id="workshop-form" class="row-form">
@@ -146,6 +202,7 @@
           </tbody>
         </table>
       </section>
+      </div>
     </main>
   </div>
 

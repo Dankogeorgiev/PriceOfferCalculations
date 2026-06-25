@@ -20,6 +20,7 @@ function showView(session) {
     loadOperationRates();
     loadLaserRates();
     loadMaterials();
+    initCalculator();
   } else {
     appView.classList.add("hidden");
     loginView.classList.remove("hidden");
@@ -299,6 +300,168 @@ laserBody.addEventListener("click", async (e) => {
   const { error } = await db.from("laser_rates").delete().eq("id", id);
   if (error) { laserError.textContent = "Грешка при триене: " + error.message; return; }
   loadLaserRates();
+});
+
+// --- КАЛКУЛАТОР (Фаза 2) ---
+const BGN_EUR = 1.95583;
+const MARGIN_MAT_LABOR = 0.5; // +50% върху материали + труд
+const MARGIN_LASER = 1.5; // +150% върху лазер
+
+let refMat = [], refLaser = [], refOp = [];
+
+async function initCalculator() {
+  const [m, l, o] = await Promise.all([
+    db.from("material_weights").select("*").order("profile_type", { ascending: true }).order("size", { ascending: true }),
+    db.from("laser_rates").select("*").order("material", { ascending: true }).order("thickness_mm", { ascending: true }),
+    db.from("operation_rates").select("*").order("operation", { ascending: true }),
+  ]);
+  refMat = m.data || [];
+  refLaser = l.data || [];
+  refOp = o.data || [];
+}
+
+function uniq(a) { return [...new Set(a)]; }
+
+function addMatRow() {
+  const tr = document.createElement("tr");
+  const profiles = uniq(refMat.map((r) => r.profile_type));
+  tr.innerHTML =
+    `<td><select class="m-profile">${profiles.map((p) => `<option>${esc(p)}</option>`).join("")}</select></td>` +
+    `<td><select class="m-size"></select></td>` +
+    `<td><input type="number" step="any" class="m-amount" /></td>` +
+    `<td><input type="number" step="any" class="m-qty" value="1" /></td>` +
+    `<td><input type="number" step="any" class="m-price" /></td>` +
+    `<td class="right m-weight">—</td>` +
+    `<td class="right m-cost">0.00</td>` +
+    `<td><button type="button" class="ghost danger m-del">✕</button></td>`;
+  document.getElementById("calc-mat-body").appendChild(tr);
+  const profileSel = tr.querySelector(".m-profile");
+  const fillSizes = () => {
+    const sizes = refMat.filter((r) => r.profile_type === profileSel.value);
+    tr.querySelector(".m-size").innerHTML = sizes
+      .map((r) => `<option value="${r.id}">${esc(r.size)} — ${r.kg_per_unit} ${esc(r.unit)}</option>`).join("");
+  };
+  fillSizes();
+  profileSel.addEventListener("change", fillSizes);
+  ["input", "change"].forEach((ev) => tr.addEventListener(ev, () => recalcMat(tr)));
+  tr.querySelector(".m-del").addEventListener("click", () => tr.remove());
+  recalcMat(tr);
+}
+
+function recalcMat(tr) {
+  const rec = refMat.find((r) => r.id === tr.querySelector(".m-size").value);
+  const amount = parseFloat(tr.querySelector(".m-amount").value) || 0;
+  const qty = parseFloat(tr.querySelector(".m-qty").value) || 0;
+  const price = parseFloat(tr.querySelector(".m-price").value) || 0;
+  const kg = rec ? amount * Number(rec.kg_per_unit) : 0;
+  const cost = kg * qty * price;
+  tr.querySelector(".m-weight").textContent = kg ? kg.toFixed(2) : "—";
+  tr.querySelector(".m-cost").textContent = cost.toFixed(2);
+  tr.dataset.cost = cost;
+}
+
+function addLaserRow() {
+  const tr = document.createElement("tr");
+  const mats = uniq(refLaser.map((r) => r.material));
+  tr.innerHTML =
+    `<td><select class="l-mat">${mats.map((m) => `<option>${esc(m)}</option>`).join("")}</select></td>` +
+    `<td><select class="l-th"></select></td>` +
+    `<td><input type="number" step="any" class="l-len" /></td>` +
+    `<td><input type="number" step="any" class="l-cont" value="0" /></td>` +
+    `<td><input type="number" step="any" class="l-qty" value="1" /></td>` +
+    `<td class="right l-cost">0.00</td>` +
+    `<td><button type="button" class="ghost danger l-del">✕</button></td>`;
+  document.getElementById("calc-laser-body").appendChild(tr);
+  const matSel = tr.querySelector(".l-mat");
+  const fillTh = () => {
+    const ths = refLaser.filter((r) => r.material === matSel.value);
+    tr.querySelector(".l-th").innerHTML = ths.map((r) => `<option value="${r.id}">${r.thickness_mm} мм</option>`).join("");
+  };
+  fillTh();
+  matSel.addEventListener("change", fillTh);
+  ["input", "change"].forEach((ev) => tr.addEventListener(ev, () => recalcLaser(tr)));
+  tr.querySelector(".l-del").addEventListener("click", () => tr.remove());
+  recalcLaser(tr);
+}
+
+function recalcLaser(tr) {
+  const rec = refLaser.find((r) => r.id === tr.querySelector(".l-th").value);
+  const len = parseFloat(tr.querySelector(".l-len").value) || 0;
+  const cont = parseFloat(tr.querySelector(".l-cont").value) || 0;
+  const qty = parseFloat(tr.querySelector(".l-qty").value) || 0;
+  let cost = 0;
+  if (rec) cost = (len * Number(rec.price_per_meter || 0) + cont * Number(rec.price_per_contour || 0)) * qty;
+  tr.querySelector(".l-cost").textContent = cost.toFixed(2);
+  tr.dataset.cost = cost;
+}
+
+function addOpRow() {
+  const tr = document.createElement("tr");
+  tr.innerHTML =
+    `<td><select class="o-op">${refOp.map((r) => `<option value="${r.id}">${esc(r.operation)}${r.machine ? " / " + esc(r.machine) : ""}</option>`).join("")}</select></td>` +
+    `<td class="right o-rate">—</td>` +
+    `<td><input type="number" step="any" class="o-ops" value="1" /></td>` +
+    `<td><input type="number" step="any" class="o-qty" value="1" /></td>` +
+    `<td class="right o-cost">0.00</td>` +
+    `<td><button type="button" class="ghost danger o-del">✕</button></td>`;
+  document.getElementById("calc-op-body").appendChild(tr);
+  ["input", "change"].forEach((ev) => tr.addEventListener(ev, () => recalcOp(tr)));
+  tr.querySelector(".o-del").addEventListener("click", () => tr.remove());
+  recalcOp(tr);
+}
+
+function recalcOp(tr) {
+  const rec = refOp.find((r) => r.id === tr.querySelector(".o-op").value);
+  const rate = rec ? Number(rec.rate || 0) : 0;
+  const ops = parseFloat(tr.querySelector(".o-ops").value) || 0;
+  const qty = parseFloat(tr.querySelector(".o-qty").value) || 0;
+  const cost = rate * ops * qty;
+  tr.querySelector(".o-rate").textContent = rec ? rate + " " + esc(rec.unit || "") : "—";
+  tr.querySelector(".o-cost").textContent = cost.toFixed(2);
+  tr.dataset.cost = cost;
+}
+
+function sumRows(sel) {
+  let s = 0;
+  document.querySelectorAll(sel + " tr").forEach((tr) => (s += parseFloat(tr.dataset.cost || 0)));
+  return s;
+}
+
+function computeCalc() {
+  const mat = sumRows("#calc-mat-body");
+  const op = sumRows("#calc-op-body");
+  const laser = sumRows("#calc-laser-body");
+  const matLabor = (mat + op) * (1 + MARGIN_MAT_LABOR);
+  const laserM = laser * (1 + MARGIN_LASER);
+  const totalBGN = matLabor + laserM;
+  const totalEUR = totalBGN / BGN_EUR;
+  const qty = parseFloat(document.getElementById("calc-qty").value) || 1;
+  document.getElementById("calc-breakdown").innerHTML =
+    `<table class="data-table">` +
+    `<tr><td>Материали</td><td class="right">${mat.toFixed(2)} лв</td></tr>` +
+    `<tr><td>Операции (труд)</td><td class="right">${op.toFixed(2)} лв</td></tr>` +
+    `<tr><td>Материали + труд + надценка 50%</td><td class="right">${matLabor.toFixed(2)} лв</td></tr>` +
+    `<tr><td>Лазер</td><td class="right">${laser.toFixed(2)} лв</td></tr>` +
+    `<tr><td>Лазер + надценка 150%</td><td class="right">${laserM.toFixed(2)} лв</td></tr>` +
+    `<tr><td><b>Цена за 1 брой</b></td><td class="right result-total">${totalEUR.toFixed(2)} €</td></tr>` +
+    `<tr><td class="muted">(= ${totalBGN.toFixed(2)} лв)</td><td></td></tr>` +
+    `<tr><td><b>За ${qty} бр.</b></td><td class="right"><b>${(totalEUR * qty).toFixed(2)} €</b></td></tr>` +
+    `</table>`;
+}
+
+document.getElementById("calc-mat-add").addEventListener("click", addMatRow);
+document.getElementById("calc-laser-add").addEventListener("click", addLaserRow);
+document.getElementById("calc-op-add").addEventListener("click", addOpRow);
+document.getElementById("calc-compute").addEventListener("click", computeCalc);
+
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    const tab = btn.getAttribute("data-tab");
+    document.getElementById("tab-calc").classList.toggle("hidden", tab !== "calc");
+    document.getElementById("tab-data").classList.toggle("hidden", tab !== "data");
+  });
 });
 
 // --- помощни ---
