@@ -18,6 +18,7 @@ function showView(session) {
     populateWorkshopSelect();
     loadMachines();
     loadOperationRates();
+    loadLaserRates();
     loadMaterials();
   } else {
     appView.classList.add("hidden");
@@ -242,6 +243,62 @@ opratesBody.addEventListener("click", async (e) => {
   const { error } = await db.from("operation_rates").delete().eq("id", id);
   if (error) { oprateError.textContent = "Грешка при триене: " + error.message; return; }
   loadOperationRates();
+});
+
+// --- Лазерно рязане (CRUD) ---
+const laserBody = document.getElementById("laser-body");
+const laserForm = document.getElementById("laser-form");
+const laserError = document.getElementById("laser-error");
+
+async function loadLaserRates() {
+  laserError.textContent = "";
+  const { data, error } = await db
+    .from("laser_rates")
+    .select("*")
+    .order("material", { ascending: true })
+    .order("thickness_mm", { ascending: true });
+  if (error) { laserError.textContent = "Грешка при зареждане: " + error.message; return; }
+  if (!data.length) {
+    laserBody.innerHTML = '<tr><td colspan="6" class="muted">Още няма лазерни цени.</td></tr>';
+    return;
+  }
+  laserBody.innerHTML = data.map(laserRowHtml).join("");
+}
+
+function laserRowHtml(r) {
+  return `<tr>
+    <td>${esc(r.material)}</td>
+    <td>${r.thickness_mm ?? ""}</td>
+    <td>${r.speed_m_min ?? ""}</td>
+    <td>${r.price_per_meter ?? ""}</td>
+    <td>${r.price_per_contour ?? ""}</td>
+    <td><button class="ghost danger" data-del-laser="${r.id}">Изтрий</button></td>
+  </tr>`;
+}
+
+laserForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  laserError.textContent = "";
+  const payload = {
+    material: val("lz-material"),
+    thickness_mm: num("lz-thickness"),
+    speed_m_min: num("lz-speed"),
+    price_per_meter: num("lz-meter"),
+    price_per_contour: num("lz-contour"),
+  };
+  const { error } = await db.from("laser_rates").insert(payload);
+  if (error) { laserError.textContent = "Грешка при запис: " + error.message; return; }
+  laserForm.reset();
+  loadLaserRates();
+});
+
+laserBody.addEventListener("click", async (e) => {
+  const id = e.target.getAttribute("data-del-laser");
+  if (!id) return;
+  if (!confirm("Да изтрия ли този ред?")) return;
+  const { error } = await db.from("laser_rates").delete().eq("id", id);
+  if (error) { laserError.textContent = "Грешка при триене: " + error.message; return; }
+  loadLaserRates();
 });
 
 // --- помощни ---

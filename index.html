@@ -123,6 +123,29 @@
           </tbody>
         </table>
       </section>
+      <section class="card">
+        <h2>Лазерно рязане (цени)</h2>
+        <form id="laser-form" class="row-form">
+          <input type="text" id="lz-material" placeholder="Материал (Стомана/Неръждавейка)" required />
+          <input type="number" step="any" id="lz-thickness" placeholder="Дебелина мм" />
+          <input type="number" step="any" id="lz-speed" placeholder="Скорост м/мин" />
+          <input type="number" step="any" id="lz-meter" placeholder="Цена/метър лв" />
+          <input type="number" step="any" id="lz-contour" placeholder="Цена/контур лв" />
+          <button type="submit">+ Добави</button>
+        </form>
+        <p id="laser-error" class="error"></p>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Материал</th><th>Дебелина мм</th><th>Скорост м/мин</th><th>Цена/метър</th><th>Цена/контур</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="laser-body">
+            <tr><td colspan="6" class="muted">Зареждане…</td></tr>
+          </tbody>
+        </table>
+      </section>
     </main>
   </div>
 
