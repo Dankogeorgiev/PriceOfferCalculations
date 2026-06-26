@@ -454,15 +454,19 @@ document.getElementById("calc-laser-add").addEventListener("click", addLaserRow)
 document.getElementById("calc-op-add").addEventListener("click", addOpRow);
 document.getElementById("calc-compute").addEventListener("click", computeCalc);
 
-document.querySelectorAll(".tab-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-    const tab = btn.getAttribute("data-tab");
-    document.getElementById("tab-calc").classList.toggle("hidden", tab !== "calc");
-    document.getElementById("tab-data").classList.toggle("hidden", tab !== "data");
-  });
+function activateTab(tabName) {
+  document.querySelectorAll(".tab-btn[data-tab]").forEach((b) => b.classList.remove("active"));
+  const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+  if (btn) btn.classList.add("active");
+  document.getElementById("tab-calc").classList.toggle("hidden", tabName !== "calc");
+  document.getElementById("tab-data").classList.toggle("hidden", tabName !== "data");
+}
+
+document.querySelectorAll(".tab-btn[data-tab]").forEach((btn) => {
+  btn.addEventListener("click", () => activateTab(btn.getAttribute("data-tab")));
 });
+
+document.getElementById("data-tab-btn").addEventListener("click", () => activateTab("data"));
 
 // --- помощни ---
 function val(id) { return document.getElementById(id).value.trim(); }

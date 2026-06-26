@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DankoSystems · Прахово боядисване</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .page-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 16px;
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 16px;
+      align-items: start;
+    }
+    @media (max-width: 820px) { .page-layout { grid-template-columns: 1fr; } }
+
+    /* Project bar */
+    .project-bar {
+      background: #f0f4ff; border-bottom: 1px solid #c7d2fe;
+      padding: 8px 20px; display: flex; align-items: center; gap: 10px;
+    }
+    .project-bar label { font-size: 13px; font-weight: 700; color: #3730a3; white-space: nowrap; }
+    .project-bar input {
+      flex: 1; max-width: 340px; padding: 5px 10px; border: 1px solid #a5b4fc;
+      border-radius: 7px; font-size: 13px; background: #fff;
+    }
+    .project-bar input:focus { outline: 2px solid #6366f1; }
+    .proj-count { font-size: 12px; color: #6366f1; font-weight: 700; margin-left: 8px; }
+
+    /* Параметри */
+    .params-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
+    .param-field { display: flex; flex-direction: column; gap: 4px; }
+    .param-field label { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .param-field input, .param-field select {
+      padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border);
+      font-size: 14px; background: var(--bg);
+    }
+    .param-field input:focus, .param-field select:focus { outline: 2px solid var(--primary); background: #fff; }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    .section-title { font-size: 13px; font-weight: 700; margin: 0 0 6px; color: var(--text); }
+
+    /* Таблица с позиции */
+    .items-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+    .items-table th { padding: 8px 10px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: left; border-bottom: 2px solid var(--border); }
+    .items-table td { padding: 5px 6px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .items-table input, .items-table select {
+      width: 100%; padding: 6px 8px; font-size: 13px;
+      border: 1px solid var(--border); border-radius: 6px; background: var(--bg);
+    }
+    .items-table input:focus, .items-table select:focus { outline: 2px solid var(--primary); background: #fff; }
+    .items-table td.num { width: 70px; }
+    .items-table td.idx { width: 28px; color: var(--muted); font-size: 12px; text-align: center; }
+    .items-table td.right { text-align: right; font-weight: 700; font-size: 13px; padding-right: 10px; }
+    .items-table td.act { width: 36px; text-align: center; }
+    .del-btn { background: none; border: none; color: #9ca3af; font-size: 17px; line-height: 1; padding: 2px 5px; cursor: pointer; border-radius: 4px; }
+    .del-btn:hover { color: var(--danger); background: #fef2f2; }
+
+    /* Резултат */
+    .result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-top: 12px; }
+    .result-box { border-radius: 10px; padding: 12px; border: 1px solid var(--border); }
+    .result-box .r-val { font-size: 22px; font-weight: 800; line-height: 1; }
+    .result-box .r-lbl { font-size: 11px; color: var(--muted); margin-top: 4px; font-weight: 600; }
+    .result-box.blue  { background: #eff6ff; border-color: #bfdbfe; }
+    .result-box.blue .r-val  { color: var(--primary); }
+    .result-box.green { background: #f0fdf4; border-color: #bbf7d0; }
+    .result-box.green .r-val { color: #16a34a; }
+    .result-box.orange{ background: #fff7ed; border-color: #fed7aa; }
+    .result-box.orange .r-val{ color: #ea580c; }
+
+    .add-to-project-btn {
+      background: #16a34a; color: #fff; border: none; border-radius: 8px;
+      padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 12px;
+    }
+    .add-to-project-btn:hover { background: #15803d; }
+
+    /* Sidebar */
+    .sidebar { position: sticky; top: 16px; }
+    .sidebar .card { padding: 16px; }
+    .sidebar h2 { margin: 0 0 12px; font-size: 16px; }
+    .project-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0; }
+    .project-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .project-item:last-child { border-bottom: none; }
+    .pi-thumb-icon { width: 52px; height: 40px; border: 1px solid var(--border); border-radius: 6px; background: #fdf4ff; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .pi-thumb { width: 52px; height: 40px; border: 1px solid var(--border); border-radius: 6px; background: #fff; flex-shrink: 0; object-fit: contain; }
+    .pi-info { flex: 1; min-width: 0; }
+    .pi-name { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pi-sub  { font-size: 11px; color: var(--muted); }
+    .pi-price{ font-size: 13px; font-weight: 800; color: var(--primary); white-space: nowrap; }
+    .pi-del  { background: none; border: none; color: #9ca3af; font-size: 16px; cursor: pointer; padding: 0 2px; flex-shrink: 0; }
+    .pi-del:hover { color: var(--danger); }
+    .pi-badge { display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; margin-right: 3px; vertical-align: middle; }
+    .pi-badge.dxf   { background: #dbeafe; color: #1d4ed8; }
+    .pi-badge.bar   { background: #d1fae5; color: #065f46; }
+    .pi-badge.paint { background: #fae8ff; color: #7e22ce; }
+    .project-total { margin-top: 12px; padding-top: 10px; border-top: 2px solid var(--border); display: flex; justify-content: space-between; align-items: baseline; }
+    .project-total .lbl { font-size: 13px; color: var(--muted); font-weight: 600; }
+    .project-total .val { font-size: 20px; font-weight: 800; color: var(--primary); }
+    .offer-btn { display: block; width: 100%; margin-top: 12px; background: #1F3864; color: #fff; border: none; border-radius: 8px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; }
+    .offer-btn:hover { background: #162b4d; }
+    .offer-btn:disabled { background: #9ca3af; cursor: default; }
+    .clear-btn { display: block; width: 100%; margin-top: 6px; background: none; color: var(--muted); border: 1px solid var(--border); border-radius: 8px; padding: 7px; font-size: 13px; cursor: pointer; }
+    .clear-btn:hover { background: #fef2f2; color: var(--danger); border-color: #fca5a5; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">DankoSystems · Прахово боядисване</div>
+    <a href="index.html" class="ghost" style="padding:7px 14px;border-radius:8px;border:1px solid var(--border);font-size:14px;font-weight:600;text-decoration:none;color:var(--text);">← Назад</a>
+  </header>
+
+  <!-- Лента за Проект -->
+  <div class="project-bar">
+    <label>Проект:</label>
+    <input type="text" id="project-name-input" placeholder="Въведи название на проекта…" />
+    <span class="proj-count" id="proj-count-badge"></span>
+  </div>
+
+  <div class="page-layout">
+
+    <!-- ===== ЛЯВА КОЛОНА ===== -->
+    <div class="left-col">
+
+      <!-- Параметри -->
+      <section class="card" style="margin-bottom:14px">
+        <h2 style="margin:0 0 12px">Параметри на боядисване</h2>
+
+        <p class="section-title">Покритие</p>
+        <div class="params-grid">
+          <div class="param-field">
+            <label>Вид покритие</label>
+            <select id="p-coating-type">
+              <option value="standard">Стандартно (гладко)</option>
+              <option value="texture">Текстурирано</option>
+              <option value="metallic">Металик</option>
+              <option value="custom">Ръчно…</option>
+            </select>
+          </div>
+          <div class="param-field">
+            <label>Цвят / RAL код</label>
+            <input type="text" id="p-color" placeholder="напр. RAL 9005" />
+          </div>
+          <div class="param-field">
+            <label>Цена / м² (лв)</label>
+            <input type="number" id="p-rate-m2" value="8.00" min="0" step="0.01" />
+          </div>
+          <div class="param-field">
+            <label>Минимум / детайл (лв)</label>
+            <input type="number" id="p-min-charge" value="0" min="0" step="0.01"
+              title="Ако цената за детайла е по-малка от минимума, се взима минималната цена" />
+          </div>
+        </div>
+
+        <hr class="divider" />
+        <p class="section-title">Детайли за боядисване</p>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th class="idx">#</th>
+              <th>Наименование</th>
+              <th class="num">Площ м²</th>
+              <th class="num">Брой</th>
+              <th class="right" style="width:80px">Сума лв</th>
+              <th class="act"></th>
+            </tr>
+          </thead>
+          <tbody id="paint-body"></tbody>
+        </table>
+        <button class="ghost" id="add-item-btn" style="margin-top:10px;font-size:14px">+ Добави позиция</button>
+        <p id="paint-error" class="error"></p>
+
+        <div style="margin-top:12px">
+          <div class="param-field" style="max-width:380px">
+            <label>Забележки (за офертата)</label>
+            <input type="text" id="p-notes" placeholder="напр. Вътрешни повърхности" />
+          </div>
+        </div>
+
+        <button id="calc-btn" style="margin-top:16px;font-size:15px;padding:10px 32px">Изчисли →</button>
+      </section>
+
+      <!-- Резултат -->
+      <section class="card" id="result-section" style="display:none">
+        <h2 style="margin:0 0 10px">Резултат</h2>
+        <div class="result-grid" id="result-grid"></div>
+        <div style="margin-top:10px;font-size:11px;color:var(--muted)" id="result-detail"></div>
+        <button class="add-to-project-btn" id="add-btn">+ Добави към проекта</button>
+      </section>
+
+    </div>
+
+    <!-- ===== СТРАНИЧЕН ПАНЕЛ ===== -->
+    <div class="sidebar">
+      <div class="card">
+        <h2 id="sidebar-project-name">Проект</h2>
+        <div id="project-list">
+          <div class="project-empty" id="project-empty">Все още няма добавени елементи.</div>
+        </div>
+        <div class="project-total" id="project-total" style="display:none">
+          <span class="lbl">Общо</span>
+          <span class="val" id="project-total-val">0.00 лв</span>
+        </div>
+        <button class="offer-btn" id="offer-btn" disabled>Генерирай оферта PDF</button>
+        <button class="clear-btn" id="clear-btn" style="display:none">Изчисти проекта</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { getProject, saveProject, setProjectName, addItem, removeItem, clearProject } from "./project-store.js";
+
+    // ---- Проект лента ----
+    const projNameInput = document.getElementById("project-name-input");
+
+    function syncProjectName() {
+      const p = getProject();
+      projNameInput.value = p.name || "";
+      const name = p.name || "";
+      document.getElementById("sidebar-project-name").textContent = name ? `„${name}"` : "Проект";
+    }
+    syncProjectName();
+
+    projNameInput.addEventListener("input", () => {
+      setProjectName(projNameInput.value.trim());
+      const name = projNameInput.value.trim();
+      document.getElementById("sidebar-project-name").textContent = name ? `„${name}"` : "Проект";
+    });
+
+    // ---- Таблица с позиции ----
+    let rowIdx = 0;
+    const paintBody = document.getElementById("paint-body");
+
+    function addPaintRow(name = "", area = "", qty = 1) {
+      rowIdx++;
+      const n = rowIdx;
+      const tr = document.createElement("tr");
+      tr.dataset.n = n;
+      tr.innerHTML = `
+        <td class="idx">${n}</td>
+        <td><input type="text" class="pi-name-inp" placeholder="—" value="${esc(name)}" /></td>
+        <td class="num"><input type="number" class="pi-area" min="0" step="0.001" placeholder="м²" value="${area}" /></td>
+        <td class="num"><input type="number" class="pi-qty" min="1" placeholder="1" value="${qty}" /></td>
+        <td class="right pi-sum">—</td>
+        <td class="act"><button class="del-btn" title="Изтрий">✕</button></td>
+      `;
+      paintBody.appendChild(tr);
+      tr.querySelectorAll("input").forEach(inp => inp.addEventListener("input", recalcRows));
+    }
+
+    document.getElementById("add-item-btn").addEventListener("click", () => {
+      addPaintRow();
+      paintBody.lastElementChild.querySelector(".pi-name-inp").focus();
+    });
+
+    paintBody.addEventListener("click", e => {
+      if (e.target.classList.contains("del-btn")) { e.target.closest("tr").remove(); recalcRows(); }
+    });
+
+    // 3 празни реда при старт
+    for (let i = 0; i < 3; i++) addPaintRow();
+
+    function getRateM2() { return Number(document.getElementById("p-rate-m2").value) || 0; }
+    function getMinCharge() { return Number(document.getElementById("p-min-charge").value) || 0; }
+
+    function rowCost(area, qty, rateM2, minCharge) {
+      const unitCost = Math.max(area * rateM2, minCharge);
+      return Math.round(unitCost * qty * 100) / 100;
+    }
+
+    function recalcRows() {
+      const rateM2 = getRateM2();
+      const minCharge = getMinCharge();
+      for (const tr of paintBody.querySelectorAll("tr")) {
+        const area = Number(tr.querySelector(".pi-area")?.value) || 0;
+        const qty  = Number(tr.querySelector(".pi-qty")?.value)  || 1;
+        const cost = area > 0 ? rowCost(area, qty, rateM2, minCharge) : 0;
+        const sumEl = tr.querySelector(".pi-sum");
+        if (sumEl) sumEl.textContent = area > 0 ? fmt(cost) + " лв" : "—";
+      }
+    }
+
+    document.getElementById("p-rate-m2").addEventListener("input", recalcRows);
+    document.getElementById("p-min-charge").addEventListener("input", recalcRows);
+
+    // ---- Последен резултат ----
+    let lastCalc = null;
+
+    // ---- Калкулация ----
+    document.getElementById("calc-btn").addEventListener("click", () => {
+      document.getElementById("paint-error").textContent = "";
+      const rateM2   = getRateM2();
+      const minCharge = getMinCharge();
+      const notes    = document.getElementById("p-notes").value.trim();
+      const coatSel  = document.getElementById("p-coating-type");
+      const coatName = coatSel.options[coatSel.selectedIndex].text;
+      const color    = document.getElementById("p-color").value.trim();
+
+      const rows = [];
+      for (const tr of paintBody.querySelectorAll("tr")) {
+        const name = tr.querySelector(".pi-name-inp")?.value.trim() || "";
+        const area = Number(tr.querySelector(".pi-area")?.value) || 0;
+        const qty  = Number(tr.querySelector(".pi-qty")?.value)  || 1;
+        if (area <= 0) continue;
+        const cost = rowCost(area, qty, rateM2, minCharge);
+        rows.push({ name, area, qty, cost });
+      }
+
+      if (!rows.length) {
+        document.getElementById("paint-error").textContent = "Въведи поне една позиция с площ > 0.";
+        return;
+      }
+
+      const totalArea  = rows.reduce((s, r) => s + r.area * r.qty, 0);
+      const totalCost  = Math.round(rows.reduce((s, r) => s + r.cost, 0) * 100) / 100;
+
+      lastCalc = { rows, totalArea, totalCost, rateM2, minCharge, coatName, color, notes };
+
+      document.getElementById("result-grid").innerHTML = `
+        <div class="result-box blue"><div class="r-val">${fmt(totalArea)} м²</div><div class="r-lbl">Обща площ</div></div>
+        <div class="result-box orange"><div class="r-val">${fmt(rateM2)} лв</div><div class="r-lbl">Цена / м²</div></div>
+        <div class="result-box green" style="border-width:2px">
+          <div class="r-val" style="font-size:26px">${fmt(totalCost)} лв</div>
+          <div class="r-lbl">Общо боядисване</div>
+        </div>
+      `;
+      const detail = [coatName, color ? `Цвят: ${color}` : "", minCharge > 0 ? `мин. ${fmt(minCharge)} лв/дет.` : ""].filter(Boolean).join(" · ");
+      document.getElementById("result-detail").textContent = detail;
+      document.getElementById("result-section").style.display = "";
+      document.getElementById("result-section").scrollIntoView({ behavior: "smooth" });
+    });
+
+    // ---- Добави към проекта ----
+    document.getElementById("add-btn").addEventListener("click", () => {
+      if (!lastCalc) return;
+      const label = lastCalc.color
+        ? `Боядисване ${lastCalc.color}`
+        : `Боядисване (${lastCalc.coatName})`;
+
+      addItem({
+        type: "paint",
+        name: label,
+        notes: lastCalc.notes,
+        qty: lastCalc.rows.length,
+        totalArea: Math.round(lastCalc.totalArea * 1000) / 1000,
+        rateM2: lastCalc.rateM2,
+        coatName: lastCalc.coatName,
+        color: lastCalc.color,
+        totalCost: lastCalc.totalCost,
+        rows: lastCalc.rows,
+      });
+      renderProjectList();
+
+      const btn = document.getElementById("add-btn");
+      btn.textContent = "✓ Добавено!";
+      btn.style.background = "#15803d";
+      setTimeout(() => { btn.textContent = "+ Добави към проекта"; btn.style.background = ""; }, 1500);
+    });
+
+    // ---- Страничен панел ----
+    function renderProjectList() {
+      const p = getProject();
+      const items = p.items || [];
+      const list = document.getElementById("project-list");
+      const empty = document.getElementById("project-empty");
+      const totalEl = document.getElementById("project-total");
+      const totalValEl = document.getElementById("project-total-val");
+      const offerBtn = document.getElementById("offer-btn");
+      const clearBtn = document.getElementById("clear-btn");
+
+      document.getElementById("proj-count-badge").textContent =
+        items.length ? `${items.length} елем.` : "";
+
+      if (!items.length) {
+        empty.style.display = "";
+        totalEl.style.display = "none";
+        offerBtn.disabled = true;
+        clearBtn.style.display = "none";
+        list.innerHTML = "";
+        list.appendChild(empty);
+        return;
+      }
+
+      empty.style.display = "none";
+      const html = items.map((item, i) => {
+        let icon, badge, sub;
+        if (item.type === "dxf") {
+          icon = `<img class="pi-thumb" src="${item.png}" alt="${esc(item.name)}" />`;
+          badge = `<span class="pi-badge dxf">DXF</span>`;
+          sub = `${item.qty} бр. × ${fmt(item.unitCost)} лв`;
+        } else if (item.type === "barcut") {
+          icon = `<div class="pi-thumb-icon">🔩</div>`;
+          badge = `<span class="pi-badge bar">ПРЪТ</span>`;
+          sub = `${item.bars} пр. × ${fmt(item.pricePerBar)} лв`;
+        } else {
+          icon = `<div class="pi-thumb-icon">🎨</div>`;
+          badge = `<span class="pi-badge paint">БОЯ</span>`;
+          sub = `${fmt(item.totalArea)} м² · ${fmt(item.rateM2)} лв/м²`;
+        }
+        return `<div class="project-item">
+          ${icon}
+          <div class="pi-info">
+            <div class="pi-name" title="${esc(item.name)}">${badge}${esc(item.name)}</div>
+            <div class="pi-sub">${sub}</div>
+            ${item.notes ? `<div class="pi-sub" style="font-style:italic">${esc(item.notes)}</div>` : ""}
+          </div>
+          <div class="pi-price">${fmt(item.totalCost)} лв</div>
+          <button class="pi-del" data-idx="${i}" title="Премахни">✕</button>
+        </div>`;
+      }).join("");
+
+      list.innerHTML = html;
+      list.appendChild(empty);
+
+      const grand = items.reduce((s, it) => s + (it.totalCost || 0), 0);
+      totalEl.style.display = "";
+      totalValEl.textContent = fmt(Math.round(grand * 100) / 100) + " лв";
+      offerBtn.disabled = false;
+      clearBtn.style.display = "";
+    }
+
+    document.getElementById("project-list").addEventListener("click", e => {
+      const idx = e.target.getAttribute("data-idx");
+      if (idx === null) return;
+      removeItem(Number(idx));
+      renderProjectList();
+    });
+
+    document.getElementById("clear-btn").addEventListener("click", () => {
+      if (!confirm("Да изчистя ли целия проект?")) return;
+      clearProject();
+      syncProjectName();
+      renderProjectList();
+    });
+
+    renderProjectList();
+
+    // ---- Генерирай оферта PDF ----
+    document.getElementById("offer-btn").addEventListener("click", () => {
+      const p = getProject();
+      const items = p.items || [];
+      if (!items.length) return;
+      const date = new Date().toLocaleDateString("bg-BG");
+      const grand = items.reduce((s, it) => s + (it.totalCost || 0), 0);
+      const projName = p.name || "Производствена калкулация";
+
+      const rows = items.map(item => {
+        let thumb, subLine, qtyCol, unitCol;
+
+        if (item.type === "dxf") {
+          thumb = `<img src="${item.png}" style="width:48pt;height:36pt;object-fit:contain;border:1px solid #e5e7eb;border-radius:4pt;display:block"/>`;
+          subLine = `${esc(item.calc?.matName || "")}, ${item.calc?.thickness || ""} мм · разрез ${fmt(item.geo?.cut_length_mm)} мм`;
+          qtyCol = item.qty;
+          unitCol = `${fmt(item.unitCost)} лв`;
+        } else if (item.type === "barcut") {
+          thumb = `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🔩</div>`;
+          subLine = `${item.bars} пр. × ${item.barLenM} м`;
+          qtyCol = item.bars;
+          unitCol = `${fmt(item.pricePerBar)} лв/пр.`;
+        } else {
+          thumb = `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🎨</div>`;
+          subLine = `${esc(item.coatName)}${item.color ? ", " + esc(item.color) : ""} · ${fmt(item.totalArea)} м²`;
+          qtyCol = `${fmt(item.totalArea)} м²`;
+          unitCol = `${fmt(item.rateM2)} лв/м²`;
+        }
+
+        return `<tr>
+          <td style="width:52pt;padding:4pt 8pt">${thumb}</td>
+          <td style="padding:4pt 8pt">
+            <b>${esc(item.name)}</b>${item.notes ? `<br><span style="color:#6b7280;font-size:8.5pt">${esc(item.notes)}</span>` : ""}
+            <br><span style="font-size:8.5pt;color:#6b7280">${subLine}</span>
+          </td>
+          <td style="padding:4pt 8pt;text-align:center">${qtyCol}</td>
+          <td style="padding:4pt 8pt;text-align:right">${unitCol}</td>
+          <td style="padding:4pt 8pt;text-align:right;font-weight:700">${fmt(item.totalCost)} лв</td>
+        </tr>`;
+      }).join("");
+
+      const html = `<!DOCTYPE html>
+<html lang="bg"><head>
+<meta charset="UTF-8"/>
+<title>${esc(projName)} — ${date}</title>
+<style>
+  @page { size: A4; margin: 14mm 14mm 16mm 14mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Roboto, Arial, sans-serif; font-size: 10pt; color: #1f2a37; }
+  .hdr { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #1F3864; padding-bottom:10px; margin-bottom:18px; }
+  .brand { font-size:20pt; font-weight:800; color:#1F3864; }
+  .proj-title { font-size:12pt; font-weight:700; color:#1F3864; margin-top:3px; }
+  .sub { font-size:9pt; color:#6b7280; margin-top:2px; }
+  .meta { text-align:right; font-size:9pt; color:#6b7280; line-height:1.7; }
+  table { width:100%; border-collapse:collapse; }
+  thead tr { background:#1F3864; color:#fff; }
+  thead th { padding:6pt 8pt; text-align:left; font-size:9pt; }
+  thead th:nth-child(3),thead th:nth-child(4),thead th:nth-child(5) { text-align:right; }
+  tbody tr { border-bottom:1px solid #f3f4f6; }
+  tbody tr:nth-child(even) { background:#f8fafc; }
+  .total-row td { background:#eff6ff; font-weight:800; font-size:11pt; color:#1d4ed8; padding:7pt 8pt; border-top:2px solid #bfdbfe; }
+  .total-row td:last-child { text-align:right; }
+  .footer { margin-top:20pt; border-top:1px solid #e5e7eb; padding-top:7pt; font-size:8pt; color:#9ca3af; display:flex; justify-content:space-between; }
+</style>
+</head><body>
+  <div class="hdr">
+    <div>
+      <div class="brand">DankoSystems</div>
+      <div class="proj-title">${esc(projName)}</div>
+      <div class="sub">Производствена калкулация</div>
+    </div>
+    <div class="meta">Дата: ${date}<br>Позиции: ${items.length}</div>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:52pt"></th>
+      <th>Позиция</th>
+      <th style="text-align:right">Кол.</th>
+      <th style="text-align:right">Ед. цена</th>
+      <th style="text-align:right">Общо (лв)</th>
+    </tr></thead>
+    <tbody>
+      ${rows}
+      <tr class="total-row">
+        <td colspan="4">ОБЩО</td>
+        <td>${fmt(Math.round(grand * 100) / 100)} лв</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="footer">
+    <span>DankoSystems · ${esc(projName)}</span>
+    <span>${date}</span>
+  </div>
+  <script>window.onload=()=>{window.print();window.onafterprint=()=>window.close();}<\/script>
+</body></html>`;
+
+      const win = window.open("", "_blank");
+      win.document.write(html);
+      win.document.close();
+    });
+
+    // ---- Helpers ----
+    function fmt(n) {
+      if (n == null) return "—";
+      const num = Number(n);
+      return isNaN(num) ? "—" : num.toLocaleString("bg-BG", { maximumFractionDigits: 2 });
+    }
+    function esc(s) {
+      return (s ?? "").toString().replace(/[&<>"]/g, c =>
+        ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+    }
+  </script>
+</body>
+</html>

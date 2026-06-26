@@ -28,8 +28,7 @@
     <header class="topbar">
       <div class="brand">DankoSystems · Оферти</div>
       <div class="user">
-        <a href="dxf-calc.html" class="ghost" style="padding:7px 14px;border-radius:8px;border:1px solid var(--border);font-size:14px;font-weight:600;text-decoration:none;color:var(--text);">DXF Анализ</a>
-        <a href="bar-cut.html" class="ghost" style="padding:7px 14px;border-radius:8px;border:1px solid var(--border);font-size:14px;font-weight:600;text-decoration:none;color:var(--text);">Прътов разкрой</a>
+        <button class="ghost" id="data-tab-btn" style="padding:7px 14px;font-size:14px;font-weight:600;">Справочни данни</button>
         <span id="user-email" class="muted"></span>
         <button id="logout-btn" class="ghost">Изход</button>
       </div>
@@ -38,7 +37,9 @@
     <main class="container">
       <nav class="tabs">
         <button class="tab-btn active" data-tab="calc">Калкулатор</button>
-        <button class="tab-btn" data-tab="data">Справочни данни</button>
+        <a class="tab-btn" href="bar-cut.html" style="text-decoration:none;display:inline-flex;align-items:center;">Прътов разкрой</a>
+        <a class="tab-btn" href="dxf-calc.html" style="text-decoration:none;display:inline-flex;align-items:center;">DXF Анализ</a>
+        <a class="tab-btn" href="powder-coat.html" style="text-decoration:none;display:inline-flex;align-items:center;">Прахово боядисване</a>
       </nav>
 
       <div id="tab-calc">
