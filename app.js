@@ -500,6 +500,12 @@ document.querySelectorAll(".tab-btn[data-tab]").forEach((btn) => {
 
 document.getElementById("data-tab-btn").addEventListener("click", () => activateTab("data"));
 
+// Auto-focus iframes on mouseenter so scroll works without clicking first
+document.addEventListener("mouseover", (e) => {
+  const frame = e.target.closest(".tool-frame");
+  if (frame) try { frame.contentWindow?.focus(); } catch (_) {}
+});
+
 // --- помощни ---
 function val(id) { return document.getElementById(id).value.trim(); }
 function num(id) { const v = document.getElementById(id).value; return v === "" ? null : Number(v); }
