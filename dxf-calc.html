@@ -464,7 +464,8 @@
         } else if (item.type === "calc") {
           icon  = `<div class="pi-thumb-bar">🔧</div>`;
           badge = `<span class="pi-badge" style="background:#eff6ff;color:#1d4ed8">КАЛК</span>`;
-          sub   = item.displaySub || `${item.qty} бр. × ${fmt(item.totalEUR)} €`;
+          const purLine = item.pur > 0 ? ` + покупни ${fmt(item.pur)} лв` : "";
+          sub   = `мат. ${fmt(item.mat)} лв + труд ${fmt(item.op)} лв${purLine}`;
         } else {
           icon  = `<div class="pi-thumb-bar">🎨</div>`;
           badge = `<span class="pi-badge" style="background:#fae8ff;color:#7e22ce">БОЯ</span>`;
