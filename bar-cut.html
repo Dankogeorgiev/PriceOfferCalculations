@@ -6,97 +6,112 @@
   <title>DankoSystems · Прътов разкрой</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    .bc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media (max-width: 640px) { .bc-grid { grid-template-columns: 1fr; } }
+    /* Параметри */
+    .params-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+    .params-row .field { display: flex; flex-direction: column; gap: 4px; }
+    .params-row .field label { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .params-row .field input { width: 180px; }
+    .params-row .field input.wide { width: 240px; }
 
-    .param-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
-    .param-group label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); font-weight: 600; }
-    .param-group input { width: 160px; }
+    /* Таблица с парчета */
+    .pieces-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+    .pieces-table th { padding: 8px 10px; font-size: 13px; font-weight: 600; color: var(--muted); text-align: left; border-bottom: 2px solid var(--border); }
+    .pieces-table td { padding: 5px 6px; border-bottom: 1px solid var(--border); }
+    .pieces-table input { width: 100%; padding: 6px 8px; font-size: 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
+    .pieces-table input:focus { outline: 2px solid var(--primary); background: #fff; }
+    .pieces-table td.num { width: 60px; }
+    .pieces-table td.idx { width: 32px; color: var(--muted); font-size: 13px; text-align: center; }
+    .pieces-table td.act { width: 40px; text-align: center; }
+    .del-btn { background: none; border: none; color: #9ca3af; font-size: 18px; line-height: 1; padding: 2px 6px; cursor: pointer; border-radius: 4px; }
+    .del-btn:hover { color: var(--danger); background: #fef2f2; }
 
-    .pieces-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    .pieces-table th, .pieces-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); font-size: 14px; text-align: left; }
-    .pieces-table th { color: var(--muted); font-weight: 600; }
-    .pieces-table input { width: 100%; padding: 5px 8px; font-size: 14px; border: 1px solid var(--border); border-radius: 6px; }
-    .pieces-table input:focus { outline: 2px solid var(--primary); }
-    .add-row-btn { margin-top: 10px; }
+    .add-row-btn { margin-top: 10px; font-size: 14px; }
+    .calc-btn { font-size: 16px; padding: 12px 36px; margin-top: 20px; display: block; }
 
-    .calc-btn { margin-top: 16px; font-size: 16px; padding: 11px 28px; }
+    /* Резултат */
+    #results { margin-top: 28px; }
+    .result-hero { text-align: center; padding: 24px 16px; background: #eff6ff; border-radius: 12px; margin-bottom: 20px; border: 1px solid #bfdbfe; }
+    .result-hero .big-num { font-size: 56px; font-weight: 800; color: var(--primary); line-height: 1; }
+    .result-hero .big-label { font-size: 18px; color: var(--primary); font-weight: 600; margin-top: 4px; }
+    .summary-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 14px; }
+    .chip { background: #fff; border: 1px solid #bfdbfe; border-radius: 20px; padding: 5px 14px; font-size: 14px; font-weight: 600; color: #1e40af; }
+    .chip.green { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+    .chip.red   { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
 
-    /* Results */
-    #results { margin-top: 24px; display: none; }
-    .summary-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
-    .chip { background: #eff6ff; color: var(--primary); border-radius: 20px; padding: 5px 14px; font-size: 14px; font-weight: 600; border: 1px solid #bfdbfe; }
-    .chip.green { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
-    .chip.red { background: #fef2f2; color: var(--danger); border-color: #fecaca; }
-
-    .bar-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
-    .bar-label { font-weight: 700; font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; }
-    .bar-label span { font-weight: 400; color: var(--muted); font-size: 13px; }
-    .bar-track { display: flex; height: 32px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); width: 100%; }
-    .bar-seg { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 0 3px; }
-    .bar-waste { background: #e5e7eb; height: 100%; }
-    .bar-pieces-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    .piece-tag { font-size: 12px; padding: 2px 8px; border-radius: 12px; color: #fff; font-weight: 600; white-space: nowrap; }
-
-    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--primary); text-decoration: none; font-weight: 600; font-size: 14px; margin-bottom: 16px; }
-    .back-link:hover { text-decoration: underline; }
+    /* Bar визуализация */
+    .bars-section h3 { margin: 0 0 14px; font-size: 16px; color: var(--muted); font-weight: 600; }
+    .bar-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+    .bar-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .bar-title { font-weight: 700; font-size: 14px; }
+    .bar-meta { font-size: 12px; color: var(--muted); }
+    .bar-track { display: flex; height: 36px; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); }
+    .seg { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; overflow: hidden; white-space: nowrap; padding: 0 3px; text-shadow: 0 1px 2px rgba(0,0,0,.3); }
+    .seg-waste { background: #e5e7eb; height: 100%; flex-shrink: 0; }
+    .bar-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .tag { font-size: 12px; padding: 2px 9px; border-radius: 12px; color: #fff; font-weight: 600; white-space: nowrap; }
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="brand">DankoSystems · Прътов разкрой</div>
-    <div class="user">
-      <a href="index.html" class="ghost" style="padding:7px 14px;border-radius:8px;border:1px solid var(--border);font-size:14px;font-weight:600;text-decoration:none;color:var(--text);">← Назад</a>
-    </div>
+    <a href="index.html" class="ghost" style="padding:7px 14px;border-radius:8px;border:1px solid var(--border);font-size:14px;font-weight:600;text-decoration:none;color:var(--text);">← Назад</a>
   </header>
 
-  <main class="container">
-    <div class="bc-grid">
-      <!-- Входни параметри -->
-      <section class="card">
-        <h2 style="margin-top:0">Параметри</h2>
-        <div class="param-group">
-          <label>Профил / материал
-            <input type="text" id="bc-profile" placeholder="напр. 200×200×4" value="" />
-          </label>
-          <label>Дължина на пръта (мм)
-            <input type="number" id="bc-barlen" value="12000" min="1" />
-          </label>
-          <label>Резерв / ширина на рез (мм)
-            <input type="number" id="bc-kerf" value="0" min="0" />
-          </label>
+  <main class="container" style="max-width:820px">
+
+    <!-- 1. Параметри на пръта -->
+    <section class="card" style="margin-bottom:16px">
+      <h2 style="margin:0 0 16px">Параметри на пръта</h2>
+      <div class="params-row">
+        <div class="field">
+          <label>Профил / материал</label>
+          <input type="text" id="bc-profile" class="wide" placeholder="напр. 200×200×4, тръба Ø60×3…" />
         </div>
-      </section>
+        <div class="field">
+          <label>Дължина на пръта (мм) *</label>
+          <input type="number" id="bc-barlen" value="6000" min="1" />
+        </div>
+        <div class="field">
+          <label>Ширина на рез / резерв (мм)</label>
+          <input type="number" id="bc-kerf" value="0" min="0" />
+        </div>
+      </div>
+    </section>
 
-      <!-- Разрези -->
-      <section class="card">
-        <h2 style="margin-top:0">Разрези</h2>
-        <table class="pieces-table" id="pieces-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Дължина (мм)</th>
-              <th>Бр.</th>
-              <th>Описание</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="pieces-body">
-          </tbody>
-        </table>
-        <button class="ghost add-row-btn" id="add-row-btn">+ Добави ред</button>
-        <p id="bc-error" class="error"></p>
-        <button class="calc-btn" id="calc-btn">Изчисли разкроя</button>
-      </section>
-    </div>
+    <!-- 2. Парчета -->
+    <section class="card">
+      <h2 style="margin:0 0 12px">Парчета за разкрой</h2>
+      <table class="pieces-table">
+        <thead>
+          <tr>
+            <th class="idx">#</th>
+            <th>Дължина (мм)</th>
+            <th class="num">Брой</th>
+            <th>Описание (по желание)</th>
+            <th class="act"></th>
+          </tr>
+        </thead>
+        <tbody id="pieces-body"></tbody>
+      </table>
+      <button class="ghost add-row-btn" id="add-row-btn">+ Добави ред</button>
+      <p id="bc-error" class="error"></p>
+      <button class="calc-btn" id="calc-btn">Изчисли разкроя →</button>
+    </section>
 
-    <!-- Резултат -->
-    <div id="results">
-      <section class="card">
-        <h2 style="margin-top:0">Резултат</h2>
-        <div class="summary-chips" id="summary-chips"></div>
+    <!-- 3. Резултат -->
+    <div id="results" class="hidden">
+
+      <div class="result-hero">
+        <div class="big-num" id="res-count">—</div>
+        <div class="big-label">пръта са необходими</div>
+        <div class="summary-row" id="res-chips"></div>
+      </div>
+
+      <div class="bars-section card">
+        <h3>Разпределение по прътове</h3>
         <div id="bars-container"></div>
-      </section>
+      </div>
+
     </div>
   </main>
 
