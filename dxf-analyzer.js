@@ -349,6 +349,7 @@ export function analyzeDxf(text, { cutLayers = null, bendLayers = [] } = {}) {
     duplicate_entities: 0,
     entity_count: 0,
     warnings: [],
+    entities: [],  // за визуализация
   };
 
   const pairs = parsePairs(text);
@@ -401,6 +402,7 @@ export function analyzeDxf(text, { cutLayers = null, bendLayers = [] } = {}) {
   }
 
   result.cut_length_mm = Math.round(result.cut_length_mm * factor * 100) / 100;
+  result.entities = cutEntities;
 
   const bb = boundingBox(cutEntities, factor);
   result.blank_x_mm  = bb.x;
