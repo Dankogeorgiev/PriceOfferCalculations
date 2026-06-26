@@ -6,104 +6,132 @@
   <title>DankoSystems · Прахово боядисване</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    .page-layout {
-      display: grid;
-      grid-template-columns: 1fr 320px;
-      gap: 16px;
-      max-width: 1100px;
-      margin: 24px auto;
-      padding: 0 16px;
-      align-items: start;
+    /* ---- Layout ---- */
+    .pc-wrap { max-width: 1260px; margin: 0 auto; padding: 16px 20px; }
+    .pc-grid { display: grid; grid-template-columns: 380px 1fr; gap: 18px; margin-top: 16px; }
+    @media (max-width: 900px) { .pc-grid { grid-template-columns: 1fr; } }
+
+    /* ---- Left panel ---- */
+    .pc-panel { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .pc-panel fieldset { border: none; margin: 0 0 16px; padding: 0; min-width: 0; }
+    .pc-panel fieldset:last-child { margin-bottom: 0; }
+    .pc-legend {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+      color: #33507e; padding: 0 0 8px; border-bottom: 1px solid var(--border);
+      width: 100%; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
     }
-    @media (max-width: 820px) { .page-layout { grid-template-columns: 1fr; } }
-
-    /* Project bar */
-    .project-bar {
-      background: #f0f4ff; border-bottom: 1px solid #c7d2fe;
-      padding: 8px 20px; display: flex; align-items: center; gap: 10px;
+    .pc-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 7px 0; }
+    .pc-row label { font-size: 13px; color: #33405a; }
+    .pc-field { position: relative; display: flex; align-items: center; }
+    .pc-field input {
+      width: 86px; font-family: 'Courier New', monospace; font-size: 13px; font-weight: 600;
+      text-align: right; color: var(--text); background: #f8fafc;
+      border: 1px solid var(--border); border-radius: 7px; padding: 6px 28px 6px 9px;
     }
-    .project-bar label { font-size: 13px; font-weight: 700; color: #3730a3; white-space: nowrap; }
-    .project-bar input {
-      flex: 1; max-width: 340px; padding: 5px 10px; border: 1px solid #a5b4fc;
-      border-radius: 7px; font-size: 13px; background: #fff;
+    .pc-field input:focus { border-color: #1F3864; background: #fff; outline: 2px solid rgba(31,56,100,.15); }
+    .pc-field .u { position: absolute; right: 8px; font-size: 10px; color: var(--muted); pointer-events: none; font-family: monospace; }
+
+    .selhang {
+      width: 100%; font-size: 14px; font-weight: 600; color: var(--text);
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 10px; outline: none; cursor: pointer;
     }
-    .project-bar input:focus { outline: 2px solid #6366f1; }
-    .proj-count { font-size: 12px; color: #6366f1; font-weight: 700; margin-left: 8px; }
+    .selhang:focus { border-color: #1F3864; }
 
-    /* Параметри */
-    .params-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
-    .param-field { display: flex; flex-direction: column; gap: 4px; }
-    .param-field label { font-size: 13px; font-weight: 600; color: var(--muted); }
-    .param-field input, .param-field select {
-      padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border);
-      font-size: 14px; background: var(--bg);
+    /* Parts & bars */
+    .pc-item {
+      display: flex; align-items: center; gap: 5px; margin: 6px 0;
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 7px 8px;
+      overflow: hidden;
     }
-    .param-field input:focus, .param-field select:focus { outline: 2px solid var(--primary); background: #fff; }
-
-    .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
-    .section-title { font-size: 13px; font-weight: 700; margin: 0 0 6px; color: var(--text); }
-
-    /* Таблица с позиции */
-    .items-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-    .items-table th { padding: 8px 10px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: left; border-bottom: 2px solid var(--border); }
-    .items-table td { padding: 5px 6px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-    .items-table input, .items-table select {
-      width: 100%; padding: 6px 8px; font-size: 13px;
-      border: 1px solid var(--border); border-radius: 6px; background: var(--bg);
+    .pc-item.sel { border-color: #1F3864; box-shadow: 0 0 0 2px rgba(31,56,100,.12); }
+    .swatch { width: 13px; height: 13px; border-radius: 3px; flex: 0 0 auto; border: 1px solid rgba(0,0,0,.15); }
+    .pc-item input.iname {
+      flex: 1 1 40px; min-width: 0; font-size: 12.5px; border: none;
+      background: transparent; color: var(--text); outline: none; padding: 2px;
     }
-    .items-table input:focus, .items-table select:focus { outline: 2px solid var(--primary); background: #fff; }
-    .items-table td.num { width: 70px; }
-    .items-table td.idx { width: 28px; color: var(--muted); font-size: 12px; text-align: center; }
-    .items-table td.right { text-align: right; font-weight: 700; font-size: 13px; padding-right: 10px; }
-    .items-table td.act { width: 36px; text-align: center; }
-    .del-btn { background: none; border: none; color: #9ca3af; font-size: 17px; line-height: 1; padding: 2px 5px; cursor: pointer; border-radius: 4px; }
-    .del-btn:hover { color: var(--danger); background: #fef2f2; }
+    .pc-item input.idim {
+      width: 42px; flex: 0 0 auto; font-family: monospace; font-size: 12px;
+      text-align: right; border: 1px solid var(--border); border-radius: 5px;
+      padding: 4px 5px; background: #fff; outline: none;
+    }
+    .pc-item input.idim:focus { border-color: #1F3864; }
+    .pc-item select {
+      flex: 1 1 0; min-width: 0; font-size: 12px; border: 1px solid var(--border);
+      border-radius: 5px; padding: 4px 5px; background: #fff; color: var(--text); outline: none;
+    }
+    .pc-item .ro {
+      flex: 0 0 auto; font-family: monospace; font-size: 12px; color: var(--text);
+      background: #fff; border: 1px solid var(--border); border-radius: 5px; padding: 4px 7px; cursor: pointer;
+    }
+    .pc-item .ro:hover { background: #1F3864; color: #fff; }
+    .pc-item .xbtn {
+      flex: 0 0 auto; cursor: pointer; color: var(--muted); font-size: 16px;
+      line-height: 1; padding: 2px 4px; border: none; background: none;
+    }
+    .pc-item .xbtn:hover { color: var(--danger); }
+    .times { font-family: monospace; font-size: 11px; color: var(--muted); flex: 0 0 auto; }
+    .baridx { font-family: monospace; font-size: 11px; color: var(--muted); width: 14px; text-align: center; flex: 0 0 auto; }
+    .addbar { display: flex; gap: 7px; margin-top: 9px; align-items: center; flex-wrap: wrap; }
+    .addbar input {
+      width: 48px; font-family: monospace; font-size: 12px; text-align: right;
+      border: 1px solid var(--border); border-radius: 6px; padding: 5px 6px; background: #fff; outline: none;
+    }
+    .pc-btn {
+      font-size: 12px; font-weight: 700; color: #1F3864; background: #eff6ff;
+      border: 1px solid #bfdbfe; border-radius: 7px; padding: 6px 10px; cursor: pointer; white-space: nowrap;
+    }
+    .pc-btn:hover { background: #1F3864; color: #fff; border-color: #1F3864; }
 
-    /* Резултат */
-    .result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-top: 12px; }
-    .result-box { border-radius: 10px; padding: 12px; border: 1px solid var(--border); }
-    .result-box .r-val { font-size: 22px; font-weight: 800; line-height: 1; }
-    .result-box .r-lbl { font-size: 11px; color: var(--muted); margin-top: 4px; font-weight: 600; }
-    .result-box.blue  { background: #eff6ff; border-color: #bfdbfe; }
-    .result-box.blue .r-val  { color: var(--primary); }
-    .result-box.green { background: #f0fdf4; border-color: #bbf7d0; }
-    .result-box.green .r-val { color: #16a34a; }
-    .result-box.orange{ background: #fff7ed; border-color: #fed7aa; }
-    .result-box.orange .r-val{ color: #ea580c; }
+    /* ---- 3D stage ---- */
+    .pc-stage { display: flex; flex-direction: column; min-width: 0; }
+    .viewbar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+    .viewbar .sel-info { font-family: monospace; font-size: 12px; color: var(--muted); }
+    .draw { position: relative; background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; height: 480px; }
+    #canvasHost { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+    #canvasHost.carry { cursor: ew-resize; }
+    .hint-3d { position: absolute; left: 12px; bottom: 10px; font-family: monospace; font-size: 11px; color: var(--muted); background: rgba(255,255,255,.85); padding: 4px 8px; border-radius: 6px; }
 
-    .add-to-project-btn {
+    /* ---- Results ---- */
+    .res-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+    @media (max-width: 560px) { .res-grid { grid-template-columns: repeat(2, 1fr); } }
+    .stat { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+    .stat .k { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .stat .v { font-family: 'Segoe UI', sans-serif; font-weight: 800; font-size: 24px; line-height: 1.1; margin-top: 5px; }
+    .stat .vsub { font-family: monospace; font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .stat.hero { background: #1F3864; }
+    .stat.hero .k { color: #9fb0cf; }
+    .stat.hero .v { color: #fff; }
+    .stat.hero .vsub { color: #9fb0cf; }
+    table.bd { width: 100%; border-collapse: collapse; margin-top: 12px; background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    table.bd th, table.bd td { text-align: right; padding: 8px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
+    table.bd th { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; background: #f6f8fb; }
+    table.bd td:first-child, table.bd th:first-child { text-align: left; }
+    table.bd tr:last-child td { border-bottom: none; }
+    table.bd .nm { display: flex; align-items: center; gap: 8px; }
+    .price-green { font-family: monospace; font-weight: 600; color: #16a34a; }
+
+    /* ---- Добави към проекта ---- */
+    .add-proj-bar {
+      margin-top: 14px; padding: 14px 16px; background: #f0fdf4;
+      border: 1px solid #bbf7d0; border-radius: 10px;
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    }
+    .add-proj-bar .apb-info { font-size: 13px; color: #166534; flex: 1; min-width: 160px; }
+    .add-proj-bar .apb-field { display: flex; align-items: center; gap: 6px; }
+    .add-proj-bar .apb-field label { font-size: 13px; font-weight: 600; color: #166534; white-space: nowrap; }
+    .add-proj-bar .apb-field input {
+      width: 80px; padding: 6px 8px; border: 1px solid #86efac; border-radius: 7px;
+      font-size: 14px; font-weight: 700; background: #fff; color: #166534;
+    }
+    .add-proj-btn {
       background: #16a34a; color: #fff; border: none; border-radius: 8px;
-      padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 12px;
+      padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap;
     }
-    .add-to-project-btn:hover { background: #15803d; }
+    .add-proj-btn:hover { background: #15803d; }
 
-    /* Sidebar */
-    .sidebar { position: sticky; top: 16px; }
-    .sidebar .card { padding: 16px; }
-    .sidebar h2 { margin: 0 0 12px; font-size: 16px; }
-    .project-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0; }
-    .project-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-    .project-item:last-child { border-bottom: none; }
-    .pi-thumb-icon { width: 52px; height: 40px; border: 1px solid var(--border); border-radius: 6px; background: #fdf4ff; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .pi-thumb { width: 52px; height: 40px; border: 1px solid var(--border); border-radius: 6px; background: #fff; flex-shrink: 0; object-fit: contain; }
-    .pi-info { flex: 1; min-width: 0; }
-    .pi-name { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .pi-sub  { font-size: 11px; color: var(--muted); }
-    .pi-price{ font-size: 13px; font-weight: 800; color: var(--primary); white-space: nowrap; }
-    .pi-del  { background: none; border: none; color: #9ca3af; font-size: 16px; cursor: pointer; padding: 0 2px; flex-shrink: 0; }
-    .pi-del:hover { color: var(--danger); }
-    .pi-badge { display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; margin-right: 3px; vertical-align: middle; }
-    .pi-badge.dxf   { background: #dbeafe; color: #1d4ed8; }
-    .pi-badge.bar   { background: #d1fae5; color: #065f46; }
-    .pi-badge.paint { background: #fae8ff; color: #7e22ce; }
-    .project-total { margin-top: 12px; padding-top: 10px; border-top: 2px solid var(--border); display: flex; justify-content: space-between; align-items: baseline; }
-    .project-total .lbl { font-size: 13px; color: var(--muted); font-weight: 600; }
-    .project-total .val { font-size: 20px; font-weight: 800; color: var(--primary); }
-    .offer-btn { display: block; width: 100%; margin-top: 12px; background: #1F3864; color: #fff; border: none; border-radius: 8px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; }
-    .offer-btn:hover { background: #162b4d; }
-    .offer-btn:disabled { background: #9ca3af; cursor: default; }
-    .clear-btn { display: block; width: 100%; margin-top: 6px; background: none; color: var(--muted); border: 1px solid var(--border); border-radius: 8px; padding: 7px; font-size: 13px; cursor: pointer; }
-    .clear-btn:hover { background: #fef2f2; color: var(--danger); border-color: #fca5a5; }
+    .pc-note { font-size: 12px; color: var(--muted); margin-top: 12px; line-height: 1.5; }
+    .pc-note b { color: #33507e; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -112,425 +140,505 @@
     <a href="index.html" class="ghost" style="padding:7px 14px;border-radius:8px;border:1px solid var(--border);font-size:14px;font-weight:600;text-decoration:none;color:var(--text);">← Назад</a>
   </header>
 
-  <!-- Лента за Проект -->
   <div id="project-bar-root"></div>
 
-  <div class="page-layout">
+  <div class="pc-wrap">
+    <div class="pc-grid">
 
-    <!-- ===== ЛЯВА КОЛОНА ===== -->
-    <div class="left-col">
+      <!-- ===== ЛЯВО — УПРАВЛЕНИЕ ===== -->
+      <div class="pc-panel">
 
-      <!-- Параметри -->
-      <section class="card" style="margin-bottom:14px">
-        <h2 style="margin:0 0 12px">Параметри на боядисване</h2>
+        <fieldset>
+          <div class="pc-legend">Подвеска</div>
+          <select class="selhang" id="hangerSel"></select>
+          <div class="pc-row" style="margin-top:10px"><label>Ширина</label><div class="pc-field"><input id="W" type="number" value="90"><span class="u">см</span></div></div>
+          <div class="pc-row"><label>Височина</label><div class="pc-field"><input id="H" type="number" value="140"><span class="u">см</span></div></div>
+          <div class="pc-row"><label>Странична хлабина</label><div class="pc-field"><input id="marginX" type="number" value="5"><span class="u">см</span></div></div>
+          <div class="pc-row"><label>Отстъп долу</label><div class="pc-field"><input id="marginBottom" type="number" value="5"><span class="u">см</span></div></div>
+          <div class="pc-row"><label>Хлабина между детайли</label><div class="pc-field"><input id="gap" type="number" value="3"><span class="u">см</span></div></div>
+        </fieldset>
 
-        <p class="section-title">Покритие</p>
-        <div class="params-grid">
-          <div class="param-field">
-            <label>Вид покритие</label>
-            <select id="p-coating-type">
-              <option value="standard">Стандартно (гладко)</option>
-              <option value="texture">Текстурирано</option>
-              <option value="metallic">Металик</option>
-              <option value="custom">Ръчно…</option>
-            </select>
+        <fieldset>
+          <div class="pc-legend"><span>Детайли <span style="font-weight:400;letter-spacing:0;text-transform:none;color:var(--muted);font-size:10px">Д × В × Ш (см)</span></span><button class="pc-btn" id="addPart">+ детайл</button></div>
+          <div id="partsList"></div>
+        </fieldset>
+
+        <fieldset>
+          <div class="pc-legend"><span>Напречни железа</span><span style="font-weight:400;text-transform:none;color:var(--muted);font-size:10px;letter-spacing:0">↻ завърти · × махни</span></div>
+          <div id="barsList"></div>
+          <div class="addbar">
+            <button class="pc-btn" id="addBar">+ желязо</button>
+            <span class="times">равномерно:</span>
+            <input id="evenN" type="number" value="7" style="width:46px">
+            <button class="pc-btn" id="evenBtn">разпредели</button>
           </div>
-          <div class="param-field">
-            <label>Цвят / RAL код</label>
-            <input type="text" id="p-color" placeholder="напр. RAL 9005" />
+        </fieldset>
+
+        <fieldset>
+          <div class="pc-legend">Цена</div>
+          <div class="pc-row"><label>Ставка бояджийно</label><div class="pc-field"><input id="rate" type="number" value="28"><span class="u">€/ч</span></div></div>
+          <div class="pc-row"><label>Подвески на час</label><div class="pc-field"><input id="thr" type="number" value="30"><span class="u">бр/ч</span></div></div>
+          <div class="pc-row"><label>Прах (опц.)</label><div class="pc-field"><input id="powder" type="number" value="0"><span class="u">€/м²</span></div></div>
+          <div class="pc-row"><label>Подвески на линия</label><div class="pc-field"><input id="hangers" type="number" value="63"><span class="u">бр</span></div></div>
+        </fieldset>
+
+      </div>
+
+      <!-- ===== ДЯСНО — 3D + РЕЗУЛТАТИ ===== -->
+      <div class="pc-stage">
+
+        <div class="viewbar">
+          <button class="pc-btn" id="rotateSel">↻ завърти избрания</button>
+          <button class="pc-btn" id="resetView">нулирай изгледа</button>
+          <span class="sel-info" id="selInfo">кликни детайл, за да го избереш</span>
+        </div>
+
+        <div class="draw">
+          <canvas id="canvasHost"></canvas>
+          <div class="hint-3d">ляв бутон по празно = въртене · колело = мащаб · десен бутон върху детайл = плъзгане по желязото</div>
+        </div>
+
+        <div class="res-grid">
+          <div class="stat hero">
+            <div class="k">Детайли на подвеска</div>
+            <div class="v" id="r_per">–</div>
+            <div class="vsub" id="r_rows"></div>
           </div>
-          <div class="param-field">
-            <label>Цена / м² (лв)</label>
-            <input type="number" id="p-rate-m2" value="8.00" min="0" step="0.01" />
+          <div class="stat">
+            <div class="k">Цена за подвеска</div>
+            <div class="v" id="r_hanger">–</div>
+            <div class="vsub" id="r_basis"></div>
           </div>
-          <div class="param-field">
-            <label>Минимум / детайл (лв)</label>
-            <input type="number" id="p-min-charge" value="0" min="0" step="0.01"
-              title="Ако цената за детайла е по-малка от минимума, се взима минималната цена" />
+          <div class="stat">
+            <div class="k">Цена/брой (средно)</div>
+            <div class="v price-green" id="r_avg">–</div>
+            <div class="vsub">споделена по броя</div>
+          </div>
+          <div class="stat">
+            <div class="k">На цяла линия</div>
+            <div class="v" id="r_line">–</div>
+            <div class="vsub" id="r_linesub"></div>
           </div>
         </div>
 
-        <hr class="divider" />
-        <p class="section-title">Детайли за боядисване</p>
-        <table class="items-table">
+        <table class="bd">
           <thead>
             <tr>
-              <th class="idx">#</th>
-              <th>Наименование</th>
-              <th class="num">Площ м²</th>
-              <th class="num">Брой</th>
-              <th class="right" style="width:80px">Сума лв</th>
-              <th class="act"></th>
+              <th>Детайл</th>
+              <th>Габарит</th>
+              <th>Ориент.</th>
+              <th>На подвеска</th>
+              <th>Цена/брой</th>
             </tr>
           </thead>
-          <tbody id="paint-body"></tbody>
+          <tbody id="bdBody"></tbody>
         </table>
-        <button class="ghost" id="add-item-btn" style="margin-top:10px;font-size:14px">+ Добави позиция</button>
-        <p id="paint-error" class="error"></p>
 
-        <div style="margin-top:12px">
-          <div class="param-field" style="max-width:380px">
-            <label>Забележки (за офертата)</label>
-            <input type="text" id="p-notes" placeholder="напр. Вътрешни повърхности" />
+        <!-- Добави към проекта -->
+        <div class="add-proj-bar">
+          <div class="apb-info" id="apb-info">Изчисли конфигурацията, после добави към проекта.</div>
+          <div class="apb-field">
+            <label>Брой детайли:</label>
+            <input type="number" id="apb-qty" value="100" min="1" />
           </div>
+          <button class="add-proj-btn" id="add-proj-btn">+ Добави към проекта</button>
         </div>
 
-        <button id="calc-btn" style="margin-top:16px;font-size:15px;padding:10px 32px">Изчисли →</button>
-      </section>
+        <p class="pc-note"><b>Как се чете:</b> избираш подвеска от менюто горе. Всеки детайл е паралелепипед — завърташ го (↻ или R), защото различните куки го закачат по различна ос. С <b>десен бутон</b> хващаш детайл и го влачиш наляво/надясно по желязото. С <b>ляв бутон</b> влачиш детайл нагоре/надолу, за да преместиш самото желязо, а по празното въртиш изгледа.</p>
 
-      <!-- Резултат -->
-      <section class="card" id="result-section" style="display:none">
-        <h2 style="margin:0 0 10px">Резултат</h2>
-        <div class="result-grid" id="result-grid"></div>
-        <div style="margin-top:10px;font-size:11px;color:var(--muted)" id="result-detail"></div>
-        <button class="add-to-project-btn" id="add-btn">+ Добави към проекта</button>
-      </section>
-
-    </div>
-
-    <!-- ===== СТРАНИЧЕН ПАНЕЛ ===== -->
-    <div class="sidebar">
-      <div class="card">
-        <h2 id="sidebar-project-name">Проект</h2>
-        <div id="project-list">
-          <div class="project-empty" id="project-empty">Все още няма добавени елементи.</div>
-        </div>
-        <div class="project-total" id="project-total" style="display:none">
-          <span class="lbl">Общо</span>
-          <span class="val" id="project-total-val">0.00 лв</span>
-        </div>
-        <button class="offer-btn" id="offer-btn" disabled>Генерирай оферта PDF</button>
-        <button class="clear-btn" id="clear-btn" style="display:none">Изчисти проекта</button>
       </div>
     </div>
-
   </div>
 
+  <script src="vendor/three.min.js"></script>
   <script type="module">
-    import { getCurrentProject, addItem, removeItem, clearCurrentProject } from "./project-store.js";
+    import { addItem, getCurrentProject } from "./project-store.js";
     import { initProjectBar } from "./project-bar.js";
 
-    // ---- Проект лента ----
-    const bar = initProjectBar(document.getElementById("project-bar-root"), {
-      onChange: () => renderProjectList(),
-    });
+    // ---- Project bar ----
+    const bar = initProjectBar(document.getElementById("project-bar-root"));
 
-    // ---- Таблица с позиции ----
-    let rowIdx = 0;
-    const paintBody = document.getElementById("paint-body");
+    // ============================================================
+    // 3D Planner (адаптиран от app.js от Danko)
+    // ============================================================
+    const PAL = ['#E07B39','#2C7A8C','#8E5BA6','#4E8A47','#C0518A','#B8842B'];
+    const fill = hex => hex + '33';
+    const ORI = [[0,1],[1,0],[0,2],[2,0],[1,2],[2,1]];
+    const AX = ['Д','В','Ш'];
 
-    function addPaintRow(name = "", area = "", qty = 1) {
-      rowIdx++;
-      const n = rowIdx;
-      const tr = document.createElement("tr");
-      tr.dataset.n = n;
-      tr.innerHTML = `
-        <td class="idx">${n}</td>
-        <td><input type="text" class="pi-name-inp" placeholder="—" value="${esc(name)}" /></td>
-        <td class="num"><input type="number" class="pi-area" min="0" step="0.001" placeholder="м²" value="${area}" /></td>
-        <td class="num"><input type="number" class="pi-qty" min="1" placeholder="1" value="${qty}" /></td>
-        <td class="right pi-sum">—</td>
-        <td class="act"><button class="del-btn" title="Изтрий">✕</button></td>
-      `;
-      paintBody.appendChild(tr);
-      tr.querySelectorAll("input").forEach(inp => inp.addEventListener("input", recalcRows));
+    let parts = [{name:'Скоба', d:[20,30,4]}, {name:'Планка', d:[12,16,2]}];
+
+    const PRESETS = {
+      'Подвеска 2ка':     {W:60,  H:120, mX:5, mB:5, bars:[{y:25,p:0,o:0},{y:75,p:0,o:0}]},
+      'Подвеска 3ка':     {W:90,  H:140, mX:5, mB:5, bars:[{y:15,p:0,o:0},{y:60,p:0,o:0},{y:105,p:1,o:0}]},
+      'Подвеска модел 1': {W:90,  H:140, mX:5, mB:5, bars:[{y:10,p:0,o:0},{y:46,p:0,o:0},{y:84,p:1,o:0},{y:105,p:1,o:0}]},
+      'Подвеска модел 2': {W:120, H:160, mX:6, mB:5, bars:[{y:15,p:0,o:0},{y:55,p:0,o:0},{y:95,p:1,o:0},{y:135,p:1,o:0}]},
+      'Подвеска модел 3': {W:75,  H:100, mX:5, mB:5, bars:[{y:12,p:0,o:0},{y:42,p:1,o:0},{y:72,p:1,o:0}]},
+    };
+    let current = 'Подвеска модел 1';
+    let bars = JSON.parse(JSON.stringify(PRESETS[current].bars));
+    let selBar = -1;
+    let lastLinePiece = 0;
+
+    const $ = id => document.getElementById(id);
+    const num = id => parseFloat($(id).value) || 0;
+    const g = () => ({W:num('W'), H:num('H'), marginX:num('marginX'), marginBottom:num('marginBottom'), gap:num('gap')});
+
+    function dimsOf(bar) {
+      const p = parts[bar.p]; if (!p) return null;
+      const [ia, iv] = ORI[bar.o % 6]; const id = [0,1,2].find(k => k !== ia && k !== iv);
+      return {along: p.d[ia], vert: p.d[iv], depth: p.d[id]};
     }
 
-    document.getElementById("add-item-btn").addEventListener("click", () => {
-      addPaintRow();
-      paintBody.lastElementChild.querySelector(".pi-name-inp").focus();
-    });
-
-    paintBody.addEventListener("click", e => {
-      if (e.target.classList.contains("del-btn")) { e.target.closest("tr").remove(); recalcRows(); }
-    });
-
-    // 3 празни реда при старт
-    for (let i = 0; i < 3; i++) addPaintRow();
-
-    function getRateM2() { return Number(document.getElementById("p-rate-m2").value) || 0; }
-    function getMinCharge() { return Number(document.getElementById("p-min-charge").value) || 0; }
-
-    function rowCost(area, qty, rateM2, minCharge) {
-      const unitCost = Math.max(area * rateM2, minCharge);
-      return Math.round(unitCost * qty * 100) / 100;
+    function compute() {
+      const c = g(), usableW = c.W - 2 * c.marginX;
+      const rows = bars.map((b, i) => {
+        if (b.p < 0 || !parts[b.p]) return {y:b.y, p:b.p, o:b.o, i, across:0, count:0, xs:[], empty:true, conflict:false};
+        const dm = dimsOf(b);
+        const across = dm.along > 0 ? Math.max(0, Math.floor((usableW + c.gap) / (dm.along + c.gap))) : 0;
+        let nextY = c.H - c.marginBottom;
+        for (const o of bars) { if (o.y > b.y && o.y < nextY) nextY = o.y; }
+        const bottom = b.y + dm.vert;
+        const conflict = !(bottom <= c.H - c.marginBottom + 1e-6 && bottom + c.gap <= nextY + 1e-6);
+        const lim = [c.marginX, c.W - c.marginX - dm.along];
+        let xs;
+        if (b.xs && b.xs.length === across) xs = b.xs.map(v => Math.max(lim[0], Math.min(lim[1], v)));
+        else { xs = []; for (let k = 0; k < across; k++) xs.push(c.marginX + k * (dm.along + c.gap)); }
+        return {y:b.y, p:b.p, o:b.o, i, dm, across, count: conflict ? 0 : across, xs, conflict, empty:false};
+      });
+      const perPart = parts.map(() => 0);
+      rows.forEach(r => { if (!r.empty && !r.conflict) perPart[r.p] += r.count; });
+      return {c, rows, perPart, total: perPart.reduce((a, b) => a + b, 0)};
     }
 
-    function recalcRows() {
-      const rateM2 = getRateM2();
-      const minCharge = getMinCharge();
-      for (const tr of paintBody.querySelectorAll("tr")) {
-        const area = Number(tr.querySelector(".pi-area")?.value) || 0;
-        const qty  = Number(tr.querySelector(".pi-qty")?.value)  || 1;
-        const cost = area > 0 ? rowCost(area, qty, rateM2, minCharge) : 0;
-        const sumEl = tr.querySelector(".pi-sum");
-        if (sumEl) sumEl.textContent = area > 0 ? fmt(cost) + " лв" : "—";
+    /* ---------- 3D ---------- */
+    let renderer, scene, camera, partsGroup, frameGroup, raycaster, host;
+    let orbit = {theta:-0.7, phi:1.15, r:300, tx:45, ty:70};
+    let drag = {mode:null, sx:0, sy:0, bar:-1, slot:-1, along:0, depth:0};
+
+    function init3D() {
+      host = $('canvasHost');
+      if (typeof THREE === 'undefined') {
+        host.parentNode.innerHTML = '<div style="padding:30px;color:#C0392B">Three.js не се зареди.</div>';
+        return false;
+      }
+      renderer = new THREE.WebGLRenderer({canvas:host, antialias:true, alpha:true});
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(35, 1, 1, 6000);
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x9aa6b6, 0.95));
+      const dl = new THREE.DirectionalLight(0xffffff, 0.55); dl.position.set(120, 200, 160); scene.add(dl);
+      frameGroup = new THREE.Group(); partsGroup = new THREE.Group();
+      scene.add(frameGroup); scene.add(partsGroup);
+      raycaster = new THREE.Raycaster();
+      resize3D();
+      host.addEventListener('pointerdown', onDown);
+      host.addEventListener('contextmenu', e => e.preventDefault());
+      window.addEventListener('pointermove', onMoveDrag);
+      window.addEventListener('pointerup', () => { drag.mode = null; });
+      host.addEventListener('wheel', e => {
+        e.preventDefault();
+        orbit.r *= (1 + e.deltaY * 0.0012);
+        orbit.r = Math.max(120, Math.min(1200, orbit.r));
+        placeCam();
+      }, {passive:false});
+      window.addEventListener('resize', resize3D);
+      window.addEventListener('keydown', e => {
+        if ((e.key === 'r' || e.key === 'R') && selBar >= 0 && bars[selBar]) {
+          bars[selBar].o = (bars[selBar].o + 1) % 6; bars[selBar].xs = null; refresh();
+        }
+      });
+      animate(); return true;
+    }
+
+    function resize3D() {
+      if (!renderer) return;
+      const w = host.clientWidth, h = host.clientHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h; camera.updateProjectionMatrix(); placeCam();
+    }
+    function placeCam() {
+      const c = g(); orbit.tx = c.W / 2; orbit.ty = c.H / 2;
+      orbit.phi = Math.max(0.25, Math.min(Math.PI - 0.25, orbit.phi));
+      camera.position.set(
+        orbit.tx + orbit.r * Math.sin(orbit.phi) * Math.sin(orbit.theta),
+        orbit.ty + orbit.r * Math.cos(orbit.phi),
+        orbit.r * Math.sin(orbit.phi) * Math.cos(orbit.theta)
+      );
+      camera.lookAt(orbit.tx, orbit.ty, 0);
+    }
+    function bar3(x1,y1,z1,x2,y2,z2,t,color) {
+      const dx=x2-x1,dy=y2-y1,dz=z2-z1,len=Math.hypot(dx,dy,dz)||0.001;
+      const m = new THREE.Mesh(
+        new THREE.BoxGeometry(t, len, t),
+        new THREE.MeshStandardMaterial({color, roughness:.8, metalness:.1})
+      );
+      m.position.set((x1+x2)/2,(y1+y2)/2,(z1+z2)/2);
+      m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), new THREE.Vector3(dx,dy,dz).normalize());
+      return m;
+    }
+    function clearGroup(grp) {
+      while (grp.children.length) { const o = grp.children.pop(); if (o.geometry) o.geometry.dispose(); grp.remove(o); }
+    }
+    function buildFrame(R) {
+      clearGroup(frameGroup); const c = R.c, ink = 0x1F3864;
+      frameGroup.add(bar3(0,0,0,0,c.H,0,1.6,ink)); frameGroup.add(bar3(c.W,0,0,c.W,c.H,0,1.6,ink));
+      frameGroup.add(bar3(0,c.H,0,c.W,c.H,0,1.6,ink)); frameGroup.add(bar3(0,0,0,c.W,0,0,1.6,ink));
+    }
+    function buildParts(R) {
+      clearGroup(partsGroup); const c = R.c;
+      R.rows.forEach(r => {
+        const yTop = c.H - r.y, sel = r.i === selBar;
+        const barMesh = bar3(0,yTop,0,c.W,yTop,0,1.4, r.conflict?0xC0392B:(sel?0x1F3864:0x5B6B7F));
+        barMesh.userData = {bar: r.i}; partsGroup.add(barMesh);
+        if (r.empty) return;
+        if (r.conflict) {
+          const gm = new THREE.BoxGeometry(c.W-2*c.marginX, Math.max(1,r.dm.vert), Math.max(1,r.dm.depth));
+          const mm = new THREE.Mesh(gm, new THREE.MeshStandardMaterial({color:0xC0392B,transparent:true,opacity:.12}));
+          mm.position.set(c.W/2, yTop-r.dm.vert/2, r.dm.depth/2); mm.userData = {bar:r.i}; partsGroup.add(mm); return;
+        }
+        const color = new THREE.Color(PAL[r.p % PAL.length]), pz = r.dm.depth/2 + 0.8;
+        r.xs.forEach((xL, k) => {
+          const cx = xL + r.dm.along/2, active = (drag.mode==='slide' && drag.bar===r.i && drag.slot===k);
+          const geo = new THREE.BoxGeometry(r.dm.along, r.dm.vert, r.dm.depth);
+          const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+            color, roughness:.55, metalness:.05, transparent:true, opacity: active?1:(sel?.95:.82)
+          }));
+          mesh.position.set(cx, yTop-r.dm.vert/2, pz); mesh.userData = {bar:r.i, slot:k}; partsGroup.add(mesh);
+          const edges = new THREE.LineSegments(
+            new THREE.EdgesGeometry(geo),
+            new THREE.LineBasicMaterial({color: (sel||active) ? 0x1F3864 : color.clone().multiplyScalar(.6).getHex()})
+          );
+          edges.position.copy(mesh.position); partsGroup.add(edges);
+          partsGroup.add(bar3(cx,yTop,pz,cx,yTop-2,pz,0.5,0x5B6B7F));
+        });
+      });
+    }
+    function render3D(R) { if (!renderer) return; buildFrame(R); buildParts(R); placeCam(); }
+    function animate() { requestAnimationFrame(animate); if (renderer) renderer.render(scene, camera); }
+
+    function pickU(e) {
+      const rect = host.getBoundingClientRect();
+      scene.updateMatrixWorld(true);
+      raycaster.setFromCamera({x:((e.clientX-rect.left)/rect.width)*2-1, y:-((e.clientY-rect.top)/rect.height)*2+1}, camera);
+      for (const h of raycaster.intersectObjects(partsGroup.children, false)) { const u = h.object.userData; if (u && u.bar !== undefined) return u; }
+      return null;
+    }
+    function planeX(e, z) {
+      const rect = host.getBoundingClientRect();
+      raycaster.setFromCamera({x:((e.clientX-rect.left)/rect.width)*2-1, y:-((e.clientY-rect.top)/rect.height)*2+1}, camera);
+      const pl = new THREE.Plane(new THREE.Vector3(0,0,1), -z), pt = new THREE.Vector3();
+      return raycaster.ray.intersectPlane(pl, pt) ? pt.x : null;
+    }
+    function onDown(e) {
+      const u = pickU(e); drag.sx = e.clientX; drag.sy = e.clientY;
+      if (e.button === 2) {
+        if (u && u.slot !== undefined) {
+          const R = compute(), row = R.rows.find(r => r.i === u.bar);
+          if (row) { bars[u.bar].xs = row.xs.slice(); drag.mode='slide'; drag.bar=u.bar; drag.slot=u.slot; drag.along=row.dm.along; drag.depth=row.dm.depth; selBar=u.bar; host.setPointerCapture&&host.setPointerCapture(e.pointerId); refresh(); }
+        }
+        e.preventDefault(); return;
+      }
+      if (u) { drag.mode='part'; drag.bar=u.bar; selBar=u.bar; refresh(); } else drag.mode='orbit';
+    }
+    function onMoveDrag(e) {
+      if (!drag.mode) return;
+      if (drag.mode === 'slide') {
+        const x = planeX(e, drag.depth/2+0.8); if (x === null) return;
+        const c = g(), lim = [c.marginX, c.W-c.marginX-drag.along];
+        if (bars[drag.bar]?.xs) bars[drag.bar].xs[drag.slot] = Math.max(lim[0], Math.min(lim[1], Math.round((x-drag.along/2)*10)/10));
+        render3D(compute()); return;
+      }
+      const dx = e.clientX-drag.sx, dy = e.clientY-drag.sy;
+      if (drag.mode === 'orbit') {
+        orbit.theta -= dx * 0.008; orbit.phi -= dy * 0.006; placeCam();
+        drag.sx = e.clientX; drag.sy = e.clientY;
+      } else if (drag.mode === 'part' && drag.bar >= 0) {
+        const worldPerPx = (2*orbit.r*Math.tan(camera.fov*Math.PI/360)) / (host.clientHeight||480);
+        bars[drag.bar].y = Math.max(0, Math.min(num('H'), Math.round((bars[drag.bar].y+dy*worldPerPx)*10)/10));
+        drag.sx = e.clientX; drag.sy = e.clientY;
+        const inp = document.querySelector('#barsList input.idim[data-i="'+drag.bar+'"][data-f="y"]');
+        if (inp) inp.value = bars[drag.bar].y;
+        softRefresh();
       }
     }
 
-    document.getElementById("p-rate-m2").addEventListener("input", recalcRows);
-    document.getElementById("p-min-charge").addEventListener("input", recalcRows);
+    /* ---------- DOM ---------- */
+    function renderResults(R) {
+      const {total, perPart} = R;
+      const rate = num('rate'), thr = num('thr'), powder = num('powder'), hangers = Math.round(num('hangers'));
+      const costHanger = thr > 0 ? rate / thr : 0;
+      const linePiece = total > 0 ? costHanger / total : 0;
+      lastLinePiece = linePiece;
 
-    // ---- Последен резултат ----
-    let lastCalc = null;
+      $('r_per').textContent = total || '0';
+      const used = R.rows.filter(r => !r.empty && !r.conflict).length;
+      $('r_rows').textContent = used ? used + ' реда' : 'нищо не виси';
+      $('r_hanger').textContent = costHanger.toFixed(2).replace('.', ',') + ' €';
+      $('r_basis').textContent = rate + ' €/ч ÷ ' + thr + ' подв/ч';
+      $('r_avg').textContent = total > 0 ? linePiece.toFixed(3).replace('.', ',') + ' €' : '–';
+      $('r_line').textContent = (total * hangers).toLocaleString('bg');
+      $('r_linesub').textContent = 'детайла · ' + hangers + ' подвески';
 
-    // ---- Калкулация ----
-    document.getElementById("calc-btn").addEventListener("click", () => {
-      document.getElementById("paint-error").textContent = "";
-      const rateM2   = getRateM2();
-      const minCharge = getMinCharge();
-      const notes    = document.getElementById("p-notes").value.trim();
-      const coatSel  = document.getElementById("p-coating-type");
-      const coatName = coatSel.options[coatSel.selectedIndex].text;
-      const color    = document.getElementById("p-color").value.trim();
+      let html = '';
+      parts.forEach((p, i) => {
+        const cnt = perPart[i], [L,Hh,Wd] = p.d;
+        const area = 2*(L*Hh + L*Wd + Hh*Wd) / 10000;
+        const price = total > 0 ? linePiece + area * powder : 0;
+        const ob = bars.find(b => b.p === i), oTxt = ob ? AX[ORI[ob.o%6][0]] + '→' : '';
+        html += `<tr>
+          <td><div class="nm"><span class="swatch" style="background:${fill(PAL[i%PAL.length])};border-color:${PAL[i%PAL.length]}"></span>${esc(p.name||'детайл '+(i+1))}</div></td>
+          <td class="times">${L}×${Hh}×${Wd}</td>
+          <td class="times">${oTxt}</td>
+          <td>${cnt}</td>
+          <td class="price-green">${cnt>0 ? price.toFixed(3).replace('.',',') + ' €' : '–'}</td>
+        </tr>`;
+      });
+      $('bdBody').innerHTML = html;
 
-      const rows = [];
-      for (const tr of paintBody.querySelectorAll("tr")) {
-        const name = tr.querySelector(".pi-name-inp")?.value.trim() || "";
-        const area = Number(tr.querySelector(".pi-area")?.value) || 0;
-        const qty  = Number(tr.querySelector(".pi-qty")?.value)  || 1;
-        if (area <= 0) continue;
-        const cost = rowCost(area, qty, rateM2, minCharge);
-        rows.push({ name, area, qty, cost });
+      // Обнови лентата "Добави към проекта"
+      if (total > 0) {
+        const qty = Number($('apb-qty').value) || 100;
+        const totalEur = linePiece * qty;
+        $('apb-info').innerHTML = `<b>${total} дет./подвеска</b> · цена/бр: <b>${linePiece.toFixed(3)} €</b> · за ${qty} бр. → <b>${totalEur.toFixed(2)} €</b>`;
+      } else {
+        $('apb-info').textContent = 'Добави детайли и железа, за да се изчисли цената.';
       }
 
-      if (!rows.length) {
-        document.getElementById("paint-error").textContent = "Въведи поне една позиция с площ > 0.";
-        return;
+      if (drag.mode==='slide' && drag.bar>=0) $('selInfo').textContent = 'Плъзгаш детайл по желязо ' + (drag.bar+1);
+      else if (selBar>=0 && bars[selBar]) {
+        const b=bars[selBar], p=parts[b.p];
+        $('selInfo').textContent = 'Избран ред ' + (selBar+1) + (p?' · '+p.name:'') + ' · ориентация '+((b.o%6)+1)+'/6';
+      } else $('selInfo').textContent = 'кликни детайл, за да го избереш';
+    }
+
+    function partOptions(sel) {
+      let o = '<option value="-1"'+(sel<0?' selected':'')+'>— празно</option>';
+      parts.forEach((p,i) => o += `<option value="${i}"${sel===i?' selected':''}>${esc(p.name||'детайл '+(i+1))}</option>`);
+      return o;
+    }
+    function renderLists() {
+      $('partsList').innerHTML = parts.map((p,i) => `
+        <div class="pc-item">
+          <span class="swatch" style="background:${fill(PAL[i%PAL.length])};border-color:${PAL[i%PAL.length]}"></span>
+          <input class="iname" data-i="${i}" data-f="name" value="${esc(p.name)}" placeholder="ime">
+          <input class="idim" data-i="${i}" data-k="0" type="number" value="${p.d[0]}">
+          <span class="times">×</span>
+          <input class="idim" data-i="${i}" data-k="1" type="number" value="${p.d[1]}">
+          <span class="times">×</span>
+          <input class="idim" data-i="${i}" data-k="2" type="number" value="${p.d[2]}">
+          <button class="xbtn" data-del="part" data-i="${i}">×</button>
+        </div>`).join('');
+
+      $('barsList').innerHTML = bars.map((b,i) => `
+        <div class="pc-item${i===selBar?' sel':''}">
+          <span class="baridx">${i+1}</span>
+          <input class="idim" data-i="${i}" data-f="y" type="number" value="${b.y}">
+          <span class="times">см</span>
+          <select data-i="${i}" data-f="p">${partOptions(b.p)}</select>
+          <button class="ro" data-rot="${i}">↻</button>
+          <button class="xbtn" data-del="bar" data-i="${i}">×</button>
+        </div>`).join('');
+    }
+    function refresh() { const R = compute(); render3D(R); renderResults(R); renderLists(); }
+    function softRefresh() { const R = compute(); render3D(R); renderResults(R); }
+
+    /* ---------- Подвески ---------- */
+    function fillHangerSelect() {
+      $('hangerSel').innerHTML = Object.keys(PRESETS).map(k => `<option${k===current?' selected':''}>${esc(k)}</option>`).join('');
+    }
+    function saveCurrent() {
+      PRESETS[current] = {W:num('W'), H:num('H'), mX:num('marginX'), mB:num('marginBottom'), bars:JSON.parse(JSON.stringify(bars))};
+    }
+    function applyPreset(key) {
+      const p = PRESETS[key];
+      $('W').value=p.W; $('H').value=p.H; $('marginX').value=p.mX; $('marginBottom').value=p.mB;
+      bars = JSON.parse(JSON.stringify(p.bars));
+      bars.forEach(b => { if (b.p >= parts.length) b.p = -1; });
+      selBar = -1; resize3D(); refresh();
+    }
+    $('hangerSel').addEventListener('change', e => { saveCurrent(); current = e.target.value; applyPreset(current); });
+
+    /* ---------- Събития ---------- */
+    document.addEventListener('input', e => {
+      const t = e.target;
+      if (t.closest('#partsList') && t.dataset.i !== undefined) {
+        const i = +t.dataset.i;
+        if (t.dataset.f === 'name') parts[i].name = t.value;
+        else if (t.dataset.k !== undefined) parts[i].d[+t.dataset.k] = parseFloat(t.value) || 0;
+        softRefresh(); return;
       }
-
-      const totalArea  = rows.reduce((s, r) => s + r.area * r.qty, 0);
-      const totalCost  = Math.round(rows.reduce((s, r) => s + r.cost, 0) * 100) / 100;
-
-      lastCalc = { rows, totalArea, totalCost, rateM2, minCharge, coatName, color, notes };
-
-      document.getElementById("result-grid").innerHTML = `
-        <div class="result-box blue"><div class="r-val">${fmt(totalArea)} м²</div><div class="r-lbl">Обща площ</div></div>
-        <div class="result-box orange"><div class="r-val">${fmt(rateM2)} лв</div><div class="r-lbl">Цена / м²</div></div>
-        <div class="result-box green" style="border-width:2px">
-          <div class="r-val" style="font-size:26px">${fmt(totalCost)} лв</div>
-          <div class="r-lbl">Общо боядисване</div>
-        </div>
-      `;
-      const detail = [coatName, color ? `Цвят: ${color}` : "", minCharge > 0 ? `мин. ${fmt(minCharge)} лв/дет.` : ""].filter(Boolean).join(" · ");
-      document.getElementById("result-detail").textContent = detail;
-      document.getElementById("result-section").style.display = "";
-      document.getElementById("result-section").scrollIntoView({ behavior: "smooth" });
+      if (t.closest('#barsList') && t.dataset.f === 'y') { bars[+t.dataset.i].y = parseFloat(t.value) || 0; softRefresh(); return; }
     });
+    document.addEventListener('change', e => {
+      const t = e.target;
+      if (t.tagName === 'SELECT' && t.dataset.f === 'p') { bars[+t.dataset.i].p = +t.value; bars[+t.dataset.i].xs = null; refresh(); }
+    });
+    document.addEventListener('click', e => {
+      const t = e.target;
+      if (t.dataset.rot !== undefined) { const i=+t.dataset.rot; bars[i].o=(bars[i].o+1)%6; bars[i].xs=null; selBar=i; refresh(); return; }
+      if (!t.dataset.del) return;
+      const i = +t.dataset.i;
+      if (t.dataset.del === 'part') { parts.splice(i,1); bars.forEach(b => { if(b.p===i)b.p=-1; else if(b.p>i)b.p--; }); if(selBar>=bars.length)selBar=-1; }
+      else { bars.splice(i,1); if(selBar===i)selBar=-1; else if(selBar>i)selBar--; }
+      refresh();
+    });
+
+    $('addPart').addEventListener('click', () => { parts.push({name:'Детайл '+(parts.length+1), d:[15,15,3]}); refresh(); });
+    $('addBar').addEventListener('click', () => {
+      const last = bars.length ? bars[bars.length-1].y : 10;
+      bars.push({y:Math.min(num('H')-10, last+20), p:parts.length?0:-1, o:0}); refresh();
+    });
+    $('evenBtn').addEventListener('click', () => {
+      const n=Math.max(1,Math.round(num('evenN'))), c=g(), top=10, us=c.H-top-c.marginBottom;
+      bars = []; for(let i=0;i<n;i++) bars.push({y:Math.round((n===1?top:top+i*us/(n-1))*10)/10, p:parts.length?0:-1, o:0});
+      selBar=-1; refresh();
+    });
+    $('rotateSel').addEventListener('click', () => { if(selBar>=0&&bars[selBar]){ bars[selBar].o=(bars[selBar].o+1)%6; bars[selBar].xs=null; refresh(); } });
+    $('resetView').addEventListener('click', () => { orbit.theta=-0.7; orbit.phi=1.15; orbit.r=300; placeCam(); });
+    ['W','H','marginX','marginBottom','gap'].forEach(id => $(id).addEventListener('input', () => { resize3D(); softRefresh(); }));
+    ['rate','thr','powder','hangers'].forEach(id => $(id).addEventListener('input', () => renderResults(compute())));
+    $('apb-qty').addEventListener('input', () => renderResults(compute()));
 
     // ---- Добави към проекта ----
-    document.getElementById("add-btn").addEventListener("click", () => {
-      if (!lastCalc) return;
-      const label = lastCalc.color
-        ? `Боядисване ${lastCalc.color}`
-        : `Боядисване (${lastCalc.coatName})`;
+    $('add-proj-btn').addEventListener('click', () => {
+      const R = compute();
+      if (!R.total || lastLinePiece <= 0) {
+        alert('Добави детайли на подвеската и провери параметрите на цената.'); return;
+      }
+      const qty = Number($('apb-qty').value) || 100;
+      const totalCost = Math.round(lastLinePiece * qty * 100) / 100;
+      const partsSummary = parts.map((p,i) => `${p.name} ${p.d.join('×')}`).join(', ');
 
       addItem({
         type: "paint",
-        name: label,
-        notes: lastCalc.notes,
-        qty: lastCalc.rows.length,
-        totalArea: Math.round(lastCalc.totalArea * 1000) / 1000,
-        rateM2: lastCalc.rateM2,
-        coatName: lastCalc.coatName,
-        color: lastCalc.color,
-        totalCost: lastCalc.totalCost,
-        rows: lastCalc.rows,
+        name: `Боядисване — ${current}`,
+        notes: partsSummary,
+        qty,
+        pricePerPiece: Math.round(lastLinePiece * 10000) / 10000,
+        totalCost,
+        // За sidebar/PDF:
+        displaySub: `${qty} бр. × ${lastLinePiece.toFixed(3)} €`,
+        // За стария формат (PDF в dxf-calc):
+        coatName: current,
+        totalArea: null,
+        rateM2: null,
       });
-      renderProjectList();
-
-      const btn = document.getElementById("add-btn");
-      btn.textContent = "✓ Добавено!";
-      btn.style.background = "#15803d";
-      setTimeout(() => { btn.textContent = "+ Добави към проекта"; btn.style.background = ""; }, 1500);
-    });
-
-    // ---- Страничен панел ----
-    function renderProjectList() {
-      const p = getCurrentProject();
-      const items = p?.items || [];
-      const list = document.getElementById("project-list");
-      const empty = document.getElementById("project-empty");
-      const totalEl = document.getElementById("project-total");
-      const totalValEl = document.getElementById("project-total-val");
-      const offerBtn = document.getElementById("offer-btn");
-      const clearBtn = document.getElementById("clear-btn");
 
       bar.refresh();
 
-      if (!items.length) {
-        empty.style.display = "";
-        totalEl.style.display = "none";
-        offerBtn.disabled = true;
-        clearBtn.style.display = "none";
-        list.innerHTML = "";
-        list.appendChild(empty);
-        return;
-      }
-
-      empty.style.display = "none";
-      const html = items.map((item, i) => {
-        let icon, badge, sub;
-        if (item.type === "dxf") {
-          icon = `<img class="pi-thumb" src="${item.png}" alt="${esc(item.name)}" />`;
-          badge = `<span class="pi-badge dxf">DXF</span>`;
-          sub = `${item.qty} бр. × ${fmt(item.unitCost)} лв`;
-        } else if (item.type === "barcut") {
-          icon = `<div class="pi-thumb-icon">🔩</div>`;
-          badge = `<span class="pi-badge bar">ПРЪТ</span>`;
-          sub = `${item.bars} пр. × ${fmt(item.pricePerBar)} лв`;
-        } else {
-          icon = `<div class="pi-thumb-icon">🎨</div>`;
-          badge = `<span class="pi-badge paint">БОЯ</span>`;
-          sub = `${fmt(item.totalArea)} м² · ${fmt(item.rateM2)} лв/м²`;
-        }
-        return `<div class="project-item">
-          ${icon}
-          <div class="pi-info">
-            <div class="pi-name" title="${esc(item.name)}">${badge}${esc(item.name)}</div>
-            <div class="pi-sub">${sub}</div>
-            ${item.notes ? `<div class="pi-sub" style="font-style:italic">${esc(item.notes)}</div>` : ""}
-          </div>
-          <div class="pi-price">${fmt(item.totalCost)} лв</div>
-          <button class="pi-del" data-idx="${i}" title="Премахни">✕</button>
-        </div>`;
-      }).join("");
-
-      list.innerHTML = html;
-      list.appendChild(empty);
-
-      const grand = items.reduce((s, it) => s + (it.totalCost || 0), 0);
-      totalEl.style.display = "";
-      totalValEl.textContent = fmt(Math.round(grand * 100) / 100) + " лв";
-      offerBtn.disabled = false;
-      clearBtn.style.display = "";
-    }
-
-    document.getElementById("project-list").addEventListener("click", e => {
-      const idx = e.target.getAttribute("data-idx");
-      if (idx === null) return;
-      removeItem(Number(idx));
-      renderProjectList();
+      const btn = $('add-proj-btn');
+      btn.textContent = '✓ Добавено!';
+      btn.style.background = '#15803d';
+      setTimeout(() => { btn.textContent = '+ Добави към проекта'; btn.style.background = ''; }, 1500);
     });
 
-    document.getElementById("clear-btn").addEventListener("click", () => {
-      if (!confirm("Да изчистя ли позициите в текущия проект?")) return;
-      clearCurrentProject();
-      renderProjectList();
-    });
+    /* ---------- Старт ---------- */
+    fillHangerSelect(); renderLists();
+    if (init3D()) refresh();
 
-    renderProjectList();
-
-    // ---- Генерирай оферта PDF ----
-    document.getElementById("offer-btn").addEventListener("click", () => {
-      const p = getCurrentProject();
-      const items = p?.items || [];
-      if (!items.length) return;
-      const date = new Date().toLocaleDateString("bg-BG");
-      const grand = items.reduce((s, it) => s + (it.totalCost || 0), 0);
-      const projName = p.name || "Производствена калкулация";
-
-      const rows = items.map(item => {
-        let thumb, subLine, qtyCol, unitCol;
-
-        if (item.type === "dxf") {
-          thumb = `<img src="${item.png}" style="width:48pt;height:36pt;object-fit:contain;border:1px solid #e5e7eb;border-radius:4pt;display:block"/>`;
-          subLine = `${esc(item.calc?.matName || "")}, ${item.calc?.thickness || ""} мм · разрез ${fmt(item.geo?.cut_length_mm)} мм`;
-          qtyCol = item.qty;
-          unitCol = `${fmt(item.unitCost)} лв`;
-        } else if (item.type === "barcut") {
-          thumb = `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🔩</div>`;
-          subLine = `${item.bars} пр. × ${item.barLenM} м`;
-          qtyCol = item.bars;
-          unitCol = `${fmt(item.pricePerBar)} лв/пр.`;
-        } else {
-          thumb = `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🎨</div>`;
-          subLine = `${esc(item.coatName)}${item.color ? ", " + esc(item.color) : ""} · ${fmt(item.totalArea)} м²`;
-          qtyCol = `${fmt(item.totalArea)} м²`;
-          unitCol = `${fmt(item.rateM2)} лв/м²`;
-        }
-
-        return `<tr>
-          <td style="width:52pt;padding:4pt 8pt">${thumb}</td>
-          <td style="padding:4pt 8pt">
-            <b>${esc(item.name)}</b>${item.notes ? `<br><span style="color:#6b7280;font-size:8.5pt">${esc(item.notes)}</span>` : ""}
-            <br><span style="font-size:8.5pt;color:#6b7280">${subLine}</span>
-          </td>
-          <td style="padding:4pt 8pt;text-align:center">${qtyCol}</td>
-          <td style="padding:4pt 8pt;text-align:right">${unitCol}</td>
-          <td style="padding:4pt 8pt;text-align:right;font-weight:700">${fmt(item.totalCost)} лв</td>
-        </tr>`;
-      }).join("");
-
-      const html = `<!DOCTYPE html>
-<html lang="bg"><head>
-<meta charset="UTF-8"/>
-<title>${esc(projName)} — ${date}</title>
-<style>
-  @page { size: A4; margin: 14mm 14mm 16mm 14mm; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: "Segoe UI", Roboto, Arial, sans-serif; font-size: 10pt; color: #1f2a37; }
-  .hdr { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #1F3864; padding-bottom:10px; margin-bottom:18px; }
-  .brand { font-size:20pt; font-weight:800; color:#1F3864; }
-  .proj-title { font-size:12pt; font-weight:700; color:#1F3864; margin-top:3px; }
-  .sub { font-size:9pt; color:#6b7280; margin-top:2px; }
-  .meta { text-align:right; font-size:9pt; color:#6b7280; line-height:1.7; }
-  table { width:100%; border-collapse:collapse; }
-  thead tr { background:#1F3864; color:#fff; }
-  thead th { padding:6pt 8pt; text-align:left; font-size:9pt; }
-  thead th:nth-child(3),thead th:nth-child(4),thead th:nth-child(5) { text-align:right; }
-  tbody tr { border-bottom:1px solid #f3f4f6; }
-  tbody tr:nth-child(even) { background:#f8fafc; }
-  .total-row td { background:#eff6ff; font-weight:800; font-size:11pt; color:#1d4ed8; padding:7pt 8pt; border-top:2px solid #bfdbfe; }
-  .total-row td:last-child { text-align:right; }
-  .footer { margin-top:20pt; border-top:1px solid #e5e7eb; padding-top:7pt; font-size:8pt; color:#9ca3af; display:flex; justify-content:space-between; }
-</style>
-</head><body>
-  <div class="hdr">
-    <div>
-      <div class="brand">DankoSystems</div>
-      <div class="proj-title">${esc(projName)}</div>
-      <div class="sub">Производствена калкулация</div>
-    </div>
-    <div class="meta">Дата: ${date}<br>Позиции: ${items.length}</div>
-  </div>
-  <table>
-    <thead><tr>
-      <th style="width:52pt"></th>
-      <th>Позиция</th>
-      <th style="text-align:right">Кол.</th>
-      <th style="text-align:right">Ед. цена</th>
-      <th style="text-align:right">Общо (лв)</th>
-    </tr></thead>
-    <tbody>
-      ${rows}
-      <tr class="total-row">
-        <td colspan="4">ОБЩО</td>
-        <td>${fmt(Math.round(grand * 100) / 100)} лв</td>
-      </tr>
-    </tbody>
-  </table>
-  <div class="footer">
-    <span>DankoSystems · ${esc(projName)}</span>
-    <span>${date}</span>
-  </div>
-  <script>window.onload=()=>{window.print();window.onafterprint=()=>window.close();}<\/script>
-</body></html>`;
-
-      const win = window.open("", "_blank");
-      win.document.write(html);
-      win.document.close();
-    });
-
-    // ---- Helpers ----
-    function fmt(n) {
-      if (n == null) return "—";
-      const num = Number(n);
-      return isNaN(num) ? "—" : num.toLocaleString("bg-BG", { maximumFractionDigits: 2 });
-    }
     function esc(s) {
-      return (s ?? "").toString().replace(/[&<>"]/g, c =>
-        ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+      return (s ?? '').toString().replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
     }
   </script>
 </body>

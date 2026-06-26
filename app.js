@@ -1,3 +1,5 @@
+import { addItem } from "./project-store.js";
+
 // --- Supabase клиент ---
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -308,6 +310,8 @@ const MARGIN_MAT_LABOR = 0.5; // +50% върху материали + труд
 const MARGIN_LASER = 1.5; // +150% върху лазер
 
 let refMat = [], refLaser = [], refOp = [];
+let lastCalcResult = null;
+let lastCalcResult = null;
 
 async function initCalculator() {
   const [m, l, o] = await Promise.all([
@@ -436,6 +440,7 @@ function computeCalc() {
   const totalBGN = matLabor + laserM;
   const totalEUR = totalBGN / BGN_EUR;
   const qty = parseFloat(document.getElementById("calc-qty").value) || 1;
+  const name = document.getElementById("calc-name").value.trim() || "Изделие";
   document.getElementById("calc-breakdown").innerHTML =
     `<table class="data-table">` +
     `<tr><td>Материали</td><td class="right">${mat.toFixed(2)} лв</td></tr>` +
@@ -447,12 +452,40 @@ function computeCalc() {
     `<tr><td class="muted">(= ${totalBGN.toFixed(2)} лв)</td><td></td></tr>` +
     `<tr><td><b>За ${qty} бр.</b></td><td class="right"><b>${(totalEUR * qty).toFixed(2)} €</b></td></tr>` +
     `</table>`;
+
+  lastCalcResult = { name, qty, mat, op, laser, matLabor, laserM, totalBGN, totalEUR };
+
+  const bar = document.getElementById("calc-add-proj-bar");
+  bar.classList.remove("hidden");
+  document.getElementById("calc-proj-summary").textContent =
+    `${name} — ${qty} бр. × ${totalEUR.toFixed(2)} € = ${(totalEUR * qty).toFixed(2)} €`;
 }
 
 document.getElementById("calc-mat-add").addEventListener("click", addMatRow);
 document.getElementById("calc-laser-add").addEventListener("click", addLaserRow);
 document.getElementById("calc-op-add").addEventListener("click", addOpRow);
 document.getElementById("calc-compute").addEventListener("click", computeCalc);
+
+document.getElementById("calc-add-to-proj-btn").addEventListener("click", () => {
+  if (!lastCalcResult) return;
+  const r = lastCalcResult;
+  addItem({
+    type: "calc",
+    name: r.name,
+    qty: r.qty,
+    mat: Math.round(r.mat * 100) / 100,
+    op: Math.round(r.op * 100) / 100,
+    laser: Math.round(r.laser * 100) / 100,
+    totalBGN: Math.round(r.totalBGN * 100) / 100,
+    totalEUR: Math.round(r.totalEUR * 10000) / 10000,
+    totalCost: Math.round(r.totalBGN * r.qty * 100) / 100,
+  });
+
+  const btn = document.getElementById("calc-add-to-proj-btn");
+  btn.textContent = "✓ Добавено!";
+  btn.style.background = "#15803d";
+  setTimeout(() => { btn.textContent = "+ Добави към проекта"; btn.style.background = ""; }, 1500);
+});
 
 function activateTab(tabName) {
   document.querySelectorAll(".tab-btn[data-tab]").forEach((b) => b.classList.remove("active"));

@@ -460,10 +460,14 @@
           icon  = `<div class="pi-thumb-bar">🔩</div>`;
           badge = `<span class="pi-badge bar">ПРЪТ</span>`;
           sub   = `${item.bars} пр. × ${fmt(item.pricePerBar)} лв`;
+        } else if (item.type === "calc") {
+          icon  = `<div class="pi-thumb-bar">🔧</div>`;
+          badge = `<span class="pi-badge" style="background:#eff6ff;color:#1d4ed8">КАЛК</span>`;
+          sub   = item.displaySub || `${item.qty} бр. × ${fmt(item.totalEUR)} €`;
         } else {
           icon  = `<div class="pi-thumb-bar">🎨</div>`;
           badge = `<span class="pi-badge" style="background:#fae8ff;color:#7e22ce">БОЯ</span>`;
-          sub   = `${fmt(item.totalArea)} м² · ${fmt(item.rateM2)} лв/м²`;
+          sub   = item.displaySub || `${fmt(item.totalArea)} м² · ${fmt(item.rateM2)} лв/м²`;
         }
         return `<div class="project-item">
           ${icon}
@@ -526,6 +530,11 @@
           subLine = `${item.bars} пр. × ${item.barLenM} м · kerf ${item.kerf} мм`;
           qtyCol  = item.bars;
           unitCol = `${fmt(item.pricePerBar)} лв/пр.`;
+        } else if (item.type === "calc") {
+          thumb   = `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🔧</div>`;
+          subLine = `мат. ${fmt(item.mat)} лв · труд ${fmt(item.op)} лв · лазер ${fmt(item.laser)} лв`;
+          qtyCol  = item.qty;
+          unitCol = `${fmt(item.totalEUR)} €/бр.`;
         } else {
           thumb   = `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🎨</div>`;
           subLine = `${esc(item.coatName || "")}${item.color ? ", " + esc(item.color) : ""} · ${fmt(item.totalArea)} м²`;

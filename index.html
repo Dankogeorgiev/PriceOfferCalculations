@@ -93,6 +93,16 @@
           <div id="calc-breakdown" class="muted">Добави редове и натисни „Изчисли цена".</div>
           <button type="button" id="calc-compute" style="margin-top:14px">Изчисли цена</button>
         </section>
+
+        <div id="calc-add-proj-bar" class="hidden" style="margin-top:16px;padding:16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div style="font-size:13px;color:#166534">
+            <b id="calc-proj-summary">—</b><br>
+            <span style="font-size:11px;color:#15803d">Изделие от Калкулатор операции</span>
+          </div>
+          <button id="calc-add-to-proj-btn" style="background:#16a34a;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">
+            + Добави към проекта
+          </button>
+        </div>
       </div>
 
       <div id="tab-data" class="hidden">
@@ -214,7 +224,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
   <script type="module">
     import { initProjectBar } from "./project-bar.js";
     // Инициализира project bar след login (app-view е скрит преди вход)
