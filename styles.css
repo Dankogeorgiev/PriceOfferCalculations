@@ -82,6 +82,17 @@ button.danger { color: var(--danger); }
 .tab-btn:nth-child(3).active,
 .tab-btn:nth-child(4).active { background: #2563eb; color: #fff; border-color: #1d4ed8; }
 
+.tool-frame {
+  width: 100%; height: calc(100vh - 175px);
+  border: none; display: block; border-radius: 8px;
+}
+
+/* Скрива хедъра и project bar когато страницата е вградена в iframe */
+html.iframe-mode .topbar,
+html.iframe-mode #project-bar-root { display: none !important; }
+html.iframe-mode body { background: transparent; }
+html.iframe-mode .container { padding-top: 0; }
+
 .card h3 { margin: 0 0 4px; }
 .calc-sub { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
 .data-table select, .data-table input { width: 100%; padding: 6px 8px; font-size: 13px; }

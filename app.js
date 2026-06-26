@@ -440,12 +440,24 @@ document.getElementById("calc-add-to-proj-btn").addEventListener("click", () => 
   setTimeout(() => { btn.textContent = "+ Добави към проекта"; btn.style.background = ""; }, 1500);
 });
 
+const IFRAME_TABS = { dxf: "frame-dxf", barcut: "frame-barcut", paint: "frame-paint" };
+
 function activateTab(tabName) {
   document.querySelectorAll(".tab-btn[data-tab]").forEach((b) => b.classList.remove("active"));
   const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
   if (btn) btn.classList.add("active");
-  document.getElementById("tab-calc").classList.toggle("hidden", tabName !== "calc");
-  document.getElementById("tab-data").classList.toggle("hidden", tabName !== "data");
+
+  ["calc", "data", "dxf", "barcut", "paint"].forEach((t) => {
+    document.getElementById(`tab-${t}`)?.classList.toggle("hidden", t !== tabName);
+  });
+
+  if (IFRAME_TABS[tabName]) {
+    const frame = document.getElementById(IFRAME_TABS[tabName]);
+    if (frame && !frame.dataset.loaded) {
+      frame.src = frame.dataset.src;
+      frame.dataset.loaded = "1";
+    }
+  }
 }
 
 document.querySelectorAll(".tab-btn[data-tab]").forEach((btn) => {
