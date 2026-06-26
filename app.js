@@ -519,27 +519,31 @@ function computeCut() {
   const cost = weight * price;
   const prof = document.getElementById("cut-profile").value;
   const sizeLabel = rec ? rec.size : "";
+  const colors = ["#2563eb", "#16a34a", "#d97706", "#9333ea", "#dc2626", "#0891b2", "#ca8a04", "#db2777"];
+  const lenColor = {};
+  uniq(fit).forEach((l, i) => { lenColor[l] = colors[i % colors.length]; });
   let html = `<h3>Разкрой — ${esc(prof)} ${esc(sizeLabel)}</h3>`;
   html += `<p class="calc-sub">Прът ${barLen} мм · рез ${kerf} мм · ${new Date().toLocaleDateString("bg-BG")}</p>`;
-  html += `<table class="data-table">`;
-  html += `<tr><td>Общо парчета</td><td class="right">${fit.length}</td></tr>`;
-  html += `<tr><td><b>Необходими пръти</b></td><td class="right"><b>${bars.length} бр. × ${barLen} мм</b></td></tr>`;
-  html += `<tr><td>Използвано / отпадък</td><td class="right">${(sumPieces / 1000).toFixed(2)} м / ${(waste / 1000).toFixed(2)} м (${wastePct.toFixed(1)}%)</td></tr>`;
-  html += `<tr><td>Тегло</td><td class="right">${weight.toFixed(2)} кг</td></tr>`;
-  html += `<tr><td><b>Себестойност</b></td><td class="right result-total">${cost.toFixed(2)} лв = ${(cost / BGN_EUR).toFixed(2)} €</td></tr>`;
-  html += `</table>`;
+  html += `<div class="cut-chips">`;
+  html += `<div class="cut-chip green big">${bars.length} пръта × ${barLen} мм</div>`;
+  html += `<div class="cut-chip">${fit.length} парчета</div>`;
+  html += `<div class="cut-chip ${wastePct > 20 ? "amber" : ""}">отпадък ${wastePct.toFixed(1)}%</div>`;
+  html += `<div class="cut-chip">${weight.toFixed(1)} кг</div>`;
+  if (price > 0) html += `<div class="cut-chip green big">${(cost / BGN_EUR).toFixed(2)} € · ${cost.toFixed(2)} лв</div>`;
+  html += `</div>`;
   if (tooLong.length) html += `<p class="error">⚠ ${tooLong.length} парче(та) са по-дълги от пръта и не се събират!</p>`;
-  html += `<h4>Схема на разкроя</h4>`;
   bars.forEach((bar, i) => {
-    html += `<div style="font-size:12px;margin-top:8px">Прът ${i + 1}:</div><div class="cut-bar">`;
-    let used = 0;
+    const used = bar.pieces.reduce((a, b) => a + b, 0);
+    const wasteLen = barLen - used;
+    html += `<div class="bar-card">`;
+    html += `<div class="bar-card-label">Прът ${i + 1} <span>използвани ${used} / ${barLen} мм · отпад ${wasteLen} мм</span></div>`;
+    html += `<div class="bar-track">`;
     bar.pieces.forEach((p) => {
-      used += p;
-      html += `<div class="cut-seg" style="width:${(p / barLen) * 100}%">${p}</div>`;
+      html += `<div class="bar-seg" style="width:${(p / barLen) * 100}%;background:${lenColor[p] || "#2563eb"}">${p}</div>`;
     });
-    const wasteW = ((barLen - used) / barLen) * 100;
-    if (wasteW > 0.5) html += `<div class="cut-seg cut-waste" style="width:${wasteW}%">отпад</div>`;
-    html += `</div>`;
+    const ww = (wasteLen / barLen) * 100;
+    if (ww > 0.3) html += `<div class="bar-seg bar-waste" style="width:${ww}%"></div>`;
+    html += `</div></div>`;
   });
   out.innerHTML = html;
 }
