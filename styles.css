@@ -68,28 +68,3 @@ button.danger { color: var(--danger); }
 .data-table select, .data-table input { width: 100%; padding: 6px 8px; font-size: 13px; }
 .add-row { margin-top: 10px; }
 .result-total { font-size: 20px; font-weight: 700; color: var(--primary-d); }
-
-.cut-bar { display: flex; height: 26px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin: 4px 0; font-size: 11px; }
-.cut-seg { background: #dbeafe; border-right: 1px solid #93c5fd; display: flex; align-items: center; justify-content: center; color: #1e3a8a; min-width: 0; overflow: hidden; white-space: nowrap; }
-.cut-waste { background: #fee2e2; color: #991b1b; border-right: none; }
-
-.cut-chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 18px; }
-.cut-chip { background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; border-radius: 20px; padding: 5px 14px; font-size: 14px; font-weight: 600; }
-.cut-chip.green { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
-.cut-chip.amber { background: #fffbeb; color: #b45309; border-color: #fde68a; }
-.cut-chip.big { font-size: 16px; }
-.bar-card { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
-.bar-card-label { font-weight: 700; font-size: 13px; margin-bottom: 8px; display: flex; justify-content: space-between; gap: 10px; }
-.bar-card-label span { font-weight: 400; color: var(--muted); font-size: 12px; }
-.bar-track { display: flex; height: 30px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-.bar-seg { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; overflow: hidden; white-space: nowrap; }
-.bar-waste { background: #e5e7eb; }
-
-@media print {
-  .topbar, .tabs, .app-noprint, #tab-calc, #tab-data { display: none !important; }
-  body { background: #fff; }
-  .container { margin: 0; max-width: 100%; padding: 0; }
-  #cut-result-card { box-shadow: none; border: none; padding: 0; }
-  .cut-bar, .cut-seg, .cut-waste, .cut-chip, .bar-track, .bar-seg, .bar-waste { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  @page { size: A4 portrait; margin: 14mm; }
-}

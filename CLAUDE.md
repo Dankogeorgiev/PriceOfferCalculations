@@ -25,11 +25,9 @@ A web app for **DankoSystems**, a manufacturing company (multiple workshops/це
 - The `authenticated_all` RLS policy means any logged-in user sees everything (fine for a small trusted team). Refine per-user later if needed.
 
 ## Status & next steps
-- ✅ Done: schema + RLS; reference data loaded (workshops, machines, operation_rates, laser_rates, material_weights/densities).
-- ✅ App has tabs: **Калкулатор** (part cost: materials auto-weight / laser / operations → per-section margins +50% mat&labour, +150% laser → ÷1.95583 → EUR), **Разкрой** (1D bar cutting-stock optimizer: editable bar length, kerf 2/3/4/5 mm, colored layout, **A4 PDF export**), **Справочни данни** (цехове, машини, ставки по операция, лазерни цени, материали — CRUD).
-- ⚠️ **Do NOT rebuild the разкрой / bar-cut tool** — it already exists as the "Разкрой" tab (a parallel duplicate `bar-cut.html`/`bar-cut.js` built in the cloud was removed/merged).
-- ⏭️ Next: more calc sections (щанца, струг/фреза, боядисване, външни), **editable margins**, save part/offer, the **offer builder** (offers + offer_items) → PDF + numbered history.
-- Margins/rates use the user's existing лв values; calibrate against the real example part `54.0056.75` (≈14.45 €/pc).
+- ✅ Done: schema + RLS; thin-slice app = **login** + **Материали** CRUD.
+- ⏭️ Next screens: цехове (workshops), машини (machines), труд (labor_roles), режийни (overheads), настройки (settings), клиенти (clients), and the **offer builder** (offers + offer_items) → **PDF export** + numbered offers + history.
+- Price-calculation logic (machine-hour rate, labor, materials + waste, overhead allocation, markup, VAT) to be defined with the user from a real example.
 
 ## Conventions
 - UI text in **Bulgarian**. Keep the simple vanilla-JS structure unless the user wants a framework.

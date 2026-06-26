@@ -318,7 +318,6 @@ async function initCalculator() {
   refMat = m.data || [];
   refLaser = l.data || [];
   refOp = o.data || [];
-  fillCutProfiles();
 }
 
 function uniq(a) { return [...new Set(a)]; }
@@ -455,112 +454,13 @@ document.getElementById("calc-laser-add").addEventListener("click", addLaserRow)
 document.getElementById("calc-op-add").addEventListener("click", addOpRow);
 document.getElementById("calc-compute").addEventListener("click", computeCalc);
 
-// --- РАЗКРОЙ (1D cutting stock) ---
-function fillCutProfiles() {
-  const profiles = uniq(refMat.filter((r) => r.unit === "kg/m").map((r) => r.profile_type));
-  document.getElementById("cut-profile").innerHTML = profiles.map((p) => `<option>${esc(p)}</option>`).join("");
-  fillCutSizes();
-}
-
-function fillCutSizes() {
-  const prof = document.getElementById("cut-profile").value;
-  const sizes = refMat.filter((r) => r.profile_type === prof);
-  document.getElementById("cut-size").innerHTML = sizes
-    .map((r) => `<option value="${r.id}">${esc(r.size)} — ${r.kg_per_unit} ${esc(r.unit)}</option>`).join("");
-}
-
-function addCutRow() {
-  const tr = document.createElement("tr");
-  tr.innerHTML =
-    `<td><input type="number" step="any" class="c-len" placeholder="мм" /></td>` +
-    `<td><input type="number" step="1" class="c-qty" value="1" /></td>` +
-    `<td><button type="button" class="ghost danger c-del">✕</button></td>`;
-  document.getElementById("cut-body").appendChild(tr);
-  tr.querySelector(".c-del").addEventListener("click", () => tr.remove());
-}
-
-function computeCut() {
-  const out = document.getElementById("cut-result");
-  out.classList.remove("muted");
-  const barLen = parseFloat(document.getElementById("cut-barlen").value) || 0;
-  const kerf = parseFloat(document.getElementById("cut-kerf").value) || 0;
-  const price = parseFloat(document.getElementById("cut-price").value) || 0;
-  const rec = refMat.find((r) => r.id === document.getElementById("cut-size").value);
-  const kgM = rec ? Number(rec.kg_per_unit) : 0;
-  const pieces = [];
-  document.querySelectorAll("#cut-body tr").forEach((tr) => {
-    const len = parseFloat(tr.querySelector(".c-len").value) || 0;
-    const qty = parseInt(tr.querySelector(".c-qty").value, 10) || 0;
-    if (len > 0 && qty > 0) pieces.push({ len, qty });
-  });
-  if (!barLen || !pieces.length) {
-    out.innerHTML = '<span class="error">Въведи дължина на пръта и поне едно парче.</span>';
-    return;
-  }
-  const all = [];
-  pieces.forEach((p) => { for (let i = 0; i < p.qty; i++) all.push(p.len); });
-  all.sort((a, b) => b - a);
-  const tooLong = all.filter((l) => l > barLen);
-  const fit = all.filter((l) => l <= barLen);
-  const bars = [];
-  for (const len of fit) {
-    const need = len + kerf;
-    let placed = false;
-    for (const bar of bars) {
-      if (bar.remaining >= need) { bar.remaining -= need; bar.pieces.push(len); placed = true; break; }
-    }
-    if (!placed) bars.push({ remaining: barLen - need, pieces: [len] });
-  }
-  const sumPieces = fit.reduce((a, b) => a + b, 0);
-  const totalBarLen = bars.length * barLen;
-  const waste = totalBarLen - sumPieces;
-  const wastePct = totalBarLen ? (waste / totalBarLen) * 100 : 0;
-  const weight = bars.length * (barLen / 1000) * kgM;
-  const cost = weight * price;
-  const prof = document.getElementById("cut-profile").value;
-  const sizeLabel = rec ? rec.size : "";
-  const colors = ["#2563eb", "#16a34a", "#d97706", "#9333ea", "#dc2626", "#0891b2", "#ca8a04", "#db2777"];
-  const lenColor = {};
-  uniq(fit).forEach((l, i) => { lenColor[l] = colors[i % colors.length]; });
-  let html = `<h3>Разкрой — ${esc(prof)} ${esc(sizeLabel)}</h3>`;
-  html += `<p class="calc-sub">Прът ${barLen} мм · рез ${kerf} мм · ${new Date().toLocaleDateString("bg-BG")}</p>`;
-  html += `<div class="cut-chips">`;
-  html += `<div class="cut-chip green big">${bars.length} пръта × ${barLen} мм</div>`;
-  html += `<div class="cut-chip">${fit.length} парчета</div>`;
-  html += `<div class="cut-chip ${wastePct > 20 ? "amber" : ""}">отпадък ${wastePct.toFixed(1)}%</div>`;
-  html += `<div class="cut-chip">${weight.toFixed(1)} кг</div>`;
-  if (price > 0) html += `<div class="cut-chip green big">${(cost / BGN_EUR).toFixed(2)} € · ${cost.toFixed(2)} лв</div>`;
-  html += `</div>`;
-  if (tooLong.length) html += `<p class="error">⚠ ${tooLong.length} парче(та) са по-дълги от пръта и не се събират!</p>`;
-  bars.forEach((bar, i) => {
-    const used = bar.pieces.reduce((a, b) => a + b, 0);
-    const wasteLen = barLen - used;
-    html += `<div class="bar-card">`;
-    html += `<div class="bar-card-label">Прът ${i + 1} <span>използвани ${used} / ${barLen} мм · отпад ${wasteLen} мм</span></div>`;
-    html += `<div class="bar-track">`;
-    bar.pieces.forEach((p) => {
-      html += `<div class="bar-seg" style="width:${(p / barLen) * 100}%;background:${lenColor[p] || "#2563eb"}">${p}</div>`;
-    });
-    const ww = (wasteLen / barLen) * 100;
-    if (ww > 0.3) html += `<div class="bar-seg bar-waste" style="width:${ww}%"></div>`;
-    html += `</div></div>`;
-  });
-  out.innerHTML = html;
-}
-
-document.getElementById("cut-add").addEventListener("click", addCutRow);
-document.getElementById("cut-compute").addEventListener("click", computeCut);
-document.getElementById("cut-pdf").addEventListener("click", () => { computeCut(); window.print(); });
-document.getElementById("cut-profile").addEventListener("change", fillCutSizes);
-
 document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
     const tab = btn.getAttribute("data-tab");
-    ["calc", "cut", "data"].forEach((k) => {
-      document.getElementById("tab-" + k).classList.toggle("hidden", k !== tab);
-    });
+    document.getElementById("tab-calc").classList.toggle("hidden", tab !== "calc");
+    document.getElementById("tab-data").classList.toggle("hidden", tab !== "data");
   });
 });
 

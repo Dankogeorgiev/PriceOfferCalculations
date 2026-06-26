@@ -28,6 +28,7 @@
     <header class="topbar">
       <div class="brand">DankoSystems · Оферти</div>
       <div class="user">
+        <a href="bar-cut.html" class="ghost" style="padding:7px 14px;border-radius:8px;border:1px solid var(--border);font-size:14px;font-weight:600;text-decoration:none;color:var(--text);">Прътов разкрой</a>
         <span id="user-email" class="muted"></span>
         <button id="logout-btn" class="ghost">Изход</button>
       </div>
@@ -36,7 +37,6 @@
     <main class="container">
       <nav class="tabs">
         <button class="tab-btn active" data-tab="calc">Калкулатор</button>
-        <button class="tab-btn" data-tab="cut">Разкрой</button>
         <button class="tab-btn" data-tab="data">Справочни данни</button>
       </nav>
 
@@ -87,42 +87,6 @@
           <h3>Резултат</h3>
           <div id="calc-breakdown" class="muted">Добави редове и натисни „Изчисли цена".</div>
           <button type="button" id="calc-compute" style="margin-top:14px">Изчисли цена</button>
-        </section>
-      </div>
-
-      <div id="tab-cut" class="hidden">
-        <section class="card app-noprint">
-          <h2>Разкрой на профили</h2>
-          <p class="calc-sub">Залагаш дължина на пръта и парчетата — алгоритъмът смята колко пръта трябват и отпадъка.</p>
-          <div class="row-form">
-            <select id="cut-profile" style="flex:1"></select>
-            <select id="cut-size" style="flex:1"></select>
-            <input type="number" step="any" id="cut-barlen" placeholder="Дължина прът (мм)" value="6000" style="max-width:170px" />
-            <input type="number" step="any" id="cut-price" placeholder="Цена/кг" style="max-width:120px" />
-            <select id="cut-kerf" style="max-width:130px">
-              <option value="2">Рез 2 мм</option>
-              <option value="3" selected>Рез 3 мм</option>
-              <option value="4">Рез 4 мм</option>
-              <option value="5">Рез 5 мм</option>
-            </select>
-          </div>
-        </section>
-
-        <section class="card app-noprint">
-          <h3>Парчета</h3>
-          <table class="data-table">
-            <thead><tr><th>Дължина (мм)</th><th>Брой</th><th></th></tr></thead>
-            <tbody id="cut-body"></tbody>
-          </table>
-          <button type="button" class="ghost add-row" id="cut-add">+ Парче</button>
-          <div style="margin-top:14px">
-            <button type="button" id="cut-compute">Изчисли разкрой</button>
-            <button type="button" class="ghost" id="cut-pdf">Експорт PDF (A4)</button>
-          </div>
-        </section>
-
-        <section class="card" id="cut-result-card">
-          <div id="cut-result" class="muted">Добави парчета и натисни „Изчисли разкрой".</div>
         </section>
       </div>
 
