@@ -68,3 +68,16 @@ button.danger { color: var(--danger); }
 .data-table select, .data-table input { width: 100%; padding: 6px 8px; font-size: 13px; }
 .add-row { margin-top: 10px; }
 .result-total { font-size: 20px; font-weight: 700; color: var(--primary-d); }
+
+.cut-bar { display: flex; height: 26px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin: 4px 0; font-size: 11px; }
+.cut-seg { background: #dbeafe; border-right: 1px solid #93c5fd; display: flex; align-items: center; justify-content: center; color: #1e3a8a; min-width: 0; overflow: hidden; white-space: nowrap; }
+.cut-waste { background: #fee2e2; color: #991b1b; border-right: none; }
+
+@media print {
+  .topbar, .tabs, .app-noprint, #tab-calc, #tab-data { display: none !important; }
+  body { background: #fff; }
+  .container { margin: 0; max-width: 100%; padding: 0; }
+  #cut-result-card { box-shadow: none; border: none; padding: 0; }
+  .cut-bar, .cut-seg, .cut-waste { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @page { size: A4 portrait; margin: 14mm; }
+}
