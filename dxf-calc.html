@@ -18,6 +18,19 @@
     }
     @media (max-width: 860px) { .page-layout { grid-template-columns: 1fr; } }
 
+    /* Project name bar */
+    .project-bar {
+      background: #f0f4ff; border-bottom: 1px solid #c7d2fe;
+      padding: 8px 20px; display: flex; align-items: center; gap: 10px;
+    }
+    .project-bar label { font-size: 13px; font-weight: 700; color: #3730a3; white-space: nowrap; }
+    .project-bar input {
+      flex: 1; max-width: 340px; padding: 5px 10px; border: 1px solid #a5b4fc;
+      border-radius: 7px; font-size: 13px; background: #fff; color: #1f2a37;
+    }
+    .project-bar input:focus { outline: 2px solid #6366f1; }
+    .project-bar .proj-count { font-size: 12px; color: #6366f1; font-weight: 700; margin-left: 8px; }
+
     /* Drop zone */
     .drop-zone {
       border: 2px dashed var(--border); border-radius: 12px; padding: 28px 20px;
@@ -87,6 +100,11 @@
     .project-item:last-child { border-bottom: none; }
     .pi-thumb { width: 52px; height: 40px; border: 1px solid var(--border); border-radius: 6px;
                 background: #fff; flex-shrink: 0; object-fit: contain; }
+    .pi-thumb-bar {
+      width: 52px; height: 40px; border: 1px solid var(--border); border-radius: 6px;
+      background: #f8fafc; flex-shrink: 0; display: flex; align-items: center;
+      justify-content: center; font-size: 20px;
+    }
     .pi-info { flex: 1; min-width: 0; }
     .pi-name { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .pi-sub  { font-size: 11px; color: var(--muted); }
@@ -94,6 +112,12 @@
     .pi-del  { background: none; border: none; color: #9ca3af; font-size: 16px; cursor: pointer;
                padding: 0 2px; flex-shrink: 0; }
     .pi-del:hover { color: var(--danger); }
+    .pi-badge {
+      display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 5px;
+      border-radius: 4px; margin-right: 3px; vertical-align: middle;
+    }
+    .pi-badge.dxf { background: #dbeafe; color: #1d4ed8; }
+    .pi-badge.bar { background: #d1fae5; color: #065f46; }
 
     .project-total {
       margin-top: 12px; padding-top: 10px; border-top: 2px solid var(--border);
@@ -123,6 +147,13 @@
     <div class="brand">DankoSystems · DXF Анализ</div>
     <a href="index.html" class="ghost" style="padding:7px 14px;border-radius:8px;border:1px solid var(--border);font-size:14px;font-weight:600;text-decoration:none;color:var(--text);">← Назад</a>
   </header>
+
+  <!-- Лента за Проект -->
+  <div class="project-bar">
+    <label>Проект:</label>
+    <input type="text" id="project-name-input" placeholder="Въведи название на проекта…" />
+    <span class="proj-count" id="proj-count-badge"></span>
+  </div>
 
   <div class="page-layout">
 
@@ -225,18 +256,18 @@
 
     </div>
 
-    <!-- ===== ДЯСНА КОЛОНА — ПРОЕКТ ===== -->
+    <!-- ===== ДЯСНА КОЛОНА — ПРОЕКТ ====== -->
     <div class="sidebar">
       <div class="card">
-        <h2>Проект</h2>
+        <h2 id="sidebar-project-name">Проект</h2>
         <div id="project-list">
-          <div class="project-empty" id="project-empty">Все още няма добавени детайли.</div>
+          <div class="project-empty" id="project-empty">Все още няма добавени елементи.</div>
         </div>
         <div class="project-total" id="project-total" style="display:none">
           <span class="lbl">Общо</span>
           <span class="val" id="project-total-val">0.00 лв</span>
         </div>
-        <button class="offer-btn" id="offer-btn" disabled>⬇ Генерирай оферта PDF</button>
+        <button class="offer-btn" id="offer-btn" disabled>Генерирай оферта PDF</button>
         <button class="clear-btn" id="clear-btn" style="display:none">Изчисти проекта</button>
       </div>
     </div>
@@ -246,20 +277,34 @@
   <script type="module">
     import { analyzeDxf, partWeightKg, estimateLaser } from "./dxf-analyzer.js";
     import { renderDxfToCanvas, canvasToPng } from "./dxf-preview.js";
+    import { getProject, saveProject, setProjectName, addItem, removeItem, clearProject } from "./project-store.js";
 
     const dropZone   = document.getElementById("drop-zone");
     const fileInput  = document.getElementById("file-input");
     const fileNameEl = document.getElementById("file-name");
     const dxfError   = document.getElementById("dxf-error");
     const canvas     = document.getElementById("preview-canvas");
+    const projNameInput = document.getElementById("project-name-input");
 
     let geoData = null;
     let currentFileName = "";
     let currentPreviewPng = "";
     let lastCalc = {};
 
-    // Проект — масив от добавени детайли
-    const project = [];
+    // ---- Зареди проектното название ----
+    function syncProjectName() {
+      const p = getProject();
+      projNameInput.value = p.name || "";
+      const nameDisplay = p.name ? `„${p.name}"` : "Проект";
+      document.getElementById("sidebar-project-name").textContent = nameDisplay;
+    }
+    syncProjectName();
+
+    projNameInput.addEventListener("input", () => {
+      setProjectName(projNameInput.value.trim());
+      const name = projNameInput.value.trim();
+      document.getElementById("sidebar-project-name").textContent = name ? `„${name}"` : "Проект";
+    });
 
     // ---- Drop / file pick ----
     dropZone.addEventListener("click", () => fileInput.click());
@@ -369,7 +414,8 @@
     // ---- Добави към проекта ----
     document.getElementById("add-btn").addEventListener("click", () => {
       if (!geoData || !lastCalc.totalAll) return;
-      project.push({
+      addItem({
+        type: "dxf",
         name: currentFileName,
         notes: lastCalc.notes,
         qty: lastCalc.qty,
@@ -377,13 +423,17 @@
         totalCost: lastCalc.totalAll,
         matName: lastCalc.matName,
         thickness: lastCalc.thickness,
-        geo: { ...geoData },
+        geo: {
+          cut_length_mm: geoData.cut_length_mm,
+          pierces: geoData.pierces,
+          blank_x_mm: geoData.blank_x_mm,
+          blank_y_mm: geoData.blank_y_mm,
+        },
         png: currentPreviewPng,
         calc: { ...lastCalc },
       });
       renderProjectList();
 
-      // Визуална обратна връзка
       const btn = document.getElementById("add-btn");
       btn.textContent = "✓ Добавено!";
       btn.style.background = "#15803d";
@@ -392,6 +442,8 @@
 
     // ---- Рендира страничния панел ----
     function renderProjectList() {
+      const p = getProject();
+      const items = p.items || [];
       const list = document.getElementById("project-list");
       const empty = document.getElementById("project-empty");
       const totalEl = document.getElementById("project-total");
@@ -399,7 +451,11 @@
       const offerBtn = document.getElementById("offer-btn");
       const clearBtn = document.getElementById("clear-btn");
 
-      if (!project.length) {
+      // Badge в лентата
+      document.getElementById("proj-count-badge").textContent =
+        items.length ? `${items.length} елем.` : "";
+
+      if (!items.length) {
         empty.style.display = "";
         totalEl.style.display = "none";
         offerBtn.disabled = true;
@@ -410,75 +466,110 @@
       }
 
       empty.style.display = "none";
-      const items = project.map((p, i) => `
-        <div class="project-item">
-          <img class="pi-thumb" src="${p.png}" alt="${esc(p.name)}" />
-          <div class="pi-info">
-            <div class="pi-name" title="${esc(p.name)}">${esc(p.name)}</div>
-            <div class="pi-sub">${p.qty} бр. × ${fmt(p.unitCost)} лв</div>
-            ${p.notes ? `<div class="pi-sub" style="font-style:italic">${esc(p.notes)}</div>` : ""}
-          </div>
-          <div class="pi-price">${fmt(p.totalCost)} лв</div>
-          <button class="pi-del" data-idx="${i}" title="Премахни">✕</button>
-        </div>
-      `).join("");
+      const html = items.map((item, i) => {
+        if (item.type === "dxf") {
+          return `<div class="project-item">
+            <img class="pi-thumb" src="${item.png}" alt="${esc(item.name)}" />
+            <div class="pi-info">
+              <div class="pi-name" title="${esc(item.name)}">
+                <span class="pi-badge dxf">DXF</span>${esc(item.name)}
+              </div>
+              <div class="pi-sub">${item.qty} бр. × ${fmt(item.unitCost)} лв</div>
+              ${item.notes ? `<div class="pi-sub" style="font-style:italic">${esc(item.notes)}</div>` : ""}
+            </div>
+            <div class="pi-price">${fmt(item.totalCost)} лв</div>
+            <button class="pi-del" data-idx="${i}" title="Премахни">✕</button>
+          </div>`;
+        } else {
+          // barcut
+          return `<div class="project-item">
+            <div class="pi-thumb-bar">🔩</div>
+            <div class="pi-info">
+              <div class="pi-name" title="${esc(item.name)}">
+                <span class="pi-badge bar">ПРЪТ</span>${esc(item.name)}
+              </div>
+              <div class="pi-sub">${item.bars} пр. × ${fmt(item.pricePerBar)} лв</div>
+              ${item.notes ? `<div class="pi-sub" style="font-style:italic">${esc(item.notes)}</div>` : ""}
+            </div>
+            <div class="pi-price">${fmt(item.totalCost)} лв</div>
+            <button class="pi-del" data-idx="${i}" title="Премахни">✕</button>
+          </div>`;
+        }
+      }).join("");
 
-      list.innerHTML = items;
+      list.innerHTML = html;
       list.appendChild(empty);
 
-      const grand = project.reduce((s, p) => s + p.totalCost, 0);
+      const grand = items.reduce((s, it) => s + (it.totalCost || 0), 0);
       totalEl.style.display = "";
       totalValEl.textContent = fmt(Math.round(grand * 100) / 100) + " лв";
       offerBtn.disabled = false;
       clearBtn.style.display = "";
     }
 
-    // Изтриване на детайл от проекта
+    // Изтриване
     document.getElementById("project-list").addEventListener("click", e => {
       const idx = e.target.getAttribute("data-idx");
       if (idx === null) return;
-      project.splice(Number(idx), 1);
+      removeItem(Number(idx));
       renderProjectList();
     });
 
-    // Изчисти всичко
+    // Изчисти
     document.getElementById("clear-btn").addEventListener("click", () => {
       if (!confirm("Да изчистя ли целия проект?")) return;
-      project.length = 0;
+      clearProject();
+      syncProjectName();
       renderProjectList();
     });
+
+    // Зареди при старт
+    renderProjectList();
 
     // ---- Генерирай оферта PDF ----
     document.getElementById("offer-btn").addEventListener("click", () => {
-      if (!project.length) return;
+      const p = getProject();
+      const items = p.items || [];
+      if (!items.length) return;
       const date = new Date().toLocaleDateString("bg-BG");
-      const grand = project.reduce((s, p) => s + p.totalCost, 0);
+      const grand = items.reduce((s, it) => s + (it.totalCost || 0), 0);
+      const projName = p.name || "Производствена калкулация";
 
-      const rows = project.map((p, i) => `
-        <tr>
-          <td style="width:52pt;padding:4pt 8pt">
-            <img src="${p.png}" style="width:48pt;height:36pt;object-fit:contain;border:1px solid #e5e7eb;border-radius:4pt;display:block"/>
-          </td>
+      const rows = items.map((item, i) => {
+        const thumb = item.type === "dxf"
+          ? `<img src="${item.png}" style="width:48pt;height:36pt;object-fit:contain;border:1px solid #e5e7eb;border-radius:4pt;display:block"/>`
+          : `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🔩</div>`;
+
+        let subLine = "";
+        if (item.type === "dxf") {
+          subLine = `${esc(item.calc.matName)}, ${item.calc.thickness} мм · разрез ${fmt(item.geo.cut_length_mm)} мм · ${item.geo.pierces} проб.`;
+        } else {
+          subLine = `${item.bars} пр. × ${item.barLenM} м · кerf ${item.kerf} мм`;
+        }
+
+        return `<tr>
+          <td style="width:52pt;padding:4pt 8pt">${thumb}</td>
           <td style="padding:4pt 8pt">
-            <b>${esc(p.name)}</b>${p.notes ? `<br><span style="color:#6b7280;font-size:8.5pt">${esc(p.notes)}</span>` : ""}
-            <br><span style="font-size:8.5pt;color:#6b7280">${esc(p.calc.matName)}, ${p.calc.thickness} мм · разрез ${fmt(p.geo.cut_length_mm)} мм · ${p.geo.pierces} проб.</span>
+            <b>${esc(item.name)}</b>${item.notes ? `<br><span style="color:#6b7280;font-size:8.5pt">${esc(item.notes)}</span>` : ""}
+            <br><span style="font-size:8.5pt;color:#6b7280">${subLine}</span>
           </td>
-          <td style="padding:4pt 8pt;text-align:center">${p.qty}</td>
-          <td style="padding:4pt 8pt;text-align:right">${fmt(p.unitCost)}</td>
-          <td style="padding:4pt 8pt;text-align:right;font-weight:700">${fmt(p.totalCost)}</td>
-        </tr>
-      `).join("");
+          <td style="padding:4pt 8pt;text-align:center">${item.qty || item.bars}</td>
+          <td style="padding:4pt 8pt;text-align:right">${item.type === "dxf" ? fmt(item.unitCost) + " лв" : fmt(item.pricePerBar) + " лв/пр."}</td>
+          <td style="padding:4pt 8pt;text-align:right;font-weight:700">${fmt(item.totalCost)} лв</td>
+        </tr>`;
+      }).join("");
 
       const html = `<!DOCTYPE html>
 <html lang="bg"><head>
 <meta charset="UTF-8"/>
-<title>Оферта — ${date}</title>
+<title>${esc(projName)} — ${date}</title>
 <style>
   @page { size: A4; margin: 14mm 14mm 16mm 14mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: "Segoe UI", Roboto, Arial, sans-serif; font-size: 10pt; color: #1f2a37; }
   .hdr { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #1F3864; padding-bottom:10px; margin-bottom:18px; }
   .brand { font-size:20pt; font-weight:800; color:#1F3864; }
+  .proj-title { font-size:12pt; font-weight:700; color:#1F3864; margin-top:3px; }
   .sub { font-size:9pt; color:#6b7280; margin-top:2px; }
   .meta { text-align:right; font-size:9pt; color:#6b7280; line-height:1.7; }
   table { width:100%; border-collapse:collapse; }
@@ -493,15 +584,19 @@
 </style>
 </head><body>
   <div class="hdr">
-    <div><div class="brand">DankoSystems</div><div class="sub">Производствена калкулация</div></div>
-    <div class="meta">Дата: ${date}<br>Детайли: ${project.length} вида</div>
+    <div>
+      <div class="brand">DankoSystems</div>
+      <div class="proj-title">${esc(projName)}</div>
+      <div class="sub">Производствена калкулация</div>
+    </div>
+    <div class="meta">Дата: ${date}<br>Позиции: ${items.length}</div>
   </div>
   <table>
     <thead><tr>
       <th style="width:52pt"></th>
-      <th>Детайл</th>
+      <th>Позиция</th>
       <th style="text-align:right">Бр.</th>
-      <th style="text-align:right">Ед. цена (лв)</th>
+      <th style="text-align:right">Ед. цена</th>
       <th style="text-align:right">Общо (лв)</th>
     </tr></thead>
     <tbody>
@@ -513,7 +608,7 @@
     </tbody>
   </table>
   <div class="footer">
-    <span>DankoSystems · Производствена калкулация</span>
+    <span>DankoSystems · ${esc(projName)}</span>
     <span>${date}</span>
   </div>
   <script>window.onload=()=>{window.print();window.onafterprint=()=>window.close();}<\/script>
