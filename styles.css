@@ -80,7 +80,7 @@ button.danger { color: var(--danger); }
 .tab-btn:nth-child(1).active,
 .tab-btn:nth-child(2).active,
 .tab-btn:nth-child(3).active,
-.tab-btn:nth-child(4).active { background: #1F3864; color: #fff; border-color: #1F3864; }
+.tab-btn:nth-child(4).active { background: #2563eb; color: #fff; border-color: #1d4ed8; }
 
 .card h3 { margin: 0 0 4px; }
 .calc-sub { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
