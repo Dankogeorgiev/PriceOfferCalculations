@@ -6,75 +6,67 @@
   <title>DankoSystems · DXF Анализ</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    /* Зона за пускане на файл */
+    /* Drop zone */
     .drop-zone {
       border: 2px dashed var(--border);
       border-radius: 12px;
-      padding: 40px 20px;
+      padding: 36px 20px;
       text-align: center;
       cursor: pointer;
       transition: border-color .15s, background .15s;
       background: var(--bg);
     }
-    .drop-zone:hover, .drop-zone.dragover {
-      border-color: var(--primary);
-      background: #eff6ff;
-    }
-    .drop-zone .drop-icon { font-size: 40px; line-height: 1; margin-bottom: 10px; }
-    .drop-zone p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--primary); background: #eff6ff; }
+    .drop-zone .drop-icon { font-size: 36px; line-height: 1; margin-bottom: 8px; }
+    .drop-zone p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
     .drop-zone strong { color: var(--primary); }
     #file-input { display: none; }
-    #file-name { margin-top: 10px; font-size: 14px; font-weight: 600; color: var(--primary); min-height: 1.4em; }
+    #file-name { margin-top: 8px; font-size: 14px; font-weight: 600; color: var(--primary); min-height: 1.4em; }
 
-    /* Резултатна лента (гео данни) */
-    .geo-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 12px;
+    /* Preview canvas */
+    .preview-wrap {
+      display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;
       margin-top: 16px;
     }
-    .geo-card {
-      background: #f8fafc;
+    #preview-canvas {
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 14px 16px;
-      text-align: center;
+      background: #fff;
+      flex-shrink: 0;
+      max-width: 100%;
     }
-    .geo-card .val { font-size: 26px; font-weight: 800; color: var(--primary); line-height: 1.1; }
-    .geo-card .lbl { font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 600; }
+    .geo-side { flex: 1; min-width: 240px; }
+
+    /* Geo cards */
+    .geo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+    }
+    .geo-card {
+      background: #f8fafc; border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px; text-align: center;
+    }
+    .geo-card .val { font-size: 22px; font-weight: 800; color: var(--primary); line-height: 1.1; }
+    .geo-card .lbl { font-size: 11px; color: var(--muted); margin-top: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
     .geo-card.accent { background: #eff6ff; border-color: #bfdbfe; }
 
     /* Параметри */
     .params-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 12px;
-      margin-top: 12px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin-top: 12px;
     }
     .param-field { display: flex; flex-direction: column; gap: 4px; }
     .param-field label { font-size: 13px; font-weight: 600; color: var(--muted); }
     .param-field input, .param-field select {
-      padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border);
-      font-size: 14px; background: var(--bg);
+      padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; background: var(--bg);
     }
-    .param-field input:focus, .param-field select:focus {
-      outline: 2px solid var(--primary); background: #fff;
-    }
+    .param-field input:focus, .param-field select:focus { outline: 2px solid var(--primary); background: #fff; }
 
-    /* Резултат калкулация */
-    .calc-result {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 12px;
-      margin-top: 16px;
-    }
-    .result-box {
-      border-radius: 10px;
-      padding: 16px;
-      border: 1px solid var(--border);
-    }
-    .result-box .r-val { font-size: 28px; font-weight: 800; line-height: 1; }
-    .result-box .r-lbl { font-size: 13px; color: var(--muted); margin-top: 4px; font-weight: 600; }
+    /* Резултат */
+    .calc-result { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 14px; }
+    .result-box { border-radius: 10px; padding: 14px; border: 1px solid var(--border); }
+    .result-box .r-val { font-size: 26px; font-weight: 800; line-height: 1; }
+    .result-box .r-lbl { font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 600; }
     .result-box.blue  { background: #eff6ff; border-color: #bfdbfe; }
     .result-box.blue .r-val  { color: var(--primary); }
     .result-box.green { background: #f0fdf4; border-color: #bbf7d0; }
@@ -82,21 +74,70 @@
     .result-box.orange{ background: #fff7ed; border-color: #fed7aa; }
     .result-box.orange .r-val{ color: #ea580c; }
 
-    .warnings { margin-top: 12px; }
-    .warn-item { font-size: 13px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a;
-                 border-radius: 6px; padding: 6px 10px; margin-bottom: 4px; }
+    .warn-item { font-size: 12px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a;
+                 border-radius: 6px; padding: 5px 9px; margin-top: 6px; }
 
+    .section-title { font-size: 14px; font-weight: 700; margin: 18px 0 4px; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
     .calc-btn { font-size: 15px; padding: 11px 32px; margin-top: 16px; }
 
-    .section-title { font-size: 15px; font-weight: 700; margin: 20px 0 4px; color: var(--text); }
-    .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+    /* PDF бутон */
+    .pdf-btn {
+      background: #1F3864; color: #fff; border: none; border-radius: 8px;
+      padding: 10px 26px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 16px;
+    }
+    .pdf-btn:hover { background: #162b4d; }
 
-    /* Печат */
+    /* ============ ОФЕРТА ПЕЧАТ ============ */
+    #offer-print { display: none; }
+
     @media print {
-      @page { size: A4; margin: 14mm 12mm; }
-      header, .drop-zone, #file-name, .params-section, .no-print { display: none !important; }
-      body { background: #fff; }
-      .card { box-shadow: none; border: 1px solid #e5e7eb; }
+      @page { size: A4 portrait; margin: 14mm 14mm 16mm 14mm; }
+
+      body > header,
+      main > section,
+      #offer-print-btn-wrap { display: none !important; }
+
+      #offer-print {
+        display: block !important;
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        color: #1f2a37;
+        font-size: 10pt;
+      }
+
+      .op-header {
+        display: flex; justify-content: space-between; align-items: flex-start;
+        border-bottom: 3px solid #1F3864; padding-bottom: 10px; margin-bottom: 16px;
+      }
+      .op-brand { font-size: 20pt; font-weight: 800; color: #1F3864; line-height: 1; }
+      .op-subtitle { font-size: 10pt; color: #6b7280; margin-top: 2px; }
+      .op-meta { text-align: right; font-size: 9pt; color: #6b7280; line-height: 1.6; }
+
+      .op-body { display: flex; gap: 18pt; align-items: flex-start; margin-bottom: 16px; }
+      .op-preview { flex-shrink: 0; }
+      .op-preview img { width: 220pt; border: 1px solid #e5e7eb; border-radius: 6pt; display: block; }
+      .op-preview .op-preview-label {
+        font-size: 8pt; color: #6b7280; text-align: center; margin-top: 4pt;
+      }
+
+      .op-geo { flex: 1; }
+      .op-geo h3 { font-size: 10pt; font-weight: 700; color: #1F3864; margin: 0 0 8pt; border-bottom: 1px solid #e5e7eb; padding-bottom: 4pt; }
+      .op-geo table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+      .op-geo td { padding: 4pt 6pt; border-bottom: 1px solid #f3f4f6; }
+      .op-geo td:first-child { color: #6b7280; width: 55%; }
+      .op-geo td:last-child { font-weight: 700; }
+
+      .op-costs { margin-bottom: 14px; }
+      .op-costs h3 { font-size: 10pt; font-weight: 700; color: #1F3864; margin: 0 0 8pt; border-bottom: 1px solid #e5e7eb; padding-bottom: 4pt; }
+      .op-costs table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+      .op-costs th { background: #1F3864; color: #fff; padding: 5pt 8pt; text-align: left; font-weight: 600; font-size: 9pt; }
+      .op-costs td { padding: 5pt 8pt; border-bottom: 1px solid #f3f4f6; }
+      .op-costs tr.total td { font-weight: 800; font-size: 11pt; background: #eff6ff; color: #1d4ed8; }
+
+      .op-footer { margin-top: 20pt; border-top: 1px solid #e5e7eb; padding-top: 8pt; font-size: 8pt; color: #9ca3af; display: flex; justify-content: space-between; }
+      .op-notes { margin-top: 12pt; font-size: 9pt; }
+      .op-notes label { font-weight: 700; display: block; margin-bottom: 4pt; }
+      .op-notes-lines { border-bottom: 1px solid #d1d5db; height: 14pt; margin-bottom: 6pt; }
     }
   </style>
 </head>
@@ -106,33 +147,38 @@
     <a href="index.html" class="ghost" style="padding:7px 14px;border-radius:8px;border:1px solid var(--border);font-size:14px;font-weight:600;text-decoration:none;color:var(--text);">← Назад</a>
   </header>
 
-  <main class="container" style="max-width:860px">
+  <main class="container" style="max-width:900px">
 
-    <!-- 1. Качване на DXF -->
+    <!-- 1. Качване -->
     <section class="card" style="margin-bottom:16px">
-      <h2 style="margin:0 0 14px">Избери DXF файл</h2>
+      <h2 style="margin:0 0 12px">Избери DXF файл</h2>
       <div class="drop-zone" id="drop-zone">
         <div class="drop-icon">📐</div>
         <strong>Провлачи DXF файл тук</strong>
         <p>или <strong>кликни</strong> за избор</p>
-        <p style="font-size:12px;margin-top:8px">Само .dxf файлове (DWG не се поддържа)</p>
+        <p style="font-size:11px;margin-top:6px">Само .dxf — DWG не се поддържа (конвертирай с ODA File Converter)</p>
       </div>
       <input type="file" id="file-input" accept=".dxf" />
       <div id="file-name"></div>
       <p id="dxf-error" class="error"></p>
     </section>
 
-    <!-- 2. Геометрия (попълва се автоматично) -->
+    <!-- 2. Визуализация + Геометрия -->
     <section class="card" id="geo-section" style="display:none;margin-bottom:16px">
-      <h2 style="margin:0 0 4px">Геометрия от DXF</h2>
-      <p class="muted" style="font-size:13px;margin:0 0 8px" id="geo-units-label"></p>
-      <div class="geo-grid" id="geo-grid"></div>
-      <div class="warnings" id="warnings-box"></div>
+      <h2 style="margin:0 0 12px">Детайл</h2>
+      <div class="preview-wrap">
+        <canvas id="preview-canvas" width="420" height="320"></canvas>
+        <div class="geo-side">
+          <p class="muted" style="font-size:12px;margin:0 0 10px" id="geo-units-label"></p>
+          <div class="geo-grid" id="geo-grid"></div>
+          <div id="warnings-box"></div>
+        </div>
+      </div>
     </section>
 
-    <!-- 3. Параметри за калкулация -->
-    <section class="card params-section" id="params-section" style="display:none;margin-bottom:16px">
-      <h2 style="margin:0 0 12px">Параметри за остойностяване</h2>
+    <!-- 3. Параметри -->
+    <section class="card" id="params-section" style="display:none;margin-bottom:16px">
+      <h2 style="margin:0 0 10px">Параметри за остойностяване</h2>
 
       <p class="section-title">Материал</p>
       <div class="params-grid">
@@ -181,54 +227,74 @@
         </div>
       </div>
 
+      <div class="param-field" style="max-width:400px;margin-top:12px">
+        <label>Наименование / забележки (за офертата)</label>
+        <input type="text" id="p-notes" placeholder="напр. Страничен панел — S235, 2 мм" />
+      </div>
+
       <button class="calc-btn" id="calc-btn">Изчисли →</button>
     </section>
 
     <!-- 4. Резултат -->
     <section class="card" id="result-section" style="display:none">
-      <h2 style="margin:0 0 14px">Резултат</h2>
+      <h2 style="margin:0 0 12px">Резултат</h2>
       <div class="calc-result" id="calc-result-grid"></div>
-      <div style="margin-top:20px;font-size:13px;color:var(--muted)" id="result-detail"></div>
+      <div style="margin-top:14px;font-size:12px;color:var(--muted)" id="result-detail"></div>
+      <div id="offer-print-btn-wrap" style="margin-top:18px">
+        <button class="pdf-btn" id="offer-btn">⬇ Оферта PDF (A4)</button>
+      </div>
     </section>
 
   </main>
 
+  <!-- ОФЕРТА — само при печат -->
+  <div id="offer-print"></div>
+
   <script type="module">
     import { analyzeDxf, partWeightKg, estimateLaser } from "./dxf-analyzer.js";
+    import { renderDxfToCanvas, canvasToPng } from "./dxf-preview.js";
 
-    // ---- Drop zone ----
-    const dropZone  = document.getElementById("drop-zone");
-    const fileInput = document.getElementById("file-input");
+    const dropZone   = document.getElementById("drop-zone");
+    const fileInput  = document.getElementById("file-input");
     const fileNameEl = document.getElementById("file-name");
-    const dxfError  = document.getElementById("dxf-error");
+    const dxfError   = document.getElementById("dxf-error");
+    const canvas     = document.getElementById("preview-canvas");
 
+    let geoData = null;
+    let parsedEntities = null;
+    let currentFileName = "";
+
+    // ---- Drop / file pick ----
     dropZone.addEventListener("click", () => fileInput.click());
     dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("dragover"); });
     dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
     dropZone.addEventListener("drop", e => {
       e.preventDefault(); dropZone.classList.remove("dragover");
-      const f = e.dataTransfer.files[0];
-      if (f) loadFile(f);
+      if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
     });
     fileInput.addEventListener("change", () => { if (fileInput.files[0]) loadFile(fileInput.files[0]); });
-
-    let geoData = null;
 
     function loadFile(file) {
       dxfError.textContent = "";
       if (!file.name.toLowerCase().endsWith(".dxf")) {
-        dxfError.textContent = "Моля качи .dxf файл (DWG не се поддържа — конвертирай с ODA File Converter).";
+        dxfError.textContent = "Моля качи .dxf файл (DWG не се поддържа).";
         return;
       }
+      currentFileName = file.name.replace(/\.dxf$/i, "");
       fileNameEl.textContent = "Зарежда: " + file.name;
       const reader = new FileReader();
-      reader.onload = e => {
+      reader.onload = ev => {
         try {
-          geoData = analyzeDxf(e.target.result);
+          const text = ev.target.result;
+          geoData = analyzeDxf(text);
+          // Вземи ентитите за рисуване от анализатора (презаредени отделно)
+          parsedEntities = extractEntitiesForPreview(text);
           fileNameEl.textContent = "✓ " + file.name;
+          renderDxfToCanvas(parsedEntities, canvas, { lineWidth: 1.5 });
           showGeo(geoData);
           document.getElementById("params-section").style.display = "";
           document.getElementById("result-section").style.display = "none";
+          document.getElementById("geo-section").scrollIntoView({ behavior: "smooth", block: "nearest" });
         } catch (err) {
           dxfError.textContent = "Грешка при четене: " + err.message;
           fileNameEl.textContent = "";
@@ -237,79 +303,192 @@
       reader.readAsText(file);
     }
 
-    function showGeo(geo) {
-      const sec = document.getElementById("geo-section");
-      sec.style.display = "";
+    // Ентитите са вградени в dxf-analyzer, но нямаме достъп до тях от showGeo.
+    // Използваме re-parse само за визуализацията.
+    function extractEntitiesForPreview(text) {
+      // Минимален re-use: просто parse + върни всички cut ентити
+      const { _parsePairsForPreview, _extractEntitiesForPreview } = window.__dxfInternals__ || {};
+      // Тъй като нямаме директен достъп до вътрешните функции на модула,
+      // ще използваме analyzeDxf с разширен тип — всъщност renderDxfToCanvas
+      // приема масив от ентити в същия формат. Тук извличаме ги директно.
+      return parseEntitiesRaw(text);
+    }
 
+    // ---- Вграден light parser само за визуализация ----
+    function parseEntitiesRaw(text) {
+      const lines = text.split(/\r?\n/);
+      const pairs = [];
+      for (let i = 0; i + 1 < lines.length; i += 2) {
+        const code = parseInt(lines[i].trim(), 10);
+        const val  = lines[i + 1].trim();
+        if (!isNaN(code)) pairs.push([code, val]);
+      }
+
+      // Намери ENTITIES секция
+      let inEnt = false, secName = "";
+      const entPairs = [];
+      for (const [c, v] of pairs) {
+        if (c === 0 && v === "SECTION") { inEnt = false; secName = ""; continue; }
+        if (c === 2 && !secName) { secName = v; if (v === "ENTITIES") inEnt = true; continue; }
+        if (c === 0 && v === "ENDSEC") { if (inEnt) break; inEnt = false; secName = ""; continue; }
+        if (inEnt) entPairs.push([c, v]);
+      }
+
+      // Прост parse на ентитите (идентичен с dxf-analyzer)
+      const CUT = new Set(["LINE","ARC","CIRCLE","ELLIPSE","LWPOLYLINE","POLYLINE","SPLINE"]);
+      const BEND = ["bend","biegen","biegung","falz","огъв"];
+      const entities = [];
+      let cur = null;
+      let lwV = [], lwLX = null, lwLY = null, lwB = 0;
+      let polyV = [], inPV = false, pvX = null, pvY = null, pvB = 0;
+
+      for (const [c, v] of entPairs) {
+        if (c === 0) {
+          if (cur) {
+            if (cur.type === "LWPOLYLINE" && lwLX !== null) {
+              lwV.push({ x: lwLX, y: lwLY ?? 0, bulge: lwB });
+              cur.vertices = lwV.slice();
+            } else if (cur.type === "LWPOLYLINE") { cur.vertices = lwV.slice(); }
+            if (cur.type === "POLYLINE") {
+              if (inPV && pvX !== null) polyV.push({ x: pvX, y: pvY ?? 0, bulge: pvB });
+              cur.vertices = polyV.slice(); polyV = []; inPV = false;
+            }
+            const lay = (cur.layer || "").toLowerCase();
+            const isBend = BEND.some(p => lay.includes(p));
+            if (CUT.has(cur.type) && !isBend) entities.push(cur);
+            cur = null;
+          }
+          if (v === "VERTEX") { inPV = true; pvX = null; pvY = null; pvB = 0; continue; }
+          if (v === "SEQEND") {
+            if (inPV && pvX !== null) polyV.push({ x: pvX, y: pvY ?? 0, bulge: pvB });
+            inPV = false; continue;
+          }
+          cur = { type: v, layer: "0" };
+          lwV = []; lwLX = null; lwLY = null; lwB = 0;
+          continue;
+        }
+        if (inPV) {
+          if (c === 10) pvX = parseFloat(v);
+          else if (c === 20) pvY = parseFloat(v);
+          else if (c === 42) pvB = parseFloat(v);
+          continue;
+        }
+        if (!cur) continue;
+        if (c === 8) { cur.layer = v; continue; }
+        switch (cur.type) {
+          case "LINE":
+            if (c===10) cur.x1=+v; else if (c===20) cur.y1=+v;
+            else if (c===11) cur.x2=+v; else if (c===21) cur.y2=+v; break;
+          case "ARC":
+            if (c===10) cur.cx=+v; else if (c===20) cur.cy=+v;
+            else if (c===40) cur.radius=+v; else if (c===50) cur.startAngle=+v;
+            else if (c===51) cur.endAngle=+v; break;
+          case "CIRCLE":
+            if (c===10) cur.cx=+v; else if (c===20) cur.cy=+v; else if (c===40) cur.radius=+v; break;
+          case "ELLIPSE":
+            if (c===10) cur.cx=+v; else if (c===20) cur.cy=+v;
+            else if (c===11) cur.majorX=+v; else if (c===21) cur.majorY=+v;
+            else if (c===40) cur.ratio=+v; else if (c===41) cur.startParam=+v;
+            else if (c===42) cur.endParam=+v; break;
+          case "LWPOLYLINE":
+            if (c===70) cur.closed=!!(parseInt(v,10)&1);
+            else if (c===10) {
+              if (lwLX!==null) { lwV.push({x:lwLX,y:lwLY??0,bulge:lwB}); lwB=0; }
+              lwLX=+v; lwLY=null;
+            } else if (c===20) lwLY=+v;
+            else if (c===42) lwB=+v; break;
+          case "POLYLINE":
+            if (c===70) cur.closed=!!(parseInt(v,10)&1); break;
+          case "SPLINE":
+            if (c===73) cur.closed=!!(parseInt(v,10)&1);
+            if (!cur.ctrlX) { cur.ctrlX=[]; cur.ctrlY=[]; }
+            if (c===10) cur.ctrlX.push(+v); else if (c===20) cur.ctrlY.push(+v); break;
+        }
+      }
+      if (cur && CUT.has(cur.type)) {
+        if (cur.type==="LWPOLYLINE") { if(lwLX!==null) lwV.push({x:lwLX,y:lwLY??0,bulge:lwB}); cur.vertices=lwV; }
+        if (cur.type==="POLYLINE") { cur.vertices=polyV; }
+        entities.push(cur);
+      }
+      return entities;
+    }
+
+    // ---- Гео панел ----
+    function showGeo(geo) {
+      document.getElementById("geo-section").style.display = "";
       document.getElementById("geo-units-label").textContent =
         `Единици: ${geo.units || "mm"} · Ентити: ${geo.entity_count}`;
-
       document.getElementById("geo-grid").innerHTML = `
         <div class="geo-card accent">
           <div class="val">${fmt(geo.cut_length_mm)}</div>
-          <div class="lbl">Дължина рязане (мм)</div>
+          <div class="lbl">Разрез мм</div>
         </div>
         <div class="geo-card accent">
           <div class="val">${geo.pierces}</div>
-          <div class="lbl">Пробивания (контури)</div>
+          <div class="lbl">Пробивания</div>
         </div>
         <div class="geo-card">
           <div class="val">${fmt(geo.blank_x_mm)}</div>
-          <div class="lbl">Габарит X (мм)</div>
+          <div class="lbl">Габарит X мм</div>
         </div>
         <div class="geo-card">
           <div class="val">${fmt(geo.blank_y_mm)}</div>
-          <div class="lbl">Габарит Y (мм)</div>
+          <div class="lbl">Габарит Y мм</div>
         </div>
         <div class="geo-card">
           <div class="val">${fmt(geo.blank_area_mm2)}</div>
-          <div class="lbl">Площ на заготовката (мм²)</div>
+          <div class="lbl">Площ мм²</div>
         </div>
         <div class="geo-card">
           <div class="val">${geo.bends}</div>
-          <div class="lbl">Огъвки (bend слоеве)</div>
+          <div class="lbl">Огъвки</div>
         </div>
       `;
-
-      const wb = document.getElementById("warnings-box");
-      wb.innerHTML = geo.warnings.map(w => `<div class="warn-item">⚠ ${esc(w)}</div>`).join("");
+      document.getElementById("warnings-box").innerHTML =
+        geo.warnings.map(w => `<div class="warn-item">⚠ ${esc(w)}</div>`).join("");
     }
 
     // ---- Плътност ----
-    document.getElementById("p-mattype").addEventListener("change", function() {
-      const cf = document.getElementById("density-custom-field");
-      cf.style.display = this.value === "custom" ? "" : "none";
+    document.getElementById("p-mattype").addEventListener("change", function () {
+      document.getElementById("density-custom-field").style.display =
+        this.value === "custom" ? "" : "none";
     });
-
     function getDensity() {
-      const sel = document.getElementById("p-mattype").value;
-      return sel === "custom"
-        ? Number(document.getElementById("p-density").value) || 7850
-        : Number(sel);
+      const v = document.getElementById("p-mattype").value;
+      return v === "custom" ? (Number(document.getElementById("p-density").value) || 7850) : Number(v);
+    }
+    function getMatName() {
+      const sel = document.getElementById("p-mattype");
+      return sel.options[sel.selectedIndex].text;
     }
 
     // ---- Калкулация ----
+    let lastCalc = {};
     document.getElementById("calc-btn").addEventListener("click", () => {
       if (!geoData) return;
 
-      const thickness   = Number(document.getElementById("p-thickness").value)    || 2;
-      const pricePerKg  = Number(document.getElementById("p-price-kg").value)     || 0;
-      const feed        = Number(document.getElementById("p-feed").value)         || 2000;
-      const pierceTime  = Number(document.getElementById("p-pierce-time").value)  || 0.5;
-      const laserRate   = Number(document.getElementById("p-laser-rate").value)   || 60;
-      const qty         = Number(document.getElementById("p-qty").value)          || 1;
-      const density     = getDensity();
+      const thickness  = Number(document.getElementById("p-thickness").value)   || 2;
+      const pricePerKg = Number(document.getElementById("p-price-kg").value)    || 0;
+      const feed       = Number(document.getElementById("p-feed").value)        || 2000;
+      const pierceTime = Number(document.getElementById("p-pierce-time").value) || 0.5;
+      const laserRate  = Number(document.getElementById("p-laser-rate").value)  || 60;
+      const qty        = Number(document.getElementById("p-qty").value)         || 1;
+      const density    = getDensity();
+      const notes      = document.getElementById("p-notes").value.trim();
 
-      const weight     = partWeightKg(geoData, thickness, density);
-      const matCost    = Math.round(weight * pricePerKg * 100) / 100;
-      const laser      = estimateLaser(geoData, { feedMmPerMin: feed, pierceTimeSec: pierceTime, ratePerHour: laserRate });
-      const totalUnit  = Math.round((matCost + laser.cost) * 100) / 100;
-      const totalAll   = Math.round(totalUnit * qty * 100) / 100;
+      const weight    = partWeightKg(geoData, thickness, density);
+      const matCost   = Math.round(weight * pricePerKg * 100) / 100;
+      const laser     = estimateLaser(geoData, { feedMmPerMin: feed, pierceTimeSec: pierceTime, ratePerHour: laserRate });
+      const totalUnit = Math.round((matCost + laser.cost) * 100) / 100;
+      const totalAll  = Math.round(totalUnit * qty * 100) / 100;
+
+      lastCalc = { thickness, pricePerKg, feed, pierceTime, laserRate, qty, density,
+                   weight, matCost, laser, totalUnit, totalAll, notes };
 
       document.getElementById("calc-result-grid").innerHTML = `
         <div class="result-box blue">
           <div class="r-val">${fmt(weight)} кг</div>
-          <div class="r-lbl">Тегло на детайл</div>
+          <div class="r-lbl">Тегло / детайл</div>
         </div>
         <div class="result-box green">
           <div class="r-val">${fmt(matCost)} лв</div>
@@ -324,22 +503,116 @@
           <div class="r-lbl">Общо / детайл</div>
         </div>
         <div class="result-box green" style="border-width:2px">
-          <div class="r-val" style="font-size:34px">${fmt(totalAll)} лв</div>
+          <div class="r-val" style="font-size:32px">${fmt(totalAll)} лв</div>
           <div class="r-lbl">Общо за ${qty} бр.</div>
         </div>
       `;
-
-      document.getElementById("result-detail").innerHTML =
+      document.getElementById("result-detail").textContent =
         `Разрез: ${fmt(geoData.cut_length_mm)} мм · ${geoData.pierces} пробивания · ` +
         `Скорост: ${feed} мм/мин · Ставка: ${laserRate} лв/час · ` +
-        `Дебелина: ${thickness} мм · Плътност: ${density} кг/м³ · Цена/кг: ${pricePerKg} лв`;
+        `Дебелина: ${thickness} мм · ${getMatName()} · Цена/кг: ${pricePerKg} лв`;
 
       document.getElementById("result-section").style.display = "";
       document.getElementById("result-section").scrollIntoView({ behavior: "smooth" });
     });
 
+    // ---- Оферта PDF ----
+    document.getElementById("offer-btn").addEventListener("click", () => {
+      if (!geoData || !lastCalc.totalAll) return;
+
+      const previewImg = canvasToPng(canvas);
+      const date = new Date().toLocaleDateString("bg-BG");
+      const c = lastCalc;
+
+      document.getElementById("offer-print").innerHTML = `
+        <div class="op-header">
+          <div>
+            <div class="op-brand">DankoSystems</div>
+            <div class="op-subtitle">Производствена калкулация</div>
+          </div>
+          <div class="op-meta">
+            Детайл: <b>${esc(currentFileName || "—")}</b><br>
+            Дата: ${date}<br>
+            ${c.notes ? `Описание: <b>${esc(c.notes)}</b>` : ""}
+          </div>
+        </div>
+
+        <div class="op-body">
+          <div class="op-preview">
+            <img src="${previewImg}" alt="DXF преглед" />
+            <div class="op-preview-label">${esc(currentFileName)}.dxf</div>
+          </div>
+          <div class="op-geo">
+            <h3>Геометрия на детайла</h3>
+            <table>
+              <tr><td>Дължина на рязане</td><td>${fmt(geoData.cut_length_mm)} мм</td></tr>
+              <tr><td>Брой пробивания</td><td>${geoData.pierces}</td></tr>
+              <tr><td>Габарит X</td><td>${fmt(geoData.blank_x_mm)} мм</td></tr>
+              <tr><td>Габарит Y</td><td>${fmt(geoData.blank_y_mm)} мм</td></tr>
+              <tr><td>Площ на заготовката</td><td>${fmt(geoData.blank_area_mm2)} мм²</td></tr>
+              ${geoData.bends ? `<tr><td>Огъвки</td><td>${geoData.bends}</td></tr>` : ""}
+            </table>
+
+            <h3 style="margin-top:14pt">Технологични параметри</h3>
+            <table>
+              <tr><td>Материал</td><td>${esc(getMatName())}</td></tr>
+              <tr><td>Дебелина</td><td>${c.thickness} мм</td></tr>
+              <tr><td>Тегло на детайл</td><td>${fmt(c.weight)} кг</td></tr>
+              <tr><td>Цена материал</td><td>${c.pricePerKg} лв/кг</td></tr>
+              <tr><td>Скорост рязане</td><td>${c.feed} мм/мин</td></tr>
+              <tr><td>Ставка лазер</td><td>${c.laserRate} лв/час</td></tr>
+              <tr><td>Лазерно рязане</td><td>${fmt(c.laser.minutes)} мин</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="op-costs">
+          <h3>Калкулация на цената</h3>
+          <table>
+            <thead>
+              <tr><th>Позиция</th><th>Ед. цена (лв)</th><th>Брой</th><th>Общо (лв)</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Материал (${getMatName()}, ${c.thickness} мм)</td>
+                <td>${fmt(c.matCost)}</td>
+                <td>${c.qty}</td>
+                <td>${fmt(Math.round(c.matCost * c.qty * 100) / 100)}</td>
+              </tr>
+              <tr>
+                <td>Лазерно рязане (${fmt(geoData.cut_length_mm)} мм, ${geoData.pierces} проб.)</td>
+                <td>${fmt(c.laser.cost)}</td>
+                <td>${c.qty}</td>
+                <td>${fmt(Math.round(c.laser.cost * c.qty * 100) / 100)}</td>
+              </tr>
+              <tr class="total">
+                <td><b>ОБЩО</b></td>
+                <td>${fmt(c.totalUnit)}</td>
+                <td>${c.qty}</td>
+                <td><b>${fmt(c.totalAll)} лв</b></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="op-notes">
+          <label>Забележки:</label>
+          <div class="op-notes-lines"></div>
+          <div class="op-notes-lines"></div>
+        </div>
+
+        <div class="op-footer">
+          <span>DankoSystems · Производствена калкулация</span>
+          <span>${date}</span>
+        </div>
+      `;
+
+      window.print();
+    });
+
+    // ---- Helpers ----
     function fmt(n) {
-      if (n === undefined || n === null) return "—";
+      if (n == null) return "—";
       const num = Number(n);
       return isNaN(num) ? "—" : num.toLocaleString("bg-BG", { maximumFractionDigits: 2 });
     }
