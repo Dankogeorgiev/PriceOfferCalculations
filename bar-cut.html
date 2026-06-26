@@ -49,6 +49,33 @@
     .seg-waste { background: #e5e7eb; height: 100%; flex-shrink: 0; }
     .bar-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
     .tag { font-size: 12px; padding: 2px 9px; border-radius: 12px; color: #fff; font-weight: 600; white-space: nowrap; }
+
+    /* PDF бутон */
+    .pdf-btn { background: #16a34a; font-size: 15px; padding: 10px 28px; margin-bottom: 16px; }
+    .pdf-btn:hover { background: #15803d; }
+
+    /* Печат / PDF */
+    @media print {
+      @page { size: A4 portrait; margin: 14mm 12mm 14mm 12mm; }
+      body { background: #fff; font-size: 11pt; }
+      header.topbar, main > section, #results .pdf-btn { display: none !important; }
+      #results { display: block !important; margin: 0; }
+      .result-hero { padding: 12px; margin-bottom: 12px; border: 1px solid #bfdbfe; border-radius: 8px; }
+      .result-hero .big-num { font-size: 38pt; }
+      .result-hero .big-label { font-size: 14pt; }
+      .chip { font-size: 10pt; padding: 3px 10px; }
+      .bars-section.card { border: none; padding: 0; box-shadow: none; }
+      .bars-section h3 { font-size: 12pt; margin-bottom: 8px; }
+      .bar-card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; page-break-inside: avoid; }
+      .bar-header { margin-bottom: 6px; }
+      .bar-title { font-size: 11pt; }
+      .bar-meta { font-size: 9pt; }
+      .bar-track { height: 28px; }
+      .seg { font-size: 8pt; }
+      .tag { font-size: 9pt; padding: 1px 7px; }
+      .print-header { display: block !important; }
+    }
+    .print-header { display: none; font-size: 13pt; font-weight: 700; margin-bottom: 10px; color: #1f2a37; }
   </style>
 </head>
 <body>
@@ -100,6 +127,10 @@
 
     <!-- 3. Резултат -->
     <div id="results" class="hidden">
+
+      <div class="print-header" id="print-header"></div>
+
+      <button class="pdf-btn" id="pdf-btn" onclick="window.print()">⬇ Експорт PDF (A4)</button>
 
       <div class="result-hero">
         <div class="big-num" id="res-count">—</div>

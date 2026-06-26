@@ -42,7 +42,7 @@ function ffd(pieces, barLen, kerf) {
   // Разгъни по количество и сортирай низходящо
   const all = [];
   pieces.forEach(p => {
-    for (let i = 0; i < p.qty; i++) all.push({ len: p.len, desc: p.desc, colorIdx: p.colorIdx });
+    for (let i = 0; i < p.qty; i++) all.push({ len: p.len, userDesc: p.userDesc, colorIdx: p.colorIdx });
   });
   all.sort((a, b) => b.len - a.len);
 
@@ -85,7 +85,7 @@ document.getElementById("calc-btn").addEventListener("click", () => {
   for (const tr of piecesBody.querySelectorAll("tr")) {
     const lenVal = tr.querySelector(".p-len").value;
     const qtyVal = tr.querySelector(".p-qty").value;
-    const desc   = tr.querySelector(".p-desc").value.trim();
+    const userDesc = tr.querySelector(".p-desc").value.trim();
     const len = Number(lenVal);
     const qty = Number(qtyVal) || 1;
 
@@ -99,7 +99,7 @@ document.getElementById("calc-btn").addEventListener("click", () => {
 
     const key = String(len);
     if (!(key in colorMap)) { colorMap[key] = colorCounter % COLORS.length; colorCounter++; }
-    pieces.push({ len, qty, desc: desc || `${len} мм`, colorIdx: colorMap[key] });
+    pieces.push({ len, qty, userDesc, colorIdx: colorMap[key] });
   }
 
   if (!pieces.length) {
@@ -118,6 +118,12 @@ document.getElementById("calc-btn").addEventListener("click", () => {
   const utilPct      = (totalUsed / totalMat * 100).toFixed(1);
   const wastePct     = (totalWaste / totalMat * 100).toFixed(1);
 
+  // Print header
+  const profile = document.getElementById("bc-profile").value.trim();
+  const dateStr = new Date().toLocaleDateString("bg-BG");
+  document.getElementById("print-header").textContent =
+    `DankoSystems · Прътов разкрой${profile ? " · " + profile : ""} · ${dateStr}`;
+
   // Hero
   document.getElementById("res-count").textContent = totalBars;
   document.getElementById("res-chips").innerHTML = `
@@ -134,14 +140,16 @@ document.getElementById("calc-btn").addEventListener("click", () => {
     const segments = bar.cuts.map(c => {
       const pct = (c.len / barLen * 100).toFixed(3);
       const col = COLORS[c.colorIdx];
-      return `<div class="seg" style="width:${pct}%;background:${col}" title="${c.len} мм — ${esc(c.desc)}">${c.len}</div>`;
+      const segLabel = c.userDesc ? `${c.len} · ${esc(c.userDesc)}` : `${c.len}`;
+      return `<div class="seg" style="width:${pct}%;background:${col}" title="${c.len} мм${c.userDesc ? " — " + esc(c.userDesc) : ""}">${segLabel}</div>`;
     }).join("");
     const wasteSeg = waste > 0
       ? `<div class="seg-waste" style="width:${(waste/barLen*100).toFixed(3)}%" title="Отпадък ${waste} мм"></div>`
       : "";
-    const tags = bar.cuts.map(c =>
-      `<span class="tag" style="background:${COLORS[c.colorIdx]}">${c.len} мм${c.desc !== c.len + " мм" ? " · " + esc(c.desc) : ""}</span>`
-    ).join("");
+    const tags = bar.cuts.map(c => {
+      const label = c.userDesc ? `${c.len} мм · ${esc(c.userDesc)}` : `${c.len} мм`;
+      return `<span class="tag" style="background:${COLORS[c.colorIdx]}">${label}</span>`;
+    }).join("");
 
     return `<div class="bar-card">
       <div class="bar-header">
