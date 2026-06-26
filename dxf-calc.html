@@ -149,11 +149,7 @@
   </header>
 
   <!-- Лента за Проект -->
-  <div class="project-bar">
-    <label>Проект:</label>
-    <input type="text" id="project-name-input" placeholder="Въведи название на проекта…" />
-    <span class="proj-count" id="proj-count-badge"></span>
-  </div>
+  <div id="project-bar-root"></div>
 
   <div class="page-layout">
 
@@ -277,33 +273,23 @@
   <script type="module">
     import { analyzeDxf, partWeightKg, estimateLaser } from "./dxf-analyzer.js";
     import { renderDxfToCanvas, canvasToPng } from "./dxf-preview.js";
-    import { getProject, saveProject, setProjectName, addItem, removeItem, clearProject } from "./project-store.js";
+    import { getCurrentProject, addItem, removeItem, clearCurrentProject } from "./project-store.js";
+    import { initProjectBar } from "./project-bar.js";
 
     const dropZone   = document.getElementById("drop-zone");
     const fileInput  = document.getElementById("file-input");
     const fileNameEl = document.getElementById("file-name");
     const dxfError   = document.getElementById("dxf-error");
     const canvas     = document.getElementById("preview-canvas");
-    const projNameInput = document.getElementById("project-name-input");
 
     let geoData = null;
     let currentFileName = "";
     let currentPreviewPng = "";
     let lastCalc = {};
 
-    // ---- Зареди проектното название ----
-    function syncProjectName() {
-      const p = getProject();
-      projNameInput.value = p.name || "";
-      const nameDisplay = p.name ? `„${p.name}"` : "Проект";
-      document.getElementById("sidebar-project-name").textContent = nameDisplay;
-    }
-    syncProjectName();
-
-    projNameInput.addEventListener("input", () => {
-      setProjectName(projNameInput.value.trim());
-      const name = projNameInput.value.trim();
-      document.getElementById("sidebar-project-name").textContent = name ? `„${name}"` : "Проект";
+    // ---- Проект лента ----
+    const bar = initProjectBar(document.getElementById("project-bar-root"), {
+      onChange: () => renderProjectList(),
     });
 
     // ---- Drop / file pick ----
@@ -442,8 +428,8 @@
 
     // ---- Рендира страничния панел ----
     function renderProjectList() {
-      const p = getProject();
-      const items = p.items || [];
+      const p = getCurrentProject();
+      const items = p?.items || [];
       const list = document.getElementById("project-list");
       const empty = document.getElementById("project-empty");
       const totalEl = document.getElementById("project-total");
@@ -451,9 +437,7 @@
       const offerBtn = document.getElementById("offer-btn");
       const clearBtn = document.getElementById("clear-btn");
 
-      // Badge в лентата
-      document.getElementById("proj-count-badge").textContent =
-        items.length ? `${items.length} елем.` : "";
+      bar.refresh();
 
       if (!items.length) {
         empty.style.display = "";
@@ -513,9 +497,8 @@
 
     // Изчисти
     document.getElementById("clear-btn").addEventListener("click", () => {
-      if (!confirm("Да изчистя ли целия проект?")) return;
-      clearProject();
-      syncProjectName();
+      if (!confirm("Да изчистя ли позициите в текущия проект?")) return;
+      clearCurrentProject();
       renderProjectList();
     });
 
@@ -524,8 +507,8 @@
 
     // ---- Генерирай оферта PDF ----
     document.getElementById("offer-btn").addEventListener("click", () => {
-      const p = getProject();
-      const items = p.items || [];
+      const p = getCurrentProject();
+      const items = p?.items || [];
       if (!items.length) return;
       const date = new Date().toLocaleDateString("bg-BG");
       const grand = items.reduce((s, it) => s + (it.totalCost || 0), 0);

@@ -1,5 +1,6 @@
 // Прътов разкрой — 1D Bin Packing (First Fit Decreasing)
-import { getProject, setProjectName, addItem } from "./project-store.js";
+import { addItem } from "./project-store.js";
+import { initProjectBar } from "./project-bar.js";
 
 const COLORS = [
   "#2563eb","#16a34a","#d97706","#9333ea","#0891b2",
@@ -9,20 +10,7 @@ const COLORS = [
 ];
 
 // ---- Проект лента ----
-const bcProjName = document.getElementById("bc-project-name");
-const bcProjCount = document.getElementById("bc-proj-count");
-
-function syncProjectBar() {
-  const p = getProject();
-  bcProjName.value = p.name || "";
-  bcProjCount.textContent = p.items?.length ? `${p.items.length} елем.` : "";
-}
-syncProjectBar();
-
-bcProjName.addEventListener("input", () => {
-  setProjectName(bcProjName.value.trim());
-  syncProjectBar();
-});
+const bar = initProjectBar(document.getElementById("project-bar-root"));
 
 // ---- Таблица с редове ----
 let rowIdx = 0;
@@ -218,7 +206,7 @@ document.getElementById("add-to-proj-btn").addEventListener("click", () => {
     totalCuts: r.totalCuts,
   });
 
-  syncProjectBar();
+  bar.refresh();
 
   const btn = document.getElementById("add-to-proj-btn");
   btn.textContent = "✓ Добавено!";

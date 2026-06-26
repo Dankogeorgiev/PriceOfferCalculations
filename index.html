@@ -34,9 +34,12 @@
       </div>
     </header>
 
+    <!-- Лента за Проект -->
+    <div id="project-bar-root"></div>
+
     <main class="container">
       <nav class="tabs">
-        <button class="tab-btn active" data-tab="calc">Калкулатор</button>
+        <button class="tab-btn active" data-tab="calc">Калкулатор операции</button>
         <a class="tab-btn" href="bar-cut.html" style="text-decoration:none;display:inline-flex;align-items:center;">Прътов разкрой</a>
         <a class="tab-btn" href="dxf-calc.html" style="text-decoration:none;display:inline-flex;align-items:center;">DXF Анализ</a>
         <a class="tab-btn" href="powder-coat.html" style="text-decoration:none;display:inline-flex;align-items:center;">Прахово боядисване</a>
@@ -212,5 +215,21 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="app.js"></script>
+  <script type="module">
+    import { initProjectBar } from "./project-bar.js";
+    // Инициализира project bar след login (app-view е скрит преди вход)
+    const observer = new MutationObserver(() => {
+      const root = document.getElementById("project-bar-root");
+      if (root && !document.getElementById("app-view").classList.contains("hidden")) {
+        initProjectBar(root);
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.getElementById("app-view"), { attributes: true, attributeFilter: ["class"] });
+    // Ако вече е логнат
+    if (!document.getElementById("app-view").classList.contains("hidden")) {
+      initProjectBar(document.getElementById("project-bar-root"));
+    }
+  </script>
 </body>
 </html>
