@@ -411,90 +411,135 @@
       const date = new Date().toLocaleDateString("bg-BG");
       const c = lastCalc;
 
-      document.getElementById("offer-print").innerHTML = `
-        <div class="op-header">
-          <div>
-            <div class="op-brand">DankoSystems</div>
-            <div class="op-subtitle">Производствена калкулация</div>
-          </div>
-          <div class="op-meta">
-            Детайл: <b>${esc(currentFileName || "—")}</b><br>
-            Дата: ${date}<br>
-            ${c.notes ? `Описание: <b>${esc(c.notes)}</b>` : ""}
-          </div>
-        </div>
+      const html = `<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8"/>
+<title>Оферта — ${esc(currentFileName)}</title>
+<style>
+  @page { size: A4 portrait; margin: 14mm 14mm 16mm 14mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Roboto, Arial, sans-serif; font-size: 10pt; color: #1f2a37; }
 
-        <div class="op-body">
-          <div class="op-preview">
-            <img src="${previewImg}" alt="DXF преглед" />
-            <div class="op-preview-label">${esc(currentFileName)}.dxf</div>
-          </div>
-          <div class="op-geo">
-            <h3>Геометрия на детайла</h3>
-            <table>
-              <tr><td>Дължина на рязане</td><td>${fmt(geoData.cut_length_mm)} мм</td></tr>
-              <tr><td>Брой пробивания</td><td>${geoData.pierces}</td></tr>
-              <tr><td>Габарит X</td><td>${fmt(geoData.blank_x_mm)} мм</td></tr>
-              <tr><td>Габарит Y</td><td>${fmt(geoData.blank_y_mm)} мм</td></tr>
-              <tr><td>Площ на заготовката</td><td>${fmt(geoData.blank_area_mm2)} мм²</td></tr>
-              ${geoData.bends ? `<tr><td>Огъвки</td><td>${geoData.bends}</td></tr>` : ""}
-            </table>
+  .op-header { display: flex; justify-content: space-between; align-items: flex-start;
+    border-bottom: 3px solid #1F3864; padding-bottom: 10px; margin-bottom: 16px; }
+  .op-brand { font-size: 20pt; font-weight: 800; color: #1F3864; line-height: 1; }
+  .op-subtitle { font-size: 10pt; color: #6b7280; margin-top: 2px; }
+  .op-meta { text-align: right; font-size: 9pt; color: #6b7280; line-height: 1.8; }
 
-            <h3 style="margin-top:14pt">Технологични параметри</h3>
-            <table>
-              <tr><td>Материал</td><td>${esc(getMatName())}</td></tr>
-              <tr><td>Дебелина</td><td>${c.thickness} мм</td></tr>
-              <tr><td>Тегло на детайл</td><td>${fmt(c.weight)} кг</td></tr>
-              <tr><td>Цена материал</td><td>${c.pricePerKg} лв/кг</td></tr>
-              <tr><td>Скорост рязане</td><td>${c.feed} мм/мин</td></tr>
-              <tr><td>Ставка лазер</td><td>${c.laserRate} лв/час</td></tr>
-              <tr><td>Лазерно рязане</td><td>${fmt(c.laser.minutes)} мин</td></tr>
-            </table>
-          </div>
-        </div>
+  .op-body { display: flex; gap: 18pt; align-items: flex-start; margin-bottom: 16px; }
+  .op-preview { flex-shrink: 0; }
+  .op-preview img { width: 210pt; border: 1px solid #e5e7eb; border-radius: 5pt; display: block; }
+  .op-preview-label { font-size: 8pt; color: #6b7280; text-align: center; margin-top: 4pt; }
 
-        <div class="op-costs">
-          <h3>Калкулация на цената</h3>
-          <table>
-            <thead>
-              <tr><th>Позиция</th><th>Ед. цена (лв)</th><th>Брой</th><th>Общо (лв)</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Материал (${getMatName()}, ${c.thickness} мм)</td>
-                <td>${fmt(c.matCost)}</td>
-                <td>${c.qty}</td>
-                <td>${fmt(Math.round(c.matCost * c.qty * 100) / 100)}</td>
-              </tr>
-              <tr>
-                <td>Лазерно рязане (${fmt(geoData.cut_length_mm)} мм, ${geoData.pierces} проб.)</td>
-                <td>${fmt(c.laser.cost)}</td>
-                <td>${c.qty}</td>
-                <td>${fmt(Math.round(c.laser.cost * c.qty * 100) / 100)}</td>
-              </tr>
-              <tr class="total">
-                <td><b>ОБЩО</b></td>
-                <td>${fmt(c.totalUnit)}</td>
-                <td>${c.qty}</td>
-                <td><b>${fmt(c.totalAll)} лв</b></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+  .op-geo { flex: 1; }
+  .op-geo h3 { font-size: 10pt; font-weight: 700; color: #1F3864; margin: 0 0 7pt;
+    border-bottom: 1px solid #e5e7eb; padding-bottom: 4pt; }
+  .op-geo table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  .op-geo td { padding: 4pt 6pt; border-bottom: 1px solid #f3f4f6; }
+  .op-geo td:first-child { color: #6b7280; width: 55%; }
+  .op-geo td:last-child { font-weight: 700; }
 
-        <div class="op-notes">
-          <label>Забележки:</label>
-          <div class="op-notes-lines"></div>
-          <div class="op-notes-lines"></div>
-        </div>
+  .op-costs { margin-bottom: 14px; }
+  .op-costs h3 { font-size: 10pt; font-weight: 700; color: #1F3864; margin: 0 0 7pt;
+    border-bottom: 1px solid #e5e7eb; padding-bottom: 4pt; }
+  .op-costs table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  .op-costs th { background: #1F3864; color: #fff; padding: 5pt 8pt; text-align: left; font-size: 9pt; }
+  .op-costs td { padding: 5pt 8pt; border-bottom: 1px solid #f3f4f6; }
+  .op-costs tr.total td { font-weight: 800; font-size: 11pt; background: #eff6ff; color: #1d4ed8; }
 
-        <div class="op-footer">
-          <span>DankoSystems · Производствена калкулация</span>
-          <span>${date}</span>
-        </div>
-      `;
+  .op-notes { margin-top: 16pt; }
+  .op-notes label { font-weight: 700; font-size: 9pt; display: block; margin-bottom: 6pt; }
+  .op-notes-line { border-bottom: 1px solid #d1d5db; height: 16pt; margin-bottom: 6pt; }
 
-      window.print();
+  .op-footer { margin-top: 18pt; border-top: 1px solid #e5e7eb; padding-top: 7pt;
+    font-size: 8pt; color: #9ca3af; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+  <div class="op-header">
+    <div>
+      <div class="op-brand">DankoSystems</div>
+      <div class="op-subtitle">Производствена калкулация</div>
+    </div>
+    <div class="op-meta">
+      Детайл: <b>${esc(currentFileName || "—")}</b><br>
+      Дата: ${date}<br>
+      ${c.notes ? `Описание: <b>${esc(c.notes)}</b>` : ""}
+    </div>
+  </div>
+
+  <div class="op-body">
+    <div class="op-preview">
+      <img src="${previewImg}" alt="DXF преглед"/>
+      <div class="op-preview-label">${esc(currentFileName)}.dxf</div>
+    </div>
+    <div class="op-geo">
+      <h3>Геометрия на детайла</h3>
+      <table>
+        <tr><td>Дължина на рязане</td><td>${fmt(geoData.cut_length_mm)} мм</td></tr>
+        <tr><td>Брой пробивания</td><td>${geoData.pierces}</td></tr>
+        <tr><td>Габарит X</td><td>${fmt(geoData.blank_x_mm)} мм</td></tr>
+        <tr><td>Габарит Y</td><td>${fmt(geoData.blank_y_mm)} мм</td></tr>
+        <tr><td>Площ на заготовката</td><td>${fmt(geoData.blank_area_mm2)} мм²</td></tr>
+        ${geoData.bends ? `<tr><td>Огъвки</td><td>${geoData.bends}</td></tr>` : ""}
+      </table>
+      <h3 style="margin-top:12pt">Технологични параметри</h3>
+      <table>
+        <tr><td>Материал</td><td>${esc(getMatName())}</td></tr>
+        <tr><td>Дебелина</td><td>${c.thickness} мм</td></tr>
+        <tr><td>Тегло на детайл</td><td>${fmt(c.weight)} кг</td></tr>
+        <tr><td>Цена материал</td><td>${c.pricePerKg} лв/кг</td></tr>
+        <tr><td>Скорост рязане</td><td>${c.feed} мм/мин</td></tr>
+        <tr><td>Ставка лазер</td><td>${c.laserRate} лв/час</td></tr>
+        <tr><td>Лазерно рязане</td><td>${fmt(c.laser.minutes)} мин</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="op-costs">
+    <h3>Калкулация на цената</h3>
+    <table>
+      <thead>
+        <tr><th>Позиция</th><th>Ед. цена (лв)</th><th>Брой</th><th>Общо (лв)</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Материал (${esc(getMatName())}, ${c.thickness} мм)</td>
+          <td>${fmt(c.matCost)}</td><td>${c.qty}</td>
+          <td>${fmt(Math.round(c.matCost * c.qty * 100) / 100)}</td>
+        </tr>
+        <tr>
+          <td>Лазерно рязане (${fmt(geoData.cut_length_mm)} мм, ${geoData.pierces} проб.)</td>
+          <td>${fmt(c.laser.cost)}</td><td>${c.qty}</td>
+          <td>${fmt(Math.round(c.laser.cost * c.qty * 100) / 100)}</td>
+        </tr>
+        <tr class="total">
+          <td><b>ОБЩО</b></td>
+          <td>${fmt(c.totalUnit)}</td><td>${c.qty}</td>
+          <td><b>${fmt(c.totalAll)} лв</b></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="op-notes">
+    <label>Забележки:</label>
+    <div class="op-notes-line"></div>
+    <div class="op-notes-line"></div>
+  </div>
+
+  <div class="op-footer">
+    <span>DankoSystems · Производствена калкулация</span>
+    <span>${date}</span>
+  </div>
+
+  <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); }<\/script>
+</body></html>`;
+
+      const win = window.open("", "_blank");
+      win.document.write(html);
+      win.document.close();
     });
 
     // ---- Helpers ----
