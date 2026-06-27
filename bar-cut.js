@@ -17,6 +17,7 @@ const bar = initProjectBar(document.getElementById("project-bar-root"));
 let bcProfileKey = 'round';
 let bcDims = {};
 let bcDesig = null;
+let lastBarsResult = null;
 
 (function buildProfileSelect() {
   const sel = document.getElementById("bc-profile-sel");
@@ -171,9 +172,6 @@ function ffd(pieces, barLen, kerf) {
   }
   return bars;
 }
-
-// Последен резултат за "Добави към проекта"
-let lastBarsResult = null;
 
 // ---- Изчисли ----
 document.getElementById("calc-btn").addEventListener("click", () => {
