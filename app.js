@@ -1,4 +1,5 @@
 import { addItem } from "./project-store.js";
+import { initProjectBar } from "./project-bar.js";
 
 // --- Supabase клиент ---
 const { createClient } = supabase;
@@ -11,11 +12,17 @@ const loginError = document.getElementById("login-error");
 const userEmail = document.getElementById("user-email");
 
 // --- Вход / изход ---
+let _pbInited = false;
+
 function showView(session) {
   if (session) {
     loginView.classList.add("hidden");
     appView.classList.remove("hidden");
     userEmail.textContent = session.user.email;
+    if (!_pbInited) {
+      initProjectBar(document.getElementById("project-bar-root"));
+      _pbInited = true;
+    }
     loadWorkshops();
     populateWorkshopSelect();
     loadMachines();
@@ -318,7 +325,8 @@ async function initCalculator() {
   ]);
   refMat = m.data || [];
   refOp = o.data || [];
-  for (let i = 0; i < 7; i++) addOpRow();
+  for (let i = 0; i < 3; i++) addOpRow();
+  for (let i = 0; i < 3; i++) addPurRow();
 }
 
 function uniq(a) { return [...new Set(a)]; }
@@ -389,6 +397,28 @@ function recalcOp(tr) {
   tr.dataset.cost = cost;
 }
 
+function addPurRow() {
+  const tr = document.createElement("tr");
+  tr.innerHTML =
+    `<td><input type="text" class="pur-name" placeholder="Наименование" /></td>` +
+    `<td><input type="number" step="any" class="pur-qty" value="1" style="max-width:60px" /></td>` +
+    `<td class="right"><input type="number" step="any" class="pur-price" placeholder="0.00" /></td>` +
+    `<td class="right pur-cost">0.00</td>` +
+    `<td><button type="button" class="ghost danger pur-del">✕</button></td>`;
+  document.getElementById("calc-pur-body").appendChild(tr);
+  ["input"].forEach((ev) => tr.addEventListener(ev, () => recalcPur(tr)));
+  tr.querySelector(".pur-del").addEventListener("click", () => tr.remove());
+  recalcPur(tr);
+}
+
+function recalcPur(tr) {
+  const qty = parseFloat(tr.querySelector(".pur-qty").value) || 0;
+  const price = parseFloat(tr.querySelector(".pur-price").value) || 0;
+  const cost = qty * price;
+  tr.querySelector(".pur-cost").textContent = cost.toFixed(2);
+  tr.dataset.cost = cost;
+}
+
 function sumRows(sel) {
   let s = 0;
   document.querySelectorAll(sel + " tr").forEach((tr) => (s += parseFloat(tr.dataset.cost || 0)));
@@ -397,27 +427,30 @@ function sumRows(sel) {
 
 function computeCalc() {
   const mat = sumRows("#calc-mat-body");
-  const op = sumRows("#calc-op-body");
-  const totalBGN = (mat + op) * (1 + MARGIN_MAT_LABOR);
+  const op  = sumRows("#calc-op-body");
+  const pur = sumRows("#calc-pur-body");
+  const totalBGN = (mat + op + pur) * (1 + MARGIN_MAT_LABOR);
   const totalEUR = totalBGN / BGN_EUR;
   document.getElementById("calc-breakdown").innerHTML =
     `<table class="data-table">` +
     `<tr><td>Материали</td><td class="right">${mat.toFixed(2)} лв</td></tr>` +
     `<tr><td>Операции (труд)</td><td class="right">${op.toFixed(2)} лв</td></tr>` +
-    `<tr><td>Мат. + труд + надценка 50%</td><td class="right">${totalBGN.toFixed(2)} лв</td></tr>` +
+    `<tr><td>Покупни изделия</td><td class="right">${pur.toFixed(2)} лв</td></tr>` +
+    `<tr><td>Всичко + надценка 50%</td><td class="right">${totalBGN.toFixed(2)} лв</td></tr>` +
     `<tr><td><b>Цена (1 бр.)</b></td><td class="right result-total">${totalEUR.toFixed(2)} €</td></tr>` +
     `<tr><td class="muted">(= ${totalBGN.toFixed(2)} лв)</td><td></td></tr>` +
     `</table>`;
 
-  lastCalcResult = { mat, op, totalBGN, totalEUR };
+  lastCalcResult = { mat, op, pur, totalBGN, totalEUR };
 
   document.getElementById("calc-add-proj-bar").classList.remove("hidden");
   document.getElementById("calc-proj-summary").textContent =
-    `Мат. ${mat.toFixed(2)} лв + Труд ${op.toFixed(2)} лв → ${totalEUR.toFixed(2)} € / бр.`;
+    `Мат. ${mat.toFixed(2)} + Труд ${op.toFixed(2)} + Покупни ${pur.toFixed(2)} → ${totalEUR.toFixed(2)} € / бр.`;
 }
 
 document.getElementById("calc-mat-add").addEventListener("click", addMatRow);
 document.getElementById("calc-op-add").addEventListener("click", addOpRow);
+document.getElementById("calc-pur-add").addEventListener("click", addPurRow);
 document.getElementById("calc-compute").addEventListener("click", computeCalc);
 
 document.getElementById("calc-add-to-proj-btn").addEventListener("click", () => {
@@ -429,6 +462,7 @@ document.getElementById("calc-add-to-proj-btn").addEventListener("click", () => 
     qty: 1,
     mat: Math.round(r.mat * 100) / 100,
     op: Math.round(r.op * 100) / 100,
+    pur: Math.round(r.pur * 100) / 100,
     totalBGN: Math.round(r.totalBGN * 100) / 100,
     totalEUR: Math.round(r.totalEUR * 10000) / 10000,
     totalCost: Math.round(r.totalBGN * 100) / 100,
@@ -440,12 +474,24 @@ document.getElementById("calc-add-to-proj-btn").addEventListener("click", () => 
   setTimeout(() => { btn.textContent = "+ Добави към проекта"; btn.style.background = ""; }, 1500);
 });
 
+const IFRAME_TABS = { dxf: "frame-dxf", barcut: "frame-barcut", paint: "frame-paint", metali: "frame-metali" };
+
 function activateTab(tabName) {
   document.querySelectorAll(".tab-btn[data-tab]").forEach((b) => b.classList.remove("active"));
   const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
   if (btn) btn.classList.add("active");
-  document.getElementById("tab-calc").classList.toggle("hidden", tabName !== "calc");
-  document.getElementById("tab-data").classList.toggle("hidden", tabName !== "data");
+
+  ["calc", "data", "dxf", "barcut", "paint", "metali"].forEach((t) => {
+    document.getElementById(`tab-${t}`)?.classList.toggle("hidden", t !== tabName);
+  });
+
+  if (IFRAME_TABS[tabName]) {
+    const frame = document.getElementById(IFRAME_TABS[tabName]);
+    if (frame && !frame.dataset.loaded) {
+      frame.src = frame.dataset.src;
+      frame.dataset.loaded = "1";
+    }
+  }
 }
 
 document.querySelectorAll(".tab-btn[data-tab]").forEach((btn) => {
@@ -453,6 +499,12 @@ document.querySelectorAll(".tab-btn[data-tab]").forEach((btn) => {
 });
 
 document.getElementById("data-tab-btn").addEventListener("click", () => activateTab("data"));
+
+// Auto-focus iframes on mouseenter so scroll works without clicking first
+document.addEventListener("mouseover", (e) => {
+  const frame = e.target.closest(".tool-frame");
+  if (frame) try { frame.contentWindow?.focus(); } catch (_) {}
+});
 
 // --- помощни ---
 function val(id) { return document.getElementById(id).value.trim(); }

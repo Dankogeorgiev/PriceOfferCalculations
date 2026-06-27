@@ -7,7 +7,10 @@
   <link rel="stylesheet" href="styles.css" />
   <style>
     /* ---- Layout ---- */
-    .pc-wrap { max-width: 1260px; margin: 0 auto; padding: 16px 20px; }
+    .pc-outer { display: grid; grid-template-columns: 1fr 290px; gap: 16px; max-width: 1580px; margin: 0 auto; padding: 0 16px; align-items: start; }
+    @media (max-width: 1100px) { .pc-outer { grid-template-columns: 1fr; } }
+    .pc-sidebar-col { position: sticky; top: 16px; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 16px; }
+    .pc-wrap { max-width: 1260px; padding: 16px 0; }
     .pc-grid { display: grid; grid-template-columns: 380px 1fr; gap: 18px; margin-top: 16px; }
     @media (max-width: 900px) { .pc-grid { grid-template-columns: 1fr; } }
 
@@ -142,6 +145,7 @@
 
   <div id="project-bar-root"></div>
 
+  <div class="pc-outer">
   <div class="pc-wrap">
     <div class="pc-grid">
 
@@ -249,14 +253,26 @@
       </div>
     </div>
   </div>
+  </div><!-- /.pc-wrap -->
+
+  <!-- Project Sidebar -->
+  <div class="pc-sidebar-col">
+    <div id="proj-sidebar-root"></div>
+  </div>
+
+  </div><!-- /.pc-outer -->
 
   <script src="vendor/three.min.js"></script>
   <script type="module">
     import { addItem, getCurrentProject } from "./project-store.js";
     import { initProjectBar } from "./project-bar.js";
+    import { initProjectSidebar } from "./project-sidebar.js";
 
-    // ---- Project bar ----
-    const bar = initProjectBar(document.getElementById("project-bar-root"));
+    // ---- Project bar + sidebar ----
+    const sidebar = initProjectSidebar(document.getElementById("proj-sidebar-root"));
+    const bar = initProjectBar(document.getElementById("project-bar-root"), {
+      onChange: () => sidebar.render(),
+    });
 
     // ============================================================
     // 3D Planner (адаптиран от app.js от Danko)
@@ -626,6 +642,7 @@
       });
 
       bar.refresh();
+      sidebar.render();
 
       const btn = $('add-proj-btn');
       btn.textContent = '✓ Добавено!';

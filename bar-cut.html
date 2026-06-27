@@ -12,6 +12,14 @@
     .params-row .field label { font-size: 13px; font-weight: 600; color: var(--muted); }
     .params-row .field input { width: 180px; }
     .params-row .field input.wide { width: 240px; }
+    .params-row .field select { width: 220px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--bg); color: var(--text); cursor: pointer; }
+    .params-row .field select:focus { outline: 2px solid var(--primary); background: #fff; }
+    .bc-readonly { background: #f8fafc !important; color: var(--muted) !important; cursor: default; }
+    .bc-weight-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 10px 16px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-top: 4px; }
+    .bc-weight-box .wstat { display: flex; flex-direction: column; gap: 2px; }
+    .bc-weight-box .wstat .wk { font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .05em; }
+    .bc-weight-box .wstat .wv { font-size: 20px; font-weight: 800; color: #1d4ed8; line-height: 1; }
+    .bc-weight-box .wstat .wu { font-size: 11px; color: #6b7280; }
 
     /* Таблица с парчета */
     .pieces-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
@@ -76,9 +84,15 @@
       .print-header { display: block !important; }
     }
     .print-header { display: none; font-size: 13pt; font-weight: 700; margin-bottom: 10px; color: #1f2a37; }
+
+    /* Outer 2-column layout with sidebar */
+    .tool-outer { display: grid; grid-template-columns: 1fr 290px; gap: 16px; max-width: 1160px; margin: 0 auto; padding: 0 16px; align-items: start; }
+    @media (max-width: 960px) { .tool-outer { grid-template-columns: 1fr; } }
+    .tool-sidebar-col { position: sticky; top: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
   </style>
 </head>
 <body>
+  <script>if (window.self !== window.top) document.documentElement.classList.add('iframe-mode');</script>
   <header class="topbar">
     <div class="brand">DankoSystems · Прътов разкрой</div>
     <a href="index.html" class="ghost" style="padding:7px 14px;border-radius:8px;border:1px solid var(--border);font-size:14px;font-weight:600;text-decoration:none;color:var(--text);">← Назад</a>
@@ -87,16 +101,37 @@
   <!-- Лента за Проект -->
   <div id="project-bar-root"></div>
 
-  <main class="container" style="max-width:820px">
+  <div class="tool-outer">
+  <main class="container" style="max-width:820px;margin:0;padding:0">
 
     <!-- 1. Параметри на пръта -->
     <section class="card" style="margin-bottom:16px">
       <h2 style="margin:0 0 16px">Параметри на пръта</h2>
+
+      <!-- Ред 1: Профил + Материал -->
       <div class="params-row">
         <div class="field">
-          <label>Профил / материал</label>
-          <input type="text" id="bc-profile" class="wide" placeholder="напр. 200×200×4, тръба Ø60×3…" />
+          <label>Вид профил</label>
+          <select id="bc-profile-sel"></select>
         </div>
+        <div class="field">
+          <label>Материал</label>
+          <select id="bc-mat-sel"></select>
+        </div>
+      </div>
+
+      <!-- Ред 2: Динамични размери (зависи от профила) -->
+      <div id="bc-dims" class="params-row" style="margin-top:12px"></div>
+
+      <!-- Авто-тегло -->
+      <div class="bc-weight-box" id="bc-weight-box" style="margin-top:12px">
+        <div class="wstat"><div class="wk">кг / метър</div><div class="wv" id="bc-kgm">—</div><div class="wu">кг/м</div></div>
+        <div class="wstat"><div class="wk">кг / прът</div><div class="wv" id="bc-kgbar">—</div><div class="wu">кг</div></div>
+        <div class="wstat"><div class="wk">Обща маса</div><div class="wv" id="bc-kgtot">—</div><div class="wu">кг (след разкрой)</div></div>
+      </div>
+
+      <!-- Ред 3: Дължина + Рез + Цена -->
+      <div class="params-row" style="margin-top:12px">
         <div class="field">
           <label>Дължина на пръта (мм) *</label>
           <input type="number" id="bc-barlen" value="6000" min="1" />
@@ -106,12 +141,22 @@
           <input type="number" id="bc-kerf" value="0" min="0" />
         </div>
         <div class="field">
-          <label>Цена / прът (лв)</label>
-          <input type="number" id="bc-price-per-bar" value="0" min="0" step="0.01" placeholder="0.00" />
+          <label>Цена €/кг</label>
+          <input type="number" id="bc-price-per-kg" value="0" min="0" step="0.01" placeholder="0.00" style="width:120px" />
         </div>
         <div class="field">
+          <label>Цена лв/прът (авто)</label>
+          <input type="text" id="bc-price-per-bar-display" class="bc-readonly" readonly value="—" style="width:130px" />
+        </div>
+        <!-- скрит input за съвместимост с изчисленията -->
+        <input type="hidden" id="bc-price-per-bar" value="0" />
+      </div>
+
+      <!-- Ред 4: Забележки -->
+      <div class="params-row" style="margin-top:8px">
+        <div class="field">
           <label>Забележки</label>
-          <input type="text" id="bc-notes" class="wide" placeholder="напр. Квадратна тръба 40×40×2" />
+          <input type="text" id="bc-notes" class="wide" placeholder="допълнителна информация" />
         </div>
       </div>
     </section>
@@ -155,18 +200,32 @@
       </div>
 
       <!-- Добави към проекта -->
-      <div style="margin-top:16px;padding:16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-        <div style="font-size:13px;color:#166534">
-          <b id="add-proj-summary">—</b><br>
-          <span style="font-size:11px;color:#15803d">Задай цена/прът горе за да изчислиш общата сума</span>
+      <div style="margin-top:16px;padding:16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div style="font-size:13px;color:#166534">
+            <b id="add-proj-summary">—</b>
+            <div style="margin-top:4px;font-size:12px;color:#15803d">
+              Активен проект: <b id="add-proj-name" style="color:#166534">—</b>
+            </div>
+          </div>
+          <button id="add-to-proj-btn" style="background:#16a34a;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">
+            + Добави към проекта
+          </button>
         </div>
-        <button id="add-to-proj-btn" style="background:#16a34a;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">
-          + Добави към проекта
-        </button>
+        <div id="add-proj-confirm" style="display:none;margin-top:10px;padding:8px 12px;background:#dcfce7;border:1px solid #86efac;border-radius:7px;font-size:13px;color:#15803d;font-weight:600">
+          ✓ Добавено успешно към проект „<span id="add-proj-confirm-name"></span>"
+        </div>
       </div>
 
     </div>
   </main>
+
+  <!-- Project Sidebar -->
+  <div class="tool-sidebar-col">
+    <div id="proj-sidebar-root"></div>
+  </div>
+
+  </div><!-- /.tool-outer -->
 
   <script type="module" src="bar-cut.js"></script>
 </body>
