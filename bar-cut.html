@@ -12,6 +12,14 @@
     .params-row .field label { font-size: 13px; font-weight: 600; color: var(--muted); }
     .params-row .field input { width: 180px; }
     .params-row .field input.wide { width: 240px; }
+    .params-row .field select { width: 220px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--bg); color: var(--text); cursor: pointer; }
+    .params-row .field select:focus { outline: 2px solid var(--primary); background: #fff; }
+    .bc-readonly { background: #f8fafc !important; color: var(--muted) !important; cursor: default; }
+    .bc-weight-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 10px 16px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-top: 4px; }
+    .bc-weight-box .wstat { display: flex; flex-direction: column; gap: 2px; }
+    .bc-weight-box .wstat .wk { font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .05em; }
+    .bc-weight-box .wstat .wv { font-size: 20px; font-weight: 800; color: #1d4ed8; line-height: 1; }
+    .bc-weight-box .wstat .wu { font-size: 11px; color: #6b7280; }
 
     /* Таблица с парчета */
     .pieces-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
@@ -93,11 +101,31 @@
     <!-- 1. Параметри на пръта -->
     <section class="card" style="margin-bottom:16px">
       <h2 style="margin:0 0 16px">Параметри на пръта</h2>
+
+      <!-- Ред 1: Профил + Материал -->
       <div class="params-row">
         <div class="field">
-          <label>Профил / материал</label>
-          <input type="text" id="bc-profile" class="wide" placeholder="напр. 200×200×4, тръба Ø60×3…" />
+          <label>Вид профил</label>
+          <select id="bc-profile-sel"></select>
         </div>
+        <div class="field">
+          <label>Материал</label>
+          <select id="bc-mat-sel"></select>
+        </div>
+      </div>
+
+      <!-- Ред 2: Динамични размери (зависи от профила) -->
+      <div id="bc-dims" class="params-row" style="margin-top:12px"></div>
+
+      <!-- Авто-тегло -->
+      <div class="bc-weight-box" id="bc-weight-box" style="margin-top:12px">
+        <div class="wstat"><div class="wk">кг / метър</div><div class="wv" id="bc-kgm">—</div><div class="wu">кг/м</div></div>
+        <div class="wstat"><div class="wk">кг / прът</div><div class="wv" id="bc-kgbar">—</div><div class="wu">кг</div></div>
+        <div class="wstat"><div class="wk">Обща маса</div><div class="wv" id="bc-kgtot">—</div><div class="wu">кг (след разкрой)</div></div>
+      </div>
+
+      <!-- Ред 3: Дължина + Рез + Цена -->
+      <div class="params-row" style="margin-top:12px">
         <div class="field">
           <label>Дължина на пръта (мм) *</label>
           <input type="number" id="bc-barlen" value="6000" min="1" />
@@ -107,12 +135,22 @@
           <input type="number" id="bc-kerf" value="0" min="0" />
         </div>
         <div class="field">
-          <label>Цена / прът (лв)</label>
-          <input type="number" id="bc-price-per-bar" value="0" min="0" step="0.01" placeholder="0.00" />
+          <label>Цена €/кг</label>
+          <input type="number" id="bc-price-per-kg" value="0" min="0" step="0.01" placeholder="0.00" style="width:120px" />
         </div>
         <div class="field">
+          <label>Цена лв/прът (авто)</label>
+          <input type="text" id="bc-price-per-bar-display" class="bc-readonly" readonly value="—" style="width:130px" />
+        </div>
+        <!-- скрит input за съвместимост с изчисленията -->
+        <input type="hidden" id="bc-price-per-bar" value="0" />
+      </div>
+
+      <!-- Ред 4: Забележки -->
+      <div class="params-row" style="margin-top:8px">
+        <div class="field">
           <label>Забележки</label>
-          <input type="text" id="bc-notes" class="wide" placeholder="напр. Квадратна тръба 40×40×2" />
+          <input type="text" id="bc-notes" class="wide" placeholder="допълнителна информация" />
         </div>
       </div>
     </section>

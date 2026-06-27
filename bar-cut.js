@@ -1,6 +1,7 @@
 // Прътов разкрой — 1D Bin Packing (First Fit Decreasing)
 import { addItem } from "./project-store.js";
 import { initProjectBar } from "./project-bar.js";
+import { MAT, P, computeWeightPerM } from "./metals-data.js";
 
 const COLORS = [
   "#2563eb","#16a34a","#d97706","#9333ea","#0891b2",
@@ -11,6 +12,110 @@ const COLORS = [
 
 // ---- Проект лента ----
 const bar = initProjectBar(document.getElementById("project-bar-root"));
+
+// ---- Профил selector ----
+let bcProfileKey = 'round';
+let bcDims = {};
+let bcDesig = null;
+
+(function buildProfileSelect() {
+  const sel = document.getElementById("bc-profile-sel");
+  const groups = {};
+  Object.entries(P).forEach(([k, p]) => { (groups[p.g] = groups[p.g] || []).push([k, p.label]); });
+  sel.innerHTML = Object.entries(groups).map(([g, arr]) =>
+    `<optgroup label="${g}">${arr.map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</optgroup>`
+  ).join("");
+})();
+
+(function buildMatSelect() {
+  const sel = document.getElementById("bc-mat-sel");
+  sel.innerHTML = Object.keys(MAT).map(m => `<option value="${m}">${m}</option>`).join("");
+})();
+
+function buildBcDims() {
+  const p = P[bcProfileKey];
+  const container = document.getElementById("bc-dims");
+  bcDims = {}; bcDesig = null;
+
+  if (p.mode === "table") {
+    const keys = Object.keys(p.table);
+    bcDesig = keys[Math.floor(keys.length / 3)] || keys[0];
+    const u = p.unitDesig || "";
+    container.innerHTML = `<div class="field"><label>Типоразмер</label>
+      <select id="bc-desig" style="width:160px">
+        ${keys.map(k => `<option value="${k}"${k == bcDesig ? " selected" : ""}>${u}${k}</option>`).join("")}
+      </select></div>`;
+  } else if (p.mode === "plate") {
+    bcDims = { t: 2, w: 1000, l: 2000, factor: p.factor };
+    container.innerHTML = p.dims ? p.dims.map(d => {
+      bcDims[d[0]] = d[2];
+      return `<div class="field"><label>${d[1]} (мм)</label><input type="number" class="bc-dim" data-k="${d[0]}" value="${d[2]}" style="width:110px"/></div>`;
+    }).join("") : "";
+    container.innerHTML += `<div class="field"><label>Широчина (мм)</label><input type="number" class="bc-dim" data-k="w" value="1000" style="width:110px"/></div>` +
+      `<div class="field"><label>Дебелина (мм)</label><input type="number" class="bc-dim" data-k="t" value="2" style="width:110px"/></div>`;
+  } else {
+    container.innerHTML = p.dims.map(d => {
+      bcDims[d[0]] = d[2];
+      return `<div class="field"><label>${d[1]} (мм)</label><input type="number" class="bc-dim" data-k="${d[0]}" value="${d[2]}" style="width:110px"/></div>`;
+    }).join("");
+  }
+  updateBcWeight();
+}
+
+const BGN_PER_EUR = 1.95583;
+
+function updateBcWeight() {
+  const density = MAT[document.getElementById("bc-mat-sel").value] || 7850;
+  const barLenM = (Number(document.getElementById("bc-barlen").value) || 6000) / 1000;
+  const pricePerKg = Number(document.getElementById("bc-price-per-kg").value) || 0;
+
+  const { kgPerM, valid } = computeWeightPerM(bcProfileKey, bcDims, bcDesig, density);
+  const kgPerBar = kgPerM * barLenM;
+
+  // Вземаме totalBars от последния резултат ако е наличен
+  const totalBars = lastBarsResult?.totalBars || 1;
+  const kgTotal = kgPerBar * totalBars;
+
+  const numFmt = n => n.toLocaleString("bg-BG", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
+  document.getElementById("bc-kgm").textContent   = valid && kgPerM  ? numFmt(kgPerM)   : "—";
+  document.getElementById("bc-kgbar").textContent  = valid && kgPerBar ? numFmt(kgPerBar) : "—";
+  document.getElementById("bc-kgtot").textContent  = valid && kgTotal  ? numFmt(kgTotal)  : "—";
+
+  // Авто цена прът = кг/прът × €/кг × 1.95583 (лв/прът)
+  let pricePerBar = 0;
+  if (valid && kgPerBar > 0 && pricePerKg > 0) {
+    pricePerBar = kgPerBar * pricePerKg * BGN_PER_EUR;
+    document.getElementById("bc-price-per-bar-display").value = pricePerBar.toFixed(2) + " лв";
+  } else {
+    document.getElementById("bc-price-per-bar-display").value = "—";
+  }
+  document.getElementById("bc-price-per-bar").value = pricePerBar.toFixed(4);
+}
+
+// Слушатели за профил/материал/размери
+document.getElementById("bc-profile-sel").addEventListener("change", e => {
+  bcProfileKey = e.target.value;
+  buildBcDims();
+});
+document.getElementById("bc-mat-sel").addEventListener("change", () => updateBcWeight());
+document.getElementById("bc-barlen").addEventListener("input", () => updateBcWeight());
+document.getElementById("bc-price-per-kg").addEventListener("input", () => updateBcWeight());
+
+document.addEventListener("input", e => {
+  if (e.target.classList.contains("bc-dim")) {
+    bcDims[e.target.dataset.k] = parseFloat(e.target.value) || 0;
+    updateBcWeight();
+  }
+});
+document.addEventListener("change", e => {
+  if (e.target.id === "bc-desig") {
+    bcDesig = e.target.value;
+    updateBcWeight();
+  }
+});
+
+buildBcDims();
 
 // ---- Таблица с редове ----
 let rowIdx = 0;
@@ -124,20 +229,40 @@ document.getElementById("calc-btn").addEventListener("click", () => {
 
   const pricePerBar = Number(document.getElementById("bc-price-per-bar").value) || 0;
   const totalCost   = Math.round(totalBars * pricePerBar * 100) / 100;
-  const profile     = document.getElementById("bc-profile").value.trim();
-  const notes       = document.getElementById("bc-notes").value.trim();
+
+  // Профил — вземаме label от селектора
+  const profileSel = document.getElementById("bc-profile-sel");
+  const profile = profileSel.options[profileSel.selectedIndex]?.text || "";
+  const notes   = document.getElementById("bc-notes").value.trim();
+
+  // Авто-тегло: изчисли с актуалния брой пръти
+  const density = MAT[document.getElementById("bc-mat-sel").value] || 7850;
+  const barLenM = barLen / 1000;
+  const { kgPerM, valid: wValid } = computeWeightPerM(bcProfileKey, bcDims, bcDesig, density);
+  const kgPerBar  = wValid ? kgPerM * barLenM : 0;
+  const kgTotal   = kgPerBar * totalBars;
+  const numFmt3   = n => n.toLocaleString("bg-BG", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
+  document.getElementById("bc-kgm").textContent  = wValid && kgPerM  ? numFmt3(kgPerM)  : "—";
+  document.getElementById("bc-kgbar").textContent = wValid && kgPerBar ? numFmt3(kgPerBar) : "—";
+  document.getElementById("bc-kgtot").textContent = wValid && kgTotal  ? numFmt3(kgTotal)  : "—";
 
   // Запази за "Добави към проекта"
   lastBarsResult = { bars, totalBars, totalCuts, totalUsed, totalMat, totalWaste,
                      utilPct, wastePct, barLen, kerf, pricePerBar, totalCost,
-                     profile, notes, pieces };
+                     profile, notes, pieces,
+                     kgPerM, kgPerBar, kgTotal };
 
   // Обнови бутона за добавяне
   const addSummary = document.getElementById("add-proj-summary");
-  if (pricePerBar > 0) {
+  if (pricePerBar > 0 && kgTotal > 0) {
+    addSummary.textContent = `${totalBars} пр. · ${numFmt3(kgTotal)} кг · ${fmt(totalCost)} лв`;
+  } else if (pricePerBar > 0) {
     addSummary.textContent = `${totalBars} пр. × ${fmt(pricePerBar)} лв = ${fmt(totalCost)} лв`;
+  } else if (kgTotal > 0) {
+    addSummary.textContent = `${totalBars} пр. · ${numFmt3(kgTotal)} кг — въведи €/кг за сума`;
   } else {
-    addSummary.textContent = `${totalBars} пр. — задай цена/прът за сума`;
+    addSummary.textContent = `${totalBars} пр. — задай профил и €/кг за сума`;
   }
 
   // Print header
@@ -151,6 +276,7 @@ document.getElementById("calc-btn").addEventListener("click", () => {
     <div class="chip green">Използване: <b>${utilPct}%</b></div>
     <div class="chip red">Отпадък: <b>${fmt(totalWaste)} мм</b> (${wastePct}%)</div>
     <div class="chip">Материал: <b>${(totalMat / 1000).toFixed(2)} м</b></div>
+    ${kgTotal > 0 ? `<div class="chip" style="background:#f0fdf4;border-color:#bbf7d0;color:#15803d">Маса: <b>${numFmt3(kgTotal)} кг</b></div>` : ""}
     ${pricePerBar > 0 ? `<div class="chip" style="background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8">Цена: <b>${fmt(totalCost)} лв</b></div>` : ""}
   `;
 
@@ -204,6 +330,9 @@ document.getElementById("add-to-proj-btn").addEventListener("click", () => {
     totalCost: r.totalCost,
     utilPct: r.utilPct,
     totalCuts: r.totalCuts,
+    kgPerM: r.kgPerM || 0,
+    kgPerBar: r.kgPerBar || 0,
+    kgTotal: r.kgTotal || 0,
   });
 
   bar.refresh();
