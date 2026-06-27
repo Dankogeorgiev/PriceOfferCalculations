@@ -194,14 +194,21 @@
       </div>
 
       <!-- Добави към проекта -->
-      <div style="margin-top:16px;padding:16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-        <div style="font-size:13px;color:#166534">
-          <b id="add-proj-summary">—</b><br>
-          <span style="font-size:11px;color:#15803d">Задай цена/прът горе за да изчислиш общата сума</span>
+      <div style="margin-top:16px;padding:16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div style="font-size:13px;color:#166534">
+            <b id="add-proj-summary">—</b>
+            <div style="margin-top:4px;font-size:12px;color:#15803d">
+              Активен проект: <b id="add-proj-name" style="color:#166534">—</b>
+            </div>
+          </div>
+          <button id="add-to-proj-btn" style="background:#16a34a;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">
+            + Добави към проекта
+          </button>
         </div>
-        <button id="add-to-proj-btn" style="background:#16a34a;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">
-          + Добави към проекта
-        </button>
+        <div id="add-proj-confirm" style="display:none;margin-top:10px;padding:8px 12px;background:#dcfce7;border:1px solid #86efac;border-radius:7px;font-size:13px;color:#15803d;font-weight:600">
+          ✓ Добавено успешно към проект „<span id="add-proj-confirm-name"></span>"
+        </div>
       </div>
 
     </div>

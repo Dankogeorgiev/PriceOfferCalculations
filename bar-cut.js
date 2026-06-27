@@ -1,5 +1,5 @@
 // Прътов разкрой — 1D Bin Packing (First Fit Decreasing)
-import { addItem } from "./project-store.js";
+import { addItem, getCurrentProject } from "./project-store.js";
 import { initProjectBar } from "./project-bar.js";
 import { MAT, P, computeWeightPerM } from "./metals-data.js";
 
@@ -11,7 +11,16 @@ const COLORS = [
 ];
 
 // ---- Проект лента ----
-const bar = initProjectBar(document.getElementById("project-bar-root"));
+const bar = initProjectBar(document.getElementById("project-bar-root"), {
+  onChange: () => refreshProjName(),
+});
+
+function refreshProjName() {
+  const proj = getCurrentProject();
+  const el = document.getElementById("add-proj-name");
+  if (el) el.textContent = proj?.name || "—";
+}
+refreshProjName();
 
 // ---- Профил selector ----
 let bcProfileKey = 'round';
@@ -251,7 +260,8 @@ document.getElementById("calc-btn").addEventListener("click", () => {
                      profile, notes, pieces,
                      kgPerM, kgPerBar, kgTotal };
 
-  // Обнови бутона за добавяне
+  // Обнови проект name и summary
+  refreshProjName();
   const addSummary = document.getElementById("add-proj-summary");
   if (pricePerBar > 0 && kgTotal > 0) {
     addSummary.textContent = `${totalBars} пр. · ${numFmt3(kgTotal)} кг · ${fmt(totalCost)} лв`;
@@ -334,11 +344,21 @@ document.getElementById("add-to-proj-btn").addEventListener("click", () => {
   });
 
   bar.refresh();
+  refreshProjName();
+
+  const projName = getCurrentProject()?.name || "—";
+  const confirmEl = document.getElementById("add-proj-confirm");
+  document.getElementById("add-proj-confirm-name").textContent = projName;
+  confirmEl.style.display = "block";
 
   const btn = document.getElementById("add-to-proj-btn");
   btn.textContent = "✓ Добавено!";
   btn.style.background = "#15803d";
-  setTimeout(() => { btn.textContent = "+ Добави към проекта"; btn.style.background = ""; }, 1500);
+  setTimeout(() => {
+    btn.textContent = "+ Добави към проекта";
+    btn.style.background = "";
+    confirmEl.style.display = "none";
+  }, 3000);
 });
 
 // ---- Помощни ----
