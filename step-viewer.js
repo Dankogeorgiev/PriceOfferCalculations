@@ -79,7 +79,7 @@ function buildModel(result) {
 
 async function ensureOcct() {
   if (occt) return occt;
-  occt = await occtimportjs({ locateFile: f => 'vendor/' + f });
+  occt = await occtimportjs({ locateFile: f => f });
   return occt;
 }
 
