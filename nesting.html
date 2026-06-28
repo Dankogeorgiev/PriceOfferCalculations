@@ -140,6 +140,7 @@
         </div>
 
         <button class="calc-btn nest-run-btn" id="nest-run-btn" disabled>Изчисли нестинга →</button>
+        <div id="nest-status" style="display:none;margin-top:10px;font-size:13px;font-weight:600"></div>
       </section>
 
       <!-- 3. Резултат -->
@@ -160,6 +161,8 @@
 
   </div><!-- /.nest-outer -->
 
+  <!-- ClipperLib (Clipper за JS — Boolean operations + MinkowskiSum за NFP) -->
+  <script src="https://unpkg.com/clipper-lib@6.4.2/clipper.js"></script>
   <script type="module" src="nesting.js"></script>
 </body>
 </html>
