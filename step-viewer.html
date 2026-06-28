@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DankoSystems · STEP Визуализация</title>
+<style>
+  :root{
+    --ink:#1F3864; --ink-soft:#33507e; --bg:#EAEEF3; --panel:#FFFFFF; --line:#D2DAE4;
+    --muted:#6B7686; --warn:#C0392B;
+    --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+    --disp:'Space Grotesk',system-ui,sans-serif; --body:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;overflow:hidden}
+  .stage{position:fixed;inset:0;background:radial-gradient(120% 120% at 50% 30%,#FFFFFF 0%,#E6EBF1 60%,#DAE0E8 100%)}
+  #c{width:100%;height:100%;display:block;cursor:grab}#c:active{cursor:grabbing}
+  .bar{position:fixed;top:14px;left:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:10px;padding:9px 12px;backdrop-filter:blur(4px)}
+  .bar h1{font-family:var(--disp);font-weight:700;font-size:15px;margin:0;letter-spacing:-.01em}
+  .bar .sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .btn{font-family:var(--mono);font-size:12px;font-weight:600;color:#fff;background:var(--ink);border:1px solid var(--ink);
+    border-radius:7px;padding:7px 12px;cursor:pointer}
+  .btn:hover{background:#16294a}
+  .btn[disabled]{opacity:.5;cursor:default}
+  .info{position:fixed;left:14px;bottom:14px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:10px;
+    padding:11px 13px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);min-width:180px;backdrop-filter:blur(4px)}
+  .info .k{color:var(--muted)}
+  .info .row{display:flex;justify-content:space-between;gap:18px;margin:3px 0}
+  .hint{position:fixed;right:14px;bottom:14px;font-family:var(--mono);font-size:11px;color:var(--muted);
+    background:rgba(255,255,255,.8);padding:5px 9px;border-radius:7px}
+  .drop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(31,56,100,.10);
+    border:3px dashed var(--ink);z-index:5}
+  .drop.show{display:flex}
+  .drop span{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--ink);background:rgba(255,255,255,.9);padding:16px 26px;border-radius:12px}
+  .status{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:13px;color:var(--muted);text-align:center}
+  .status.err{color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="stage">
+  <canvas id="c"></canvas>
+  <div class="bar">
+    <h1>STEP визуализатор</h1>
+    <span class="sub">occt-import-js · three.js</span>
+    <button class="btn" id="loadBtn" disabled>Зареди .step</button>
+    <input type="file" id="fileInput" accept=".step,.stp,.iges,.igs,.brep" style="display:none">
+  </div>
+  <div class="info" id="info" style="display:none">
+    <div class="row"><span class="k">Файл</span><span id="i_name">–</span></div>
+    <div class="row"><span class="k">Тела</span><span id="i_solids">–</span></div>
+    <div class="row"><span class="k">Габарит</span><span id="i_bbox">–</span></div>
+    <div class="row"><span class="k">Триъгълници</span><span id="i_tris">–</span></div>
+  </div>
+  <div class="hint">влачи = въртене · колело = мащаб · десен бутон = преместване</div>
+  <div class="drop" id="drop"><span>Пусни STEP файла тук</span></div>
+  <div class="status" id="status">Зарежда CAD ядрото…</div>
+</div>
+<script src="three.min.js"></script>
+<script src="occt-import-js.js"></script>
+<script src="step-viewer.js"></script>
+</body>
+</html>

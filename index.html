@@ -39,12 +39,17 @@
 
     <main class="container">
       <nav class="tabs">
-        <button class="tab-btn" data-tab="dxf">DXF Анализ</button>
-        <button class="tab-btn" data-tab="barcut">Прътов разкрой</button>
-        <button class="tab-btn" data-tab="paint">Прахово боядисване</button>
-        <button class="tab-btn" data-tab="metali">Калкулатор метали</button>
-        <button class="tab-btn" data-tab="nesting">DXF Нестинг</button>
-        <button class="tab-btn active" data-tab="calc">Калкулатор операции</button>
+        <div class="tabs-row">
+          <button class="tab-btn" data-tab="dxf">DXF Анализ</button>
+          <button class="tab-btn" data-tab="barcut">Прътов разкрой</button>
+          <button class="tab-btn" data-tab="paint">Прахово боядисване</button>
+          <button class="tab-btn" data-tab="metali">Калкулатор метали</button>
+          <button class="tab-btn active" data-tab="calc">Калкулатор операции</button>
+        </div>
+        <div class="tabs-row tabs-row--tools">
+          <button class="tab-btn tab-btn--tool" data-tab="nesting">DXF Нестинг</button>
+          <button class="tab-btn tab-btn--tool" data-tab="step">STEP Визуализация</button>
+        </div>
       </nav>
 
       <div id="tab-calc">
@@ -228,6 +233,10 @@
       </div>
       <div id="tab-nesting" class="hidden">
         <iframe data-src="nesting.html" id="frame-nesting" class="tool-frame"></iframe>
+      </div>
+
+      <div id="tab-step" class="hidden">
+        <iframe data-src="step-viewer.html" id="frame-step" class="tool-frame" style="height:calc(100vh - 120px)"></iframe>
       </div>
     </main>
   </div>
