@@ -164,7 +164,7 @@ function nestPart(outerPoly, { sheetW, sheetH, clearance, margin, rotations }) {
 
   const placed  = [];
   const partArea_ = polyArea(outerPoly);
-  const cap = Math.min(500, Math.ceil(sheetW * sheetH / Math.max(partArea_, 1)) + 5);
+  const cap = Math.min(2000, Math.ceil(sheetW * sheetH / Math.max(partArea_, 1)) + 5);
 
   self.postMessage({ type: 'status', msg: 'Нарежда детайлите…' });
 
