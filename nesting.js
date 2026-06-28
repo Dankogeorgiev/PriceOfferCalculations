@@ -289,6 +289,7 @@ function init() {
 
     worker.onmessage = function (e) {
       const msg = e.data;
+      if (msg.type === "status") { setStatus(msg.msg); return; }
       if (msg.type === "progress") {
         const pct = msg.total > 0 ? Math.min(99, (msg.placed / msg.total) * 100) : 0;
         setProgress(pct);

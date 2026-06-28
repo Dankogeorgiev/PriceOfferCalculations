@@ -1,12 +1,15 @@
 /**
- * nesting-worker.js — Web Worker за NFP нестинг.
- * Зарежда ClipperLib и изпълнява nestPart() извън главния thread.
+ * nesting-worker.js — NFP нестинг с кешираниNFP.
+ *
+ * Ключова оптимизация: MinkowskiSum се изчислява само ВЕДНЪЖ за всяка двойка
+ * ориентации (rotations² пъти), след което всяко поставяне само транслира
+ * кешираните резултати. Forbidden zone се поддържа инкрементално.
  */
 
 importScripts('https://unpkg.com/clipper-lib@6.4.2/clipper.js');
 
 // ============================================================
-// Геометрични помощни
+// Геометрия
 // ============================================================
 
 function polyArea(pts) {
@@ -29,7 +32,7 @@ function polyBbox(pts) {
     if (x < x0) x0 = x; if (x > x1) x1 = x;
     if (y < y0) y0 = y; if (y > y1) y1 = y;
   }
-  return { x0, y0, x1, y1, w: x1 - x0, h: y1 - y0 };
+  return { x0, y0, x1, y1 };
 }
 
 function normalizePoly(pts) {
@@ -37,7 +40,7 @@ function normalizePoly(pts) {
   return pts.map(([x, y]) => [x - x0, y - y0]);
 }
 
-// Douglas-Peucker опростяване
+// Douglas-Peucker
 function dpSimplify(pts, tol) {
   if (pts.length <= 2) return pts;
   let maxD = 0, maxI = 0;
@@ -57,19 +60,16 @@ function dpSimplify(pts, tol) {
   return [pts[0], pts[pts.length - 1]];
 }
 
-function simplifyPoly(pts, maxVerts = 64) {
+function simplifyPoly(pts, maxVerts = 48) {
   if (pts.length <= maxVerts) return pts;
-  // Адаптивна толеранция
-  let tol = 0.1;
-  let simplified = pts;
-  while (simplified.length > maxVerts && tol < 10) {
-    // затвори контура преди опростяване
+  let tol = 0.2, result = pts;
+  while (result.length > maxVerts && tol < 20) {
     const closed = [...pts, pts[0]];
-    simplified = dpSimplify(closed, tol);
-    simplified = simplified.slice(0, -1); // маха последната = първата
+    const s = dpSimplify(closed, tol);
+    result = s.slice(0, -1);
     tol *= 2;
   }
-  return simplified.length >= 3 ? simplified : pts.slice(0, maxVerts);
+  return result.length >= 3 ? result : pts.slice(0, maxVerts);
 }
 
 // ============================================================
@@ -81,7 +81,6 @@ const SC = 1000;
 function toC(pts) {
   return pts.map(([x, y]) => ({ X: Math.round(x * SC), Y: Math.round(y * SC) }));
 }
-
 function bboxC(path) {
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (const p of path) {
@@ -90,12 +89,10 @@ function bboxC(path) {
   }
   return { x0, y0, x1, y1 };
 }
-
 function largestPath(paths) {
   if (!paths || !paths.length) return null;
   return paths.reduce((b, p) => (!b || p.length > b.length ? p : b), null);
 }
-
 function offsetPath(cpath, distMm) {
   if (Math.abs(distMm) < 1e-9) return cpath;
   const co = new ClipperLib.ClipperOffset();
@@ -105,10 +102,12 @@ function offsetPath(cpath, distMm) {
   return largestPath(res) ?? cpath;
 }
 
-function cUnion(paths) {
-  if (!paths.length) return [];
+function cUnionAdd(existing, newPaths) {
+  // Добавя newPaths към съществуващ union (инкрементално)
+  if (!newPaths.length) return existing;
+  const all = [...existing, ...newPaths];
   const c = new ClipperLib.Clipper();
-  c.AddPaths(paths, ClipperLib.PolyType.ptSubject, true);
+  c.AddPaths(all, ClipperLib.PolyType.ptSubject, true);
   const res = new ClipperLib.Paths();
   c.Execute(ClipperLib.ClipType.ctUnion, res,
     ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero);
@@ -116,6 +115,7 @@ function cUnion(paths) {
 }
 
 function cDiff(subj, clip) {
+  if (!clip.length) return subj;
   const c = new ClipperLib.Clipper();
   c.AddPaths(subj, ClipperLib.PolyType.ptSubject, true);
   c.AddPaths(clip, ClipperLib.PolyType.ptClip, true);
@@ -125,47 +125,57 @@ function cDiff(subj, clip) {
   return res;
 }
 
-function computeNFP(stationaryC, movingC) {
-  const Bneg = movingC.map(p => ({ X: -p.X, Y: -p.Y }));
-  try {
-    return ClipperLib.Clipper.MinkowskiSum(stationaryC, Bneg, true) ?? [];
-  } catch { return []; }
-}
-
 // ============================================================
-// NFP нестинг
+// NFP нестинг с кеш
 // ============================================================
 
 function nestPart(outerPoly, { sheetW, sheetH, clearance, margin, rotations }) {
-  const MAX_VERTS = 60;
-  const simplified = simplifyPoly(outerPoly, MAX_VERTS);
-  const half = clearance / 2;
+  const MAX_VERTS = 48;
+  const simple = simplifyPoly(outerPoly, MAX_VERTS);
+  const half   = clearance / 2;
   const Ws = Math.round(sheetW * SC), Hs = Math.round(sheetH * SC), Ms = Math.round(margin * SC);
 
+  // 1. Подготви ориентации
   const oris = rotations.map(deg => {
-    const rotated = rotatePoly(simplified, deg);
-    const norm = normalizePoly(rotated);
-    const cp = toC(norm);
+    const norm = normalizePoly(rotatePoly(simple, deg));
+    const cp   = toC(norm);
     const coll = offsetPath(cp, half);
-    const bb = bboxC(coll);
+    const bb   = bboxC(coll);
     return { deg, norm, coll, bb };
   });
 
-  const placed = [];
+  // 2. КЕШИРАЙ NFP за всяка двойка ориентации (само rotations² MinkowskiSum-а!)
+  self.postMessage({ type: 'status', msg: `Предизчислява NFP (${oris.length * oris.length} комбинации)…` });
+  const nfpCache = {}; // nfpCache[degA][degB] = масив от Clipper paths
+  for (const oriA of oris) {
+    nfpCache[oriA.deg] = {};
+    for (const oriB of oris) {
+      const Bneg = oriB.coll.map(p => ({ X: -p.X, Y: -p.Y }));
+      try {
+        nfpCache[oriA.deg][oriB.deg] = ClipperLib.Clipper.MinkowskiSum(oriA.coll, Bneg, true) ?? [];
+      } catch { nfpCache[oriA.deg][oriB.deg] = []; }
+    }
+  }
+
+  // 3. Инкрементален forbidden zone за всяка moving ориентация
+  // cumForb[deg] = union на всички NFP-та на вече поставените части спрямо тази ориентация
+  const cumForb = {};
+  for (const ori of oris) cumForb[ori.deg] = [];
+
+  const placed  = [];
   const partArea_ = polyArea(outerPoly);
-  const cap = Math.min(300, Math.ceil(sheetW * sheetH / Math.max(partArea_, 1)) + 5);
-  const total = cap; // за прогрес
+  const cap = Math.min(500, Math.ceil(sheetW * sheetH / Math.max(partArea_, 1)) + 5);
+
+  self.postMessage({ type: 'status', msg: 'Нарежда детайлите…' });
 
   while (placed.length < cap) {
-    // Изпрати прогрес
-    if (placed.length % 5 === 0) {
-      self.postMessage({ type: 'progress', placed: placed.length, total });
-    }
+    if (placed.length % 5 === 0)
+      self.postMessage({ type: 'progress', placed: placed.length, total: cap });
 
-    let best = null;
+    let best = null; // { score:[Y,X], ori, rx, ry }
 
     for (const ori of oris) {
-      const { bb, coll } = ori;
+      const { bb } = ori;
       const lx = Ms - bb.x0, hx = Ws - Ms - bb.x1;
       const ly = Ms - bb.y0, hy = Hs - Ms - bb.y1;
       if (hx < lx || hy < ly) continue;
@@ -175,13 +185,7 @@ function nestPart(outerPoly, { sheetW, sheetH, clearance, margin, rotations }) {
         { X: hx, Y: hy }, { X: lx, Y: hy },
       ]];
 
-      let forb = [];
-      for (const pl of placed) {
-        const nfps = computeNFP(pl.worldColl, coll);
-        if (nfps.length) forb = forb.concat(nfps);
-      }
-      const forbidden = forb.length ? cUnion(forb) : [];
-      const allowed   = forbidden.length ? cDiff(ifp, forbidden) : ifp;
+      const allowed = cDiff(ifp, cumForb[ori.deg]);
       if (!allowed.length) continue;
 
       for (const path of allowed) {
@@ -196,15 +200,23 @@ function nestPart(outerPoly, { sheetW, sheetH, clearance, margin, rotations }) {
     if (!best) break;
 
     const { ori, rx, ry } = best;
-    const worldColl = ori.coll.map(p => ({ X: p.X + rx, Y: p.Y + ry }));
-    // realPoly се изпраща на main thread — използва оригиналния (не опростения) за SVG
+
+    // 4. Актуализирай cumForb за всички moving ориентации (използва кеша)
+    for (const oriB of oris) {
+      const cached = nfpCache[ori.deg][oriB.deg];
+      if (!cached.length) continue;
+      const translated = cached.map(path => path.map(p => ({ X: p.X + rx, Y: p.Y + ry })));
+      cumForb[oriB.deg] = cUnionAdd(cumForb[oriB.deg], translated);
+    }
+
+    // Съхрани полигона за SVG (по оригинален контур, не опростен)
     const displayPoly = normalizePoly(rotatePoly(outerPoly, ori.deg))
       .map(([x, y]) => [x + rx / SC, y + ry / SC]);
-    placed.push({ worldColl, poly: displayPoly, x: rx / SC, y: ry / SC, rot: ori.deg });
+    placed.push({ rot: ori.deg, rx, ry, poly: displayPoly, x: rx / SC, y: ry / SC });
   }
 
   return {
-    placements: placed.map(({ worldColl: _wc, ...rest }) => rest), // не изпращай worldColl
+    placements: placed.map(({ rx: _r, ry: _r2, ...rest }) => rest),
     count: placed.length,
     utilization: placed.length * partArea_ / (sheetW * sheetH),
     sheetW, sheetH,
@@ -212,7 +224,7 @@ function nestPart(outerPoly, { sheetW, sheetH, clearance, margin, rotations }) {
 }
 
 // ============================================================
-// Worker message handler
+// Worker entry point
 // ============================================================
 
 self.onmessage = function (e) {
