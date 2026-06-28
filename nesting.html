@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DankoSystems · DXF Нестинг</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* 2-колонен layout с sidebar */
+    .nest-outer {
+      display: grid;
+      grid-template-columns: 1fr 290px;
+      gap: 16px;
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 16px;
+      align-items: start;
+    }
+    @media (max-width: 960px) { .nest-outer { grid-template-columns: 1fr; } }
+    .nest-sidebar-col {
+      position: sticky; top: 16px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px;
+    }
+
+    /* Drop zone */
+    .nest-drop {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--bg);
+      transition: border-color .15s, background .15s;
+    }
+    .nest-drop:hover, .nest-drop.dragover {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+    .nest-drop .drop-icon { font-size: 36px; line-height: 1; margin-bottom: 8px; }
+    .nest-drop p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .nest-drop strong { color: var(--primary); }
+    #nest-file-name { margin-top: 8px; font-size: 14px; font-weight: 600; color: var(--primary); min-height: 1.4em; }
+
+    /* Параметри */
+    .nest-params { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-top: 16px; }
+    .nest-field { display: flex; flex-direction: column; gap: 4px; }
+    .nest-field label { font-size: 12px; font-weight: 600; color: var(--muted); }
+    .nest-field input[type="number"] { width: 110px; }
+    .rot-group { display: flex; flex-direction: column; gap: 4px; }
+    .rot-group label.hdr { font-size: 12px; font-weight: 600; color: var(--muted); }
+    .rot-group .rot-checks { display: flex; gap: 8px; flex-wrap: wrap; }
+    .rot-checks label { font-size: 13px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
+    /* Run button */
+    .nest-run-btn { margin-top: 16px; font-size: 15px; padding: 11px 32px; display: block; }
+    .nest-run-btn:disabled { opacity: .5; cursor: default; }
+
+    /* Results */
+    #nest-results { margin-top: 24px; }
+    .nest-hero { font-size: 64px; font-weight: 800; color: var(--primary); line-height: 1; text-align: center; }
+    .nest-hero-lbl { font-size: 18px; color: var(--primary); font-weight: 600; text-align: center; margin-top: 4px; }
+    .nest-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
+    .nest-chip {
+      background: #fff; border: 1px solid #bfdbfe; border-radius: 20px;
+      padding: 5px 14px; font-size: 13px; font-weight: 600; color: #1e40af;
+    }
+    .nest-chip.green { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+    .nest-stats-box {
+      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px;
+      padding: 20px; margin-bottom: 16px;
+    }
+    #nest-svg { margin-top: 12px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+    #nest-svg svg { display: block; width: 100%; height: auto; }
+    .nest-warn { font-size: 12px; color: #b45309; background: #fef3c7; border: 1px solid #fcd34d;
+                 border-radius: 6px; padding: 5px 10px; margin-bottom: 6px; }
+    .nest-empty { color: var(--muted); font-size: 14px; padding: 20px; text-align: center; }
+
+    @media print {
+      header.topbar, .nest-params, .nest-run-btn, #project-bar-root, .nest-sidebar-col { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <script>if (window.self !== window.top) document.documentElement.classList.add('iframe-mode');</script>
+  <header class="topbar">
+    <div class="brand">DankoSystems · DXF Нестинг</div>
+    <a href="index.html" class="ghost" style="padding:7px 14px;border-radius:8px;border:1px solid var(--border);font-size:14px;font-weight:600;text-decoration:none;color:var(--text);">← Назад</a>
+  </header>
+
+  <div id="project-bar-root"></div>
+
+  <div class="nest-outer">
+
+    <!-- ===== Ляво — инструмент ===== -->
+    <div>
+
+      <!-- 1. Drop zone -->
+      <section class="card" style="margin-bottom:16px">
+        <h2 style="margin:0 0 14px">Избери DXF файл</h2>
+        <div class="nest-drop" id="nest-drop">
+          <div class="drop-icon">📐</div>
+          <p><strong>Провлачи DXF файл</strong> или кликни за избор</p>
+          <p>Извлича контура и нарежда максимален брой детайли на лист.</p>
+          <div id="nest-file-name"></div>
+        </div>
+        <input type="file" id="nest-file-input" accept=".dxf" style="display:none" />
+      </section>
+
+      <!-- 2. Параметри на листа -->
+      <section class="card" style="margin-bottom:16px">
+        <h2 style="margin:0 0 14px">Параметри на листа</h2>
+
+        <div class="nest-params">
+          <div class="nest-field">
+            <label>Ширина на лист (мм)</label>
+            <input type="number" id="nest-w" value="1000" min="10" step="10" />
+          </div>
+          <div class="nest-field">
+            <label>Височина на лист (мм)</label>
+            <input type="number" id="nest-h" value="2000" min="10" step="10" />
+          </div>
+          <div class="nest-field">
+            <label>Хлабина / мост (мм)</label>
+            <input type="number" id="nest-clearance" value="2" min="0" step="0.5" />
+          </div>
+          <div class="nest-field">
+            <label>Поле от ръба (мм)</label>
+            <input type="number" id="nest-margin" value="5" min="0" step="1" />
+          </div>
+          <div class="rot-group">
+            <label class="hdr">Въртене</label>
+            <div class="rot-checks">
+              <label><input type="checkbox" name="nest-rot" value="0" checked /> 0°</label>
+              <label><input type="checkbox" name="nest-rot" value="90" checked /> 90°</label>
+              <label><input type="checkbox" name="nest-rot" value="180" /> 180°</label>
+              <label><input type="checkbox" name="nest-rot" value="270" /> 270°</label>
+            </div>
+          </div>
+        </div>
+
+        <button class="calc-btn nest-run-btn" id="nest-run-btn" disabled>Изчисли нестинга →</button>
+      </section>
+
+      <!-- 3. Резултат -->
+      <div id="nest-results" class="hidden">
+        <div id="nest-warnings"></div>
+        <div class="card">
+          <div class="nest-stats-box" id="nest-stats"></div>
+          <div id="nest-svg"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== Дясно — проект ===== -->
+    <div class="nest-sidebar-col">
+      <div id="proj-sidebar-root"></div>
+    </div>
+
+  </div><!-- /.nest-outer -->
+
+  <script type="module" src="nesting.js"></script>
+</body>
+</html>

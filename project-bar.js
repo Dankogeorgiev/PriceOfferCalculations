@@ -49,7 +49,7 @@ function typeLabel(type) {
 }
 
 // ---- PDF генерация ----
-function generateProjectPDF(p) {
+export function generateProjectPDF(p) {
   const items = p?.items || [];
   const date = new Date().toLocaleDateString("bg-BG");
   const grand = items.reduce((s, it) => s + (it.totalCost || 0), 0);

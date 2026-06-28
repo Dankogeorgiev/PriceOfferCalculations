@@ -1,6 +1,8 @@
 import { MAT, P, computeWeightPerM } from "./metals-data.js";
+import { initProjectSidebar } from "./project-sidebar.js";
 
 const $ = id => document.getElementById(id);
+const sidebar = initProjectSidebar(document.getElementById("proj-sidebar-root"));
 let curKey = 'round', vals = {}, desig = null;
 
 function buildProfileSelect() {

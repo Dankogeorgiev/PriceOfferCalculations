@@ -1,6 +1,7 @@
 // Прътов разкрой — 1D Bin Packing (First Fit Decreasing)
 import { addItem, getCurrentProject } from "./project-store.js";
 import { initProjectBar } from "./project-bar.js";
+import { initProjectSidebar } from "./project-sidebar.js";
 import { MAT, P, computeWeightPerM } from "./metals-data.js";
 
 const COLORS = [
@@ -10,9 +11,10 @@ const COLORS = [
   "#1d4ed8","#15803d","#b45309","#7e22ce","#0369a1",
 ];
 
-// ---- Проект лента ----
+// ---- Проект лента + странична лента ----
+const sidebar = initProjectSidebar(document.getElementById("proj-sidebar-root"));
 const bar = initProjectBar(document.getElementById("project-bar-root"), {
-  onChange: () => refreshProjName(),
+  onChange: () => { refreshProjName(); sidebar.render(); },
 });
 
 function refreshProjName() {
@@ -345,6 +347,7 @@ document.getElementById("add-to-proj-btn").addEventListener("click", () => {
 
   bar.refresh();
   refreshProjName();
+  sidebar.render();
 
   const projName = getCurrentProject()?.name || "—";
   const confirmEl = document.getElementById("add-proj-confirm");
