@@ -57,7 +57,12 @@
   <div class="drop" id="drop"><span>Пусни STEP файла тук</span></div>
   <div class="status" id="status">Зарежда CAD ядрото…</div>
 </div>
+<script>
+  // Укажи базовия URL преди зареждане на occt-import-js, за да работи в iframe
+  window.__occtBase = (new URL('occt-import-js.js', document.baseURI)).href.replace(/[^/]+$/, '');
+</script>
 <script src="three.min.js"></script>
+<script>var Module = { locateFile: f => window.__occtBase + f };</script>
 <script src="occt-import-js.js"></script>
 <script src="step-viewer.js"></script>
 </body>
