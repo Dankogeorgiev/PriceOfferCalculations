@@ -113,12 +113,12 @@
 
         <div class="nest-params">
           <div class="nest-field">
-            <label>Ширина на лист (мм)</label>
-            <input type="number" id="nest-w" value="1000" min="10" step="10" />
-          </div>
-          <div class="nest-field">
-            <label>Височина на лист (мм)</label>
-            <input type="number" id="nest-h" value="2000" min="10" step="10" />
+            <label>Размер на лист</label>
+            <select id="nest-sheet" style="font-size:14px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);cursor:pointer">
+              <option value="1000x2000">1000 × 2000 мм</option>
+              <option value="1250x2500">1250 × 2500 мм</option>
+              <option value="1500x3000">1500 × 3000 мм</option>
+            </select>
           </div>
           <div class="nest-field">
             <label>Хлабина / мост (мм)</label>

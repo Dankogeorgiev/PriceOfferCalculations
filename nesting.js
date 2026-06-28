@@ -238,7 +238,7 @@ function init() {
   }
 
   runBtn.addEventListener("click", () => { if (currentText) startNesting(currentText); });
-  ["nest-w","nest-h","nest-clearance","nest-margin"].forEach(id =>
+  ["nest-sheet","nest-clearance","nest-margin"].forEach(id =>
     document.getElementById(id).addEventListener("change", () => { if (currentText) startNesting(currentText); }));
   document.querySelectorAll("input[name='nest-rot']").forEach(cb =>
     cb.addEventListener("change", () => { if (currentText) startNesting(currentText); }));
@@ -247,8 +247,8 @@ function init() {
     // Стоп на предишен worker ако тече
     if (worker) { worker.terminate(); worker = null; }
 
-    const sheetW    = parseFloat(document.getElementById("nest-w").value) || 1000;
-    const sheetH    = parseFloat(document.getElementById("nest-h").value) || 2000;
+    const [sheetW, sheetH] = (document.getElementById("nest-sheet").value || "1000x2000")
+      .split("x").map(Number);
     const clearance = parseFloat(document.getElementById("nest-clearance").value) || 2;
     const margin    = parseFloat(document.getElementById("nest-margin").value) || 5;
     const rotations = [...document.querySelectorAll("input[name='nest-rot']:checked")]
