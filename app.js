@@ -34,6 +34,7 @@ function showView(session) {
     loadOperationRates();
     loadLaserRates();
     loadMaterials();
+    loadSwissParams();
     initCalculator();
   } else {
     appView.classList.add("hidden");
@@ -314,6 +315,50 @@ laserBody.addEventListener("click", async (e) => {
   const { error } = await db.from("laser_rates").delete().eq("id", id);
   if (error) { laserError.textContent = "Грешка при триене: " + error.message; return; }
   loadLaserRates();
+});
+
+// --- SWISS TYPE параметри ---
+const SWISS_INV_KEYS = ["swiss_i_base","swiss_i_bar","swiss_i_chip","swiss_i_tool1","swiss_i_tool2","swiss_i_cool","swiss_i_mist"];
+const BGN_EUR_SWISS = 1.95583;
+
+async function loadSwissParams() {
+  const { data } = await db.from("settings").select("key,value");
+  if (data && data.length) {
+    data.forEach(row => {
+      const el = document.querySelector(`[data-key="${row.key}"]`);
+      if (el) el.value = row.value;
+    });
+  }
+  updateSwissEur();
+}
+
+function updateSwissEur() {
+  let total = 0;
+  SWISS_INV_KEYS.forEach(key => {
+    const inp = document.querySelector(`[data-key="${key}"]`);
+    const v = parseFloat(inp?.value) || 0;
+    total += v;
+    const eurEl = document.getElementById(key + "_eur");
+    if (eurEl) eurEl.textContent = (v / BGN_EUR_SWISS).toFixed(0) + " EUR";
+  });
+  const totalEl = document.getElementById("swiss_total_bgn");
+  const totalEurEl = document.getElementById("swiss_total_eur");
+  if (totalEl) totalEl.textContent = total.toLocaleString("bg-BG") + " лв";
+  if (totalEurEl) totalEurEl.textContent = (total / BGN_EUR_SWISS).toFixed(0) + " EUR";
+}
+
+document.querySelectorAll(".sw-inv").forEach(el => el.addEventListener("input", updateSwissEur));
+
+document.getElementById("swiss-params-save")?.addEventListener("click", async () => {
+  const msg = document.getElementById("swiss-params-msg");
+  msg.textContent = "Запазване…";
+  const rows = [...document.querySelectorAll(".sw-p")].map(el => ({
+    key: el.dataset.key, value: el.value
+  }));
+  const { error } = await db.from("settings").upsert(rows, { onConflict: "key" });
+  if (error) { msg.textContent = "Грешка: " + error.message; return; }
+  msg.textContent = "✓ Запазено!";
+  setTimeout(() => { msg.textContent = ""; }, 3000);
 });
 
 // --- КАЛКУЛАТОР (Фаза 2) ---

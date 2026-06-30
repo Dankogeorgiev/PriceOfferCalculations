@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SWISS Type Калкулатор</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
   <style>
     body { background: var(--bg); }
     .container { max-width: 680px; margin: 28px auto; padding: 0 20px; }
@@ -303,8 +305,55 @@ function toggleParams() {
     : "▸ Машинни параметри (промени при нужда)";
 }
 
+// Mapping: swiss_type Supabase key → local input id
+const PARAM_MAP = {
+  swiss_amort:      "p_amort",
+  swiss_salary:     "p_salary",
+  swiss_machines:   "p_machines",
+  swiss_kwh:        "p_kwh",
+  swiss_shift_h:    "p_shift_h",
+  swiss_shifts:     "p_shifts",
+  swiss_days:       "p_days",
+  swiss_util:       "p_util",
+  swiss_power:      "p_power",
+  swiss_comp_kw:    "p_comp_kw",
+  swiss_comp_share: "p_comp_share",
+  swiss_setup_h:    "p_setup_h",
+  swiss_batch:      "p_batch",
+};
+const INV_KEYS = ["swiss_i_base","swiss_i_bar","swiss_i_chip","swiss_i_tool1","swiss_i_tool2","swiss_i_cool","swiss_i_mist"];
+
+async function loadFromSupabase() {
+  try {
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data } = await db.from("settings").select("key,value");
+    if (!data || !data.length) return;
+
+    let totalBGN = 0;
+    data.forEach(row => {
+      // Параметри
+      const localId = PARAM_MAP[row.key];
+      if (localId) {
+        const el = document.getElementById(localId);
+        if (el) el.value = row.value;
+      }
+      // Инвестиция — сумираме за p_invest_eur
+      if (INV_KEYS.includes(row.key)) totalBGN += parseFloat(row.value) || 0;
+    });
+    if (totalBGN > 0) document.getElementById("p_invest_eur").value = (totalBGN / BGN_EUR).toFixed(0);
+  } catch(e) { /* без Supabase — ползва defaults */ }
+  calc();
+}
+
 document.querySelectorAll("input").forEach(el => el.addEventListener("input", calc));
-calc();
+
+// Зарежда Supabase ако е в iframe (сесията е в localStorage)
+if (typeof supabase !== "undefined" && typeof SUPABASE_URL !== "undefined") {
+  loadFromSupabase();
+} else {
+  calc();
+}
 
 if (window.self !== window.top) document.documentElement.classList.add("iframe-mode");
 </script>

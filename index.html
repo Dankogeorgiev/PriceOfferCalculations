@@ -226,6 +226,51 @@
           </tbody>
         </table>
       </section>
+
+      <section class="card">
+        <h2>SWISS Type SM205 — Машинни параметри</h2>
+        <p class="muted" style="margin:0 0 14px;font-size:13px">Параметри за калкулатора на себестойност. Промени при смяна на разходи или инвестиция.</p>
+
+        <h3 style="margin:0 0 10px;font-size:15px;color:#1F3864">Допускания</h3>
+        <table class="data-table" id="swiss-params-table">
+          <thead><tr><th>Параметър</th><th>Стойност</th><th>Мярка</th></tr></thead>
+          <tbody>
+            <tr><td>Срок на амортизация</td><td><input type="number" class="sw-p" data-key="swiss_amort" value="48" min="1" style="width:90px"/></td><td class="muted">месеца</td></tr>
+            <tr><td>Заплата оператор / месец (EUR с осигуровки)</td><td><input type="number" class="sw-p" data-key="swiss_salary" value="1838" min="0" style="width:90px"/></td><td class="muted">EUR/мес</td></tr>
+            <tr><td>Машини на 1 оператор</td><td><input type="number" class="sw-p" data-key="swiss_machines" value="2" min="1" style="width:90px"/></td><td class="muted">бр.</td></tr>
+            <tr><td>Цена на електроенергията</td><td><input type="number" class="sw-p" data-key="swiss_kwh" value="0.19" step="0.01" style="width:90px"/></td><td class="muted">EUR/kWh</td></tr>
+            <tr><td>Часове на смяна</td><td><input type="number" class="sw-p" data-key="swiss_shift_h" value="8" min="1" style="width:90px"/></td><td class="muted">ч</td></tr>
+            <tr><td>Смени на ден</td><td><input type="number" class="sw-p" data-key="swiss_shifts" value="1" min="1" style="width:90px"/></td><td class="muted">бр.</td></tr>
+            <tr><td>Работни дни / месец</td><td><input type="number" class="sw-p" data-key="swiss_days" value="21" min="1" style="width:90px"/></td><td class="muted">дни</td></tr>
+            <tr><td>Натовареност (продуктивно време)</td><td><input type="number" class="sw-p" data-key="swiss_util" value="0.85" step="0.01" min="0.1" max="1" style="width:90px"/></td><td class="muted">0 – 1</td></tr>
+            <tr><td>Средна консумирана мощност на машина</td><td><input type="number" class="sw-p" data-key="swiss_power" value="4" step="0.5" style="width:90px"/></td><td class="muted">kW</td></tr>
+            <tr><td>Мощност на компресора</td><td><input type="number" class="sw-p" data-key="swiss_comp_kw" value="8" step="0.5" style="width:90px"/></td><td class="muted">kW</td></tr>
+            <tr><td>Дял от компресора за машината</td><td><input type="number" class="sw-p" data-key="swiss_comp_share" value="0.10" step="0.01" max="1" style="width:90px"/></td><td class="muted">0 – 1</td></tr>
+            <tr><td>Спомагателно време (настройка / партида)</td><td><input type="number" class="sw-p" data-key="swiss_setup_h" value="2" step="0.5" style="width:90px"/></td><td class="muted">часа</td></tr>
+            <tr><td>Детайли в партида (серия)</td><td><input type="number" class="sw-p" data-key="swiss_batch" value="1000" min="1" style="width:90px"/></td><td class="muted">бр.</td></tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin:18px 0 10px;font-size:15px;color:#1F3864">Инвестиция за 1 машина (BGN)</h3>
+        <table class="data-table">
+          <thead><tr><th>Компонент</th><th>BGN</th><th>EUR</th></tr></thead>
+          <tbody>
+            <tr><td>Базова цена на машината</td><td><input type="number" class="sw-p sw-inv" data-key="swiss_i_base" value="118000" style="width:110px"/></td><td class="muted sw-eur" id="swiss_i_base_eur">—</td></tr>
+            <tr><td>Прътоподаващо устройство PRO RAY 326</td><td><input type="number" class="sw-p sw-inv" data-key="swiss_i_bar" value="20500" style="width:110px"/></td><td class="muted sw-eur" id="swiss_i_bar_eur">—</td></tr>
+            <tr><td>Стружкотранспортьор</td><td><input type="number" class="sw-p sw-inv" data-key="swiss_i_chip" value="2800" style="width:110px"/></td><td class="muted sw-eur" id="swiss_i_chip_eur">—</td></tr>
+            <tr><td>Въртящи + неподвижни инструменти (преден шпиндел)</td><td><input type="number" class="sw-p sw-inv" data-key="swiss_i_tool1" value="3800" style="width:110px"/></td><td class="muted sw-eur" id="swiss_i_tool1_eur">—</td></tr>
+            <tr><td>Доп. ексцентрикови инструменти (заден шпиндел)</td><td><input type="number" class="sw-p sw-inv" data-key="swiss_i_tool2" value="1800" style="width:110px"/></td><td class="muted sw-eur" id="swiss_i_tool2_eur">—</td></tr>
+            <tr><td>Станция за охлаждане 70/150 bar</td><td><input type="number" class="sw-p sw-inv" data-key="swiss_i_cool" value="2900" style="width:110px"/></td><td class="muted sw-eur" id="swiss_i_cool_eur">—</td></tr>
+            <tr><td>Oil mist filter</td><td><input type="number" class="sw-p sw-inv" data-key="swiss_i_mist" value="1900" style="width:110px"/></td><td class="muted sw-eur" id="swiss_i_mist_eur">—</td></tr>
+            <tr style="font-weight:700"><td>ОБЩО инвестиция</td><td id="swiss_total_bgn">—</td><td id="swiss_total_eur">—</td></tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:14px;display:flex;align-items:center;gap:12px">
+          <button id="swiss-params-save" type="button">💾 Запази параметрите</button>
+          <span id="swiss-params-msg" class="muted" style="font-size:13px"></span>
+        </div>
+      </section>
       </div>
 
       <div id="tab-dxf" class="hidden">
