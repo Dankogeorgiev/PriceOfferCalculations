@@ -139,6 +139,8 @@
     .pc-note b { color: #33507e; font-weight: 600; }
   </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
 </head>
 <body>
   <script>if (window.self !== window.top) document.documentElement.classList.add('iframe-mode');</script>
@@ -268,9 +270,13 @@
 
   <script src="vendor/three.min.js"></script>
   <script type="module">
-    import { getCurrentProject } from "./project-store.js";
+    import { getCurrentProject, initSync } from "./project-store.js";
     import { initProjectBar } from "./project-bar.js";
     import { initProjectSidebar } from "./project-sidebar.js";
+
+    if (typeof SUPABASE_URL !== "undefined") {
+      initSync(SUPABASE_URL, SUPABASE_ANON_KEY).catch(() => {});
+    }
 
     // ---- Project bar + sidebar ----
     const sidebar = initProjectSidebar(document.getElementById("proj-sidebar-root"));

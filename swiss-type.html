@@ -368,6 +368,10 @@
 import { renderDxfToCanvas, canvasToPng } from "./dxf-preview.js";
 import { initProjectBar } from "./project-bar.js";
 import { initProjectSidebar } from "./project-sidebar.js";
+import { initSync } from "./project-store.js";
+
+// Supabase sync за проекти
+initSync(SUPABASE_URL, SUPABASE_ANON_KEY).catch(() => {});
 
 const sidebar = initProjectSidebar(document.getElementById("swiss-proj-sidebar-root"));
 const bar = initProjectBar(document.getElementById("project-bar-root") || document.createElement("div"), {

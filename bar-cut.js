@@ -1,7 +1,12 @@
 // Прътов разкрой — 1D Bin Packing (First Fit Decreasing)
-import { addItem, getCurrentProject } from "./project-store.js";
+import { addItem, getCurrentProject, initSync } from "./project-store.js";
 import { initProjectBar } from "./project-bar.js";
 import { initProjectSidebar } from "./project-sidebar.js";
+
+// Supabase sync за проекти
+if (typeof SUPABASE_URL !== "undefined") {
+  initSync(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
 import { MAT, P, computeWeightPerM } from "./metals-data.js";
 
 const COLORS = [

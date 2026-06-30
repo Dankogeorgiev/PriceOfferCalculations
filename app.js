@@ -1,4 +1,4 @@
-import { addItem } from "./project-store.js";
+import { addItem, initSync } from "./project-store.js";
 import { initProjectBar } from "./project-bar.js";
 import { initProjectSidebar } from "./project-sidebar.js";
 
@@ -21,6 +21,11 @@ function showView(session) {
     appView.classList.remove("hidden");
     userEmail.textContent = session.user.email;
     if (!_pbInited) {
+      // Supabase sync за проекти — зарежда от cloud и активира auto-save
+      initSync(SUPABASE_URL, SUPABASE_ANON_KEY).then(() => {
+        if (window._appProjectBar) window._appProjectBar.refresh();
+        if (window._calcSidebar) window._calcSidebar.render();
+      });
       const calcSidebar = initProjectSidebar(document.getElementById("calc-proj-sidebar-root"));
       window._appProjectBar = initProjectBar(document.getElementById("project-bar-root"), {
         onChange: () => calcSidebar.render(),

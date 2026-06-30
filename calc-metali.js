@@ -1,5 +1,11 @@
 import { MAT, P, computeWeightPerM } from "./metals-data.js";
 import { initProjectSidebar } from "./project-sidebar.js";
+import { initSync } from "./project-store.js";
+
+// Supabase sync за проекти
+if (typeof SUPABASE_URL !== "undefined") {
+  initSync(SUPABASE_URL, SUPABASE_ANON_KEY).catch(() => {});
+}
 
 const $ = id => document.getElementById(id);
 const sidebar = initProjectSidebar(document.getElementById("proj-sidebar-root"));

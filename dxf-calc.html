@@ -142,6 +142,8 @@
     .clear-btn:hover { background: #fef2f2; color: var(--danger); border-color: #fca5a5; }
   </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
 </head>
 <body>
   <script>if (window.self !== window.top) document.documentElement.classList.add('iframe-mode');</script>
@@ -275,8 +277,12 @@
   <script type="module">
     import { analyzeDxf, partWeightKg, estimateLaser } from "./dxf-analyzer.js";
     import { renderDxfToCanvas, canvasToPng } from "./dxf-preview.js";
-    import { getCurrentProject, removeItem, clearCurrentProject } from "./project-store.js";
+    import { getCurrentProject, removeItem, clearCurrentProject, initSync } from "./project-store.js";
     import { initProjectBar } from "./project-bar.js";
+
+    if (typeof SUPABASE_URL !== "undefined") {
+      initSync(SUPABASE_URL, SUPABASE_ANON_KEY).catch(() => {});
+    }
 
     const dropZone   = document.getElementById("drop-zone");
     const fileInput  = document.getElementById("file-input");
@@ -582,6 +588,8 @@
   .footer { margin-top:20pt; border-top:1px solid #e5e7eb; padding-top:7pt; font-size:8pt; color:#9ca3af; display:flex; justify-content:space-between; }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
 </head><body>
   <div class="hdr">
     <div>
