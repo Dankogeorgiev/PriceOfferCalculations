@@ -59,6 +59,8 @@
       padding: 4px 5px; background: #fff; outline: none;
     }
     .pc-item input.idim:focus { border-color: #1F3864; }
+    .pc-item input.bar-n { width: 36px; background: #f0fdf4; border-color: #bbf7d0; }
+    .pc-item input.bar-n:focus { border-color: #16a34a; }
     .pc-item select {
       flex: 1 1 0; min-width: 0; font-size: 12px; border: 1px solid var(--border);
       border-radius: 5px; padding: 4px 5px; background: #fff; color: var(--text); outline: none;
@@ -312,16 +314,27 @@
       const rows = bars.map((b, i) => {
         if (b.p < 0 || !parts[b.p]) return {y:b.y, p:b.p, o:b.o, i, across:0, count:0, xs:[], empty:true, conflict:false};
         const dm = dimsOf(b);
-        const across = dm.along > 0 ? Math.max(0, Math.floor((usableW + c.gap) / (dm.along + c.gap))) : 0;
+        const autoAcross = dm.along > 0 ? Math.max(0, Math.floor((usableW + c.gap) / (dm.along + c.gap))) : 0;
+        const across = (b.n != null && b.n >= 0) ? b.n : autoAcross;
         let nextY = c.H - c.marginBottom;
         for (const o of bars) { if (o.y > b.y && o.y < nextY) nextY = o.y; }
         const bottom = b.y + dm.vert;
         const conflict = !(bottom <= c.H - c.marginBottom + 1e-6 && bottom + c.gap <= nextY + 1e-6);
         const lim = [c.marginX, c.W - c.marginX - dm.along];
+        // При ръчен брой — равномерно разпределение; при авто — пакетиране
         let xs;
-        if (b.xs && b.xs.length === across) xs = b.xs.map(v => Math.max(lim[0], Math.min(lim[1], v)));
-        else { xs = []; for (let k = 0; k < across; k++) xs.push(c.marginX + k * (dm.along + c.gap)); }
-        return {y:b.y, p:b.p, o:b.o, i, dm, across, count: conflict ? 0 : across, xs, conflict, empty:false};
+        if (b.n != null && b.n >= 0) {
+          xs = [];
+          if (across > 0) {
+            const step = across > 1 ? (lim[1] - lim[0]) / (across - 1) : 0;
+            for (let k = 0; k < across; k++) xs.push(across === 1 ? (lim[0] + lim[1]) / 2 : lim[0] + k * step);
+          }
+        } else if (b.xs && b.xs.length === across) {
+          xs = b.xs.map(v => Math.max(lim[0], Math.min(lim[1], v)));
+        } else {
+          xs = []; for (let k = 0; k < across; k++) xs.push(c.marginX + k * (dm.along + c.gap));
+        }
+        return {y:b.y, p:b.p, o:b.o, i, dm, across, autoAcross, count: conflict ? 0 : across, xs, conflict, empty:false};
       });
       const perPart = parts.map(() => 0);
       rows.forEach(r => { if (!r.empty && !r.conflict) perPart[r.p] += r.count; });
@@ -554,15 +567,23 @@
           <button class="xbtn" data-del="part" data-i="${i}">×</button>
         </div>`).join('');
 
-      $('barsList').innerHTML = bars.map((b,i) => `
+      const Rtmp = compute();
+      $('barsList').innerHTML = bars.map((b,i) => {
+        const row = Rtmp.rows.find(r => r.i === i);
+        const autoN = row ? row.autoAcross : '';
+        const manualN = b.n != null ? b.n : '';
+        return `
         <div class="pc-item${i===selBar?' sel':''}">
           <span class="baridx">${i+1}</span>
           <input class="idim" data-i="${i}" data-f="y" type="number" value="${b.y}">
           <span class="times">см</span>
           <select data-i="${i}" data-f="p">${partOptions(b.p)}</select>
           <button class="ro" data-rot="${i}">↻</button>
+          <input class="idim bar-n" data-i="${i}" data-f="n" type="number" min="0" placeholder="${autoN}" value="${manualN}" title="Брой детайли на ред (празно = авто)">
+          <span class="times">бр</span>
           <button class="xbtn" data-del="bar" data-i="${i}">×</button>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     }
     function refresh() { const R = compute(); render3D(R); renderResults(R); renderLists(); }
     function softRefresh() { const R = compute(); render3D(R); renderResults(R); }
@@ -600,6 +621,11 @@
         softRefresh(); return;
       }
       if (t.closest('#barsList') && t.dataset.f === 'y') { bars[+t.dataset.i].y = parseFloat(t.value) || 0; softRefresh(); return; }
+      if (t.closest('#barsList') && t.dataset.f === 'n') {
+        const v = t.value.trim();
+        bars[+t.dataset.i].n = v === '' ? null : Math.max(0, parseInt(v) || 0);
+        softRefresh(); return;
+      }
     });
     document.addEventListener('change', e => {
       const t = e.target;
