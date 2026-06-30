@@ -7,27 +7,381 @@
   <link rel="stylesheet" href="styles.css" />
   <style>
     body { background: var(--bg); }
-    .container { max-width: 1200px; margin: 24px auto; padding: 0 20px; }
-    .coming-soon {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 60vh; gap: 16px; text-align: center;
+    .container { max-width: 1100px; margin: 24px auto; padding: 0 20px; }
+
+    .page-title { font-size: 20px; font-weight: 700; color: #1F3864; margin: 0 0 4px; }
+    .page-sub   { color: #6b7280; font-size: 13px; margin: 0 0 20px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: #6b7280; margin: 0 0 10px;
     }
-    .coming-soon-icon { font-size: 64px; }
-    .coming-soon h2 { margin: 0; font-size: 24px; color: #1F3864; }
-    .coming-soon p { color: #6b7280; max-width: 420px; line-height: 1.6; }
+
+    /* Параметри таблица */
+    .param-table { width: 100%; border-collapse: collapse; }
+    .param-table tr { border-bottom: 1px solid var(--border); }
+    .param-table td { padding: 7px 4px; font-size: 13px; vertical-align: middle; }
+    .param-table td:first-child { color: #374151; width: 60%; }
+    .param-table td:last-child  { color: #6b7280; font-size: 11px; padding-left: 6px; }
+    .param-table input {
+      width: 90px; padding: 5px 8px; font-size: 13px;
+      border: 1px solid #93c5fd; border-radius: 6px;
+      background: #eff6ff; text-align: right;
+    }
+    .param-table input:focus { outline: 2px solid #2563eb; border-color: #2563eb; background:#fff; }
+
+    /* Инвестиция таблица */
+    .inv-table { width: 100%; border-collapse: collapse; }
+    .inv-table tr { border-bottom: 1px solid var(--border); }
+    .inv-table td { padding: 6px 4px; font-size: 13px; vertical-align: middle; }
+    .inv-table td:first-child { color: #374151; }
+    .inv-table td:nth-child(2) { text-align: right; }
+    .inv-table td:nth-child(3) { text-align: right; font-weight: 600; color: #1d4ed8; }
+    .inv-table input {
+      width: 110px; padding: 5px 8px; font-size: 13px;
+      border: 1px solid #93c5fd; border-radius: 6px;
+      background: #eff6ff; text-align: right;
+    }
+    .inv-total td { font-weight: 700; background: #f0f9ff; }
+
+    /* Резултат секция */
+    .result-card {
+      background: #1F3864; color: #fff;
+      border-radius: 12px; padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .result-card .label { font-size: 12px; opacity: .7; margin-bottom: 4px; }
+    .result-card .big { font-size: 36px; font-weight: 800; letter-spacing: -.02em; }
+    .result-card .sub  { font-size: 12px; opacity: .65; margin-top: 4px; }
+
+    .breakdown-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    .breakdown-table tr { border-bottom: 1px solid var(--border); }
+    .breakdown-table td { padding: 7px 6px; font-size: 13px; }
+    .breakdown-table td:last-child { text-align: right; font-weight: 600; }
+    .breakdown-table .total-row td { font-weight: 700; background: #eff6ff; color: #1d4ed8; }
+
+    /* Детайл калкулатор */
+    .detail-row {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .detail-row label { font-size: 13px; color: #374151; white-space: nowrap; }
+    .detail-row input {
+      width: 90px; padding: 7px 10px; font-size: 15px; font-weight: 700;
+      border: 2px solid #2563eb; border-radius: 8px;
+      background: #eff6ff; text-align: right; color: #1d4ed8;
+    }
+    .detail-row input:focus { outline: 2px solid #1d4ed8; background: #fff; }
+    .sec-label { font-size: 13px; color: #6b7280; }
+
+    .multi-detail { margin-top: 14px; }
+    .multi-detail table { width: 100%; border-collapse: collapse; }
+    .multi-detail th { text-align: left; font-size: 12px; color: #6b7280; padding: 5px 6px; border-bottom: 2px solid var(--border); }
+    .multi-detail td { padding: 6px 6px; font-size: 13px; border-bottom: 1px solid var(--border); }
+    .multi-detail td:last-child { text-align: right; font-weight: 700; color: #1d4ed8; }
+    .multi-detail input[type=text]   { width: 100%; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; padding: 5px 7px; }
+    .multi-detail input[type=number] { width: 70px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; padding: 5px 7px; text-align: right; }
+
+    .calc-btn {
+      background: #2563eb; color: #fff; border: none; border-radius: 8px;
+      padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer;
+      margin-top: 10px;
+    }
+    .calc-btn:hover { background: #1d4ed8; }
+
+    .rates-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 8px;
+    }
+    .rate-chip {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 10px; font-size: 12px;
+    }
+    .rate-chip .val { font-weight: 700; color: #1d4ed8; font-size: 14px; }
+    .rate-chip .lbl { color: #6b7280; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="coming-soon">
-      <div class="coming-soon-icon">⚙️</div>
-      <h2>SWISS Type Калкулатор</h2>
-      <p>Калкулаторът за Swiss Type стругови операции се изгражда.<br>
-         Очаква се скоро.</p>
+<div class="container">
+  <p class="page-title">⚙️ SWISS Type Калкулатор — SM205 SYNTEC</p>
+  <p class="page-sub">2 машини · 1 оператор · всички суми в EUR · Сини полета = въвеждай</p>
+
+  <div class="grid-2">
+    <!-- ЛЯВА КОЛОНА: параметри + инвестиция -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <div class="card">
+        <p class="section-label">1 · Допускания (входни параметри)</p>
+        <table class="param-table">
+          <tr><td>Срок на амортизация (месеца)</td>
+              <td><input type="number" id="p_amort" value="48" min="1" /></td>
+              <td>мес</td></tr>
+          <tr><td>Заплата оператор / месец (EUR, с осигуровки)</td>
+              <td><input type="number" id="p_salary" value="1838" min="0" /></td>
+              <td>EUR/мес</td></tr>
+          <tr><td>Машини на 1 оператор</td>
+              <td><input type="number" id="p_machines" value="2" min="1" /></td>
+              <td>бр.</td></tr>
+          <tr><td>Цена на електроенергията</td>
+              <td><input type="number" id="p_kwh" value="0.19" step="0.01" min="0" /></td>
+              <td>EUR/kWh</td></tr>
+          <tr><td>Часове на смяна</td>
+              <td><input type="number" id="p_shift_h" value="8" min="1" /></td>
+              <td>ч</td></tr>
+          <tr><td>Смени на ден</td>
+              <td><input type="number" id="p_shifts" value="1" min="1" /></td>
+              <td>бр.</td></tr>
+          <tr><td>Работни дни / месец</td>
+              <td><input type="number" id="p_days" value="21" min="1" /></td>
+              <td>дни</td></tr>
+          <tr><td>Натовареност (продуктивно време)</td>
+              <td><input type="number" id="p_util" value="0.85" step="0.01" min="0.1" max="1" /></td>
+              <td>0–1</td></tr>
+          <tr><td>Средна консумирана мощност на машина</td>
+              <td><input type="number" id="p_power" value="4" step="0.5" min="0" /></td>
+              <td>kW</td></tr>
+          <tr><td>Мощност на компресора</td>
+              <td><input type="number" id="p_comp_kw" value="8" step="0.5" min="0" /></td>
+              <td>kW</td></tr>
+          <tr><td>Дял от компресора за тази машина</td>
+              <td><input type="number" id="p_comp_share" value="0.10" step="0.01" min="0" max="1" /></td>
+              <td>0–1</td></tr>
+          <tr><td>Спомагателно време (настройка / партида)</td>
+              <td><input type="number" id="p_setup_h" value="2" step="0.5" min="0" /></td>
+              <td>часа</td></tr>
+          <tr><td>Детайли в партида (серия)</td>
+              <td><input type="number" id="p_batch" value="1000" min="1" /></td>
+              <td>бр.</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <p class="section-label">2 · Инвестиция за 1 машина (BGN)</p>
+        <table class="inv-table">
+          <tr><td>Базова цена на машината</td>
+              <td><input type="number" id="i_base" value="118000" /></td>
+              <td id="i_base_eur">—</td></tr>
+          <tr><td>Прътоподаващо устройство PRO RAY 326</td>
+              <td><input type="number" id="i_bar" value="20500" /></td>
+              <td id="i_bar_eur">—</td></tr>
+          <tr><td>Стружкотранспортьор</td>
+              <td><input type="number" id="i_chip" value="2800" /></td>
+              <td id="i_chip_eur">—</td></tr>
+          <tr><td>Въртящи + неподвижни инструменти (преден шпиндел)</td>
+              <td><input type="number" id="i_tool1" value="3800" /></td>
+              <td id="i_tool1_eur">—</td></tr>
+          <tr><td>Доп. ексцентрикови инструменти (заден шпиндел)</td>
+              <td><input type="number" id="i_tool2" value="1800" /></td>
+              <td id="i_tool2_eur">—</td></tr>
+          <tr><td>Станция за охлаждане 70/150 bar</td>
+              <td><input type="number" id="i_cool" value="2900" /></td>
+              <td id="i_cool_eur">—</td></tr>
+          <tr><td>Oil mist filter</td>
+              <td><input type="number" id="i_mist" value="1900" /></td>
+              <td id="i_mist_eur">—</td></tr>
+          <tr class="inv-total"><td><b>ОБЩО инвестиция</b></td>
+              <td id="i_total_bgn" style="text-align:right;font-weight:700">—</td>
+              <td id="i_total_eur">—</td></tr>
+        </table>
+        <p style="font-size:11px;color:#9ca3af;margin:8px 0 0">EUR колона = BGN ÷ 1.95583</p>
+      </div>
+    </div>
+
+    <!-- ДЯСНА КОЛОНА: ставки + калкулатор на детайл -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <div class="card">
+        <p class="section-label">3 · Изчислени ставки</p>
+        <div class="rates-grid">
+          <div class="rate-chip"><div class="lbl">Продуктивни часове / мес</div><div class="val" id="r_prod_h">—</div></div>
+          <div class="rate-chip"><div class="lbl">Амортизация EUR / час</div><div class="val" id="r_amort_h">—</div></div>
+          <div class="rate-chip"><div class="lbl">Труд EUR / час (за 1 маш.)</div><div class="val" id="r_labor_h">—</div></div>
+          <div class="rate-chip"><div class="lbl">Ток EUR / час</div><div class="val" id="r_elec_h">—</div></div>
+          <div class="rate-chip"><div class="lbl">Въздух EUR / час</div><div class="val" id="r_air_h">—</div></div>
+          <div class="rate-chip"><div class="lbl" style="color:#1d4ed8;font-weight:600">ОБЩ РАЗХОД EUR / час</div><div class="val" id="r_total_h" style="font-size:18px">—</div></div>
+          <div class="rate-chip"><div class="lbl">ОБЩ РАЗХОД EUR / сек</div><div class="val" id="r_total_s">—</div></div>
+          <div class="rate-chip"><div class="lbl">Настройка / детайл EUR</div><div class="val" id="r_setup_p">—</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="section-label">4 · Калкулатор на 1 детайл</p>
+        <div class="detail-row">
+          <label>Машинно време:</label>
+          <input type="number" id="d_secs" value="22" min="0.1" step="0.5" />
+          <span class="sec-label">секунди</span>
+        </div>
+        <table class="param-table" style="margin-bottom:10px">
+          <tr><td>Материал за 1 детайл (EUR, по избор)</td>
+              <td><input type="number" id="d_mat" value="0" step="0.001" min="0" /></td>
+              <td>EUR</td></tr>
+          <tr><td>Инструмент / консумативи (EUR, по избор)</td>
+              <td><input type="number" id="d_tool" value="0" step="0.001" min="0" /></td>
+              <td>EUR</td></tr>
+          <tr><td>Надценка / печалба %</td>
+              <td><input type="number" id="d_margin" value="25" step="1" min="0" /></td>
+              <td>%</td></tr>
+        </table>
+
+        <div class="result-card" id="result-card">
+          <div class="label">Себестойност на 1 детайл</div>
+          <div class="big" id="res_cost">—</div>
+          <div class="sub" id="res_sub">натисни Изчисли или промени стойност</div>
+        </div>
+
+        <table class="breakdown-table">
+          <tr><td>Машинно време (обработка)</td><td id="b_proc">—</td></tr>
+          <tr><td>Спомагателно (настройка) / детайл</td><td id="b_setup">—</td></tr>
+          <tr><td>Материал</td><td id="b_mat">—</td></tr>
+          <tr><td>Инструмент / консумативи</td><td id="b_tool">—</td></tr>
+          <tr class="total-row"><td><b>Себестойност</b></td><td id="b_cost">—</td></tr>
+          <tr><td>Продажна цена (+ надценка)</td><td id="b_price">—</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <p class="section-label">5 · Сравни няколко детайла</p>
+        <div class="multi-detail">
+          <table id="multi-table">
+            <thead><tr>
+              <th>Детайл</th>
+              <th>Секунди</th>
+              <th>Материал €</th>
+              <th>Себестойност €</th>
+            </tr></thead>
+            <tbody id="multi-body"></tbody>
+          </table>
+          <button type="button" class="ghost add-row" id="multi-add" style="margin-top:10px;font-size:13px">+ Добави детайл</button>
+        </div>
+      </div>
+
     </div>
   </div>
-  <script>
-    if (window.self !== window.top) document.documentElement.classList.add("iframe-mode");
-  </script>
+</div>
+
+<script>
+const BGN_EUR = 1.95583;
+const INV_IDS = ["i_base","i_bar","i_chip","i_tool1","i_tool2","i_cool","i_mist"];
+
+function g(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function fmt(n, d=4) { return n.toFixed(d); }
+function fmtE(n) { return n.toFixed(4) + " €"; }
+
+function calc() {
+  // --- параметри ---
+  const amortMo   = g("p_amort");
+  const salary    = g("p_salary");
+  const machines  = g("p_machines") || 2;
+  const kwh       = g("p_kwh");
+  const shiftH    = g("p_shift_h");
+  const shifts    = g("p_shifts");
+  const days      = g("p_days");
+  const util      = g("p_util");
+  const power     = g("p_power");
+  const compKw    = g("p_comp_kw");
+  const compShare = g("p_comp_share");
+  const setupH    = g("p_setup_h");
+  const batch     = g("p_batch") || 1;
+
+  // --- инвестиция ---
+  let totalBGN = 0;
+  INV_IDS.forEach(id => {
+    const v = g(id);
+    totalBGN += v;
+    document.getElementById(id + "_eur").textContent = (v / BGN_EUR).toFixed(0) + " EUR";
+  });
+  const totalEUR = totalBGN / BGN_EUR;
+  document.getElementById("i_total_bgn").textContent = totalBGN.toLocaleString("bg-BG") + " лв";
+  document.getElementById("i_total_eur").textContent = totalEUR.toFixed(0) + " EUR";
+
+  // --- продуктивни часове ---
+  const prodH = shiftH * shifts * days * util;          // часа/месец
+  document.getElementById("r_prod_h").textContent = prodH.toFixed(1) + " ч";
+
+  // --- ставки на час ---
+  const amortH = (totalEUR / amortMo) / prodH;          // EUR/час амортизация
+  const laborH = (salary / prodH) / machines;           // EUR/час труд (за 1 машина)
+  const elecH  = power * kwh;                           // EUR/час ток
+  const airH   = compKw * compShare * kwh;              // EUR/час въздух
+  const totalH = amortH + laborH + elecH + airH;        // EUR/час общо
+  const totalS = totalH / 3600;                         // EUR/сек
+
+  document.getElementById("r_amort_h").textContent = amortH.toFixed(4) + " €";
+  document.getElementById("r_labor_h").textContent = laborH.toFixed(4) + " €";
+  document.getElementById("r_elec_h").textContent  = elecH.toFixed(4) + " €";
+  document.getElementById("r_air_h").textContent   = airH.toFixed(4) + " €";
+  document.getElementById("r_total_h").textContent = totalH.toFixed(4) + " €";
+  document.getElementById("r_total_s").textContent = totalS.toFixed(6) + " €";
+
+  // --- настройка на детайл ---
+  // Разход за настройка = setupH × (amortH + пълна ставка оператор/час)
+  const fullLaborH = salary / prodH;   // пълна ставка без делене на машини
+  const setupBatch = setupH * (amortH + fullLaborH);
+  const setupPart  = setupBatch / batch;
+  document.getElementById("r_setup_p").textContent = setupPart.toFixed(5) + " €";
+
+  // --- калкулатор на 1 детайл ---
+  const secs   = g("d_secs");
+  const mat    = g("d_mat");
+  const tool   = g("d_tool");
+  const margin = g("d_margin") / 100;
+
+  const procCost  = secs * totalS;
+  const cost      = procCost + setupPart + mat + tool;
+  const sellPrice = cost * (1 + margin);
+
+  document.getElementById("res_cost").textContent = cost.toFixed(4) + " €";
+  document.getElementById("res_sub").textContent =
+    `${secs} сек × ${totalS.toFixed(6)} €/сек + настройка ${setupPart.toFixed(5)} €` +
+    (mat > 0 ? ` + мат. ${mat.toFixed(4)} €` : "") +
+    (tool > 0 ? ` + инстр. ${tool.toFixed(4)} €` : "");
+
+  document.getElementById("b_proc").textContent  = procCost.toFixed(4) + " €";
+  document.getElementById("b_setup").textContent = setupPart.toFixed(5) + " €";
+  document.getElementById("b_mat").textContent   = mat.toFixed(4) + " €";
+  document.getElementById("b_tool").textContent  = tool.toFixed(4) + " €";
+  document.getElementById("b_cost").textContent  = cost.toFixed(4) + " €";
+  document.getElementById("b_price").textContent = sellPrice.toFixed(4) + " €";
+
+  // --- multi-детайл таблица ---
+  updateMulti(totalS, setupPart);
+
+  return { totalS, setupPart };
+}
+
+function updateMulti(totalS, setupPart) {
+  document.querySelectorAll("#multi-body tr").forEach(tr => {
+    const secs = parseFloat(tr.querySelector(".ms").value) || 0;
+    const mat  = parseFloat(tr.querySelector(".mm").value) || 0;
+    const cost = secs * totalS + setupPart + mat;
+    tr.querySelector(".mc").textContent = cost.toFixed(4) + " €";
+  });
+}
+
+function addMultiRow() {
+  const tr = document.createElement("tr");
+  tr.innerHTML =
+    `<td><input type="text" class="md" placeholder="Детайл…" /></td>` +
+    `<td><input type="number" class="ms" value="0" step="0.5" min="0" /></td>` +
+    `<td><input type="number" class="mm" value="0" step="0.001" min="0" /></td>` +
+    `<td class="mc">—</td>`;
+  document.getElementById("multi-body").appendChild(tr);
+  tr.addEventListener("input", () => calc());
+}
+
+// Авто-преизчисли при всяка промяна
+document.querySelectorAll("input").forEach(el => el.addEventListener("input", calc));
+document.getElementById("multi-add").addEventListener("click", () => { addMultiRow(); calc(); });
+
+// Начално зареждане
+addMultiRow();
+addMultiRow();
+addMultiRow();
+calc();
+
+if (window.self !== window.top) document.documentElement.classList.add("iframe-mode");
+</script>
 </body>
 </html>
