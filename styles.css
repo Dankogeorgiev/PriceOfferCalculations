@@ -47,7 +47,7 @@ button.danger { color: var(--danger); }
 }
 .brand { font-weight: 700; }
 .user { display: flex; align-items: center; gap: 12px; }
-.container { max-width: 980px; margin: 24px auto; padding: 0 20px; }
+.container { max-width: 1400px; margin: 24px auto; padding: 0 20px; }
 .card h2 { margin-top: 0; }
 
 .row-form { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -88,22 +88,24 @@ html.iframe-mode .container { padding-top: 0; }
 
 .card h3 { margin: 0 0 4px; }
 .calc-sub { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
-.data-table select, .data-table input { width: 100%; padding: 6px 8px; font-size: 13px; }
+.data-table select, .data-table input, .data-table textarea { width: 100%; padding: 6px 8px; font-size: 13px; }
+.data-table textarea { resize: vertical; min-height: 38px; font-family: inherit; line-height: 1.4; }
 .add-row { margin-top: 10px; }
 .result-total { font-size: 20px; font-weight: 700; color: var(--primary-d); }
 
 .calc-outer {
   display: grid;
-  grid-template-columns: 1fr 290px;
-  gap: 16px;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
   align-items: start;
 }
-@media (max-width: 960px) { .calc-outer { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) { .calc-outer { grid-template-columns: 1fr 300px; } }
+@media (max-width: 800px) { .calc-outer { grid-template-columns: 1fr; } }
 .calc-sidebar-col {
   position: sticky;
   top: 16px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 14px;
+  padding: 18px;
 }
