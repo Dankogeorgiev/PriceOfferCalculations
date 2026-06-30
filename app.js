@@ -20,7 +20,7 @@ function showView(session) {
     appView.classList.remove("hidden");
     userEmail.textContent = session.user.email;
     if (!_pbInited) {
-      initProjectBar(document.getElementById("project-bar-root"));
+      window._appProjectBar = initProjectBar(document.getElementById("project-bar-root"));
       _pbInited = true;
     }
     loadWorkshops();
@@ -455,7 +455,7 @@ document.getElementById("calc-compute").addEventListener("click", computeCalc);
 document.getElementById("calc-add-to-proj-btn").addEventListener("click", () => {
   if (!lastCalcResult) return;
   const r = lastCalcResult;
-  addItem({
+  window._appProjectBar?.pickAndAdd({
     type: "calc",
     name: "Операции (труд)",
     qty: 1,
@@ -465,12 +465,14 @@ document.getElementById("calc-add-to-proj-btn").addEventListener("click", () => 
     totalBGN: Math.round(r.totalBGN * 100) / 100,
     totalEUR: Math.round(r.totalEUR * 10000) / 10000,
     totalCost: Math.round(r.totalBGN * 100) / 100,
+  }, {
+    onDone: () => {
+      const btn = document.getElementById("calc-add-to-proj-btn");
+      btn.textContent = "✓ Добавено!";
+      btn.style.background = "#15803d";
+      setTimeout(() => { btn.textContent = "+ Добави към проекта"; btn.style.background = ""; }, 2000);
+    },
   });
-
-  const btn = document.getElementById("calc-add-to-proj-btn");
-  btn.textContent = "✓ Добавено!";
-  btn.style.background = "#15803d";
-  setTimeout(() => { btn.textContent = "+ Добави към проекта"; btn.style.background = ""; }, 1500);
 });
 
 const IFRAME_TABS = { dxf: "frame-dxf", barcut: "frame-barcut", paint: "frame-paint", metali: "frame-metali", nesting: "frame-nesting", step: "frame-step" };

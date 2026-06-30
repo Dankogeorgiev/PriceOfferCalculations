@@ -11,7 +11,7 @@
 
 import {
   getProjects, getCurrentProject,
-  createProject, switchProject, setProjectName, deleteProject,
+  createProject, switchProject, setProjectName, deleteProject, addItemToProject,
 } from "./project-store.js";
 
 const BAR_STYLE = `
@@ -350,5 +350,63 @@ export function initProjectBar(containerEl, { onChange } = {}) {
   if (!getProjects().length) createProject("Проект 1");
   refresh();
 
-  return { refresh };
+  function pickAndAdd(item, { onDone } = {}) {
+    const projects = getProjects();
+
+    const overlay = document.createElement("div");
+    overlay.style.cssText = `
+      position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:10000;
+      display:flex;align-items:center;justify-content:center;padding:16px;
+    `;
+
+    const PBTN = `padding:8px 14px;border-radius:8px;border:1px solid #a5b4fc;font-size:13px;font-weight:700;cursor:pointer;background:#fff;color:#3730a3;white-space:nowrap;display:block;width:100%;text-align:left;margin-bottom:6px;`;
+    const rows = projects.map(p => {
+      const total = (p.items || []).reduce((s, it) => s + (it.totalCost || 0), 0);
+      const cnt   = (p.items || []).length;
+      return `<button class="pa-pick" data-id="${esc(p.id)}" style="${PBTN}">
+        <span style="font-size:14px">${esc(p.name || "Без име")}</span>
+        <span style="font-size:11px;color:#6b7280;font-weight:400;margin-left:8px">${cnt} позиции${total > 0 ? " · " + fmt(total) + " €" : ""}</span>
+      </button>`;
+    }).join("");
+
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);width:100%;max-width:420px;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #e5e7eb;">
+          <h2 style="margin:0;font-size:16px;color:#1f2a37">Добави към проект</h2>
+          <button id="pa-close" style="background:none;border:none;font-size:22px;cursor:pointer;color:#6b7280;padding:2px 6px">✕</button>
+        </div>
+        <div style="padding:16px 20px">
+          ${rows}
+          <button id="pa-new" style="padding:8px 14px;border-radius:8px;border:2px dashed #a5b4fc;font-size:13px;font-weight:700;cursor:pointer;background:#f0f4ff;color:#4338ca;width:100%;margin-top:4px">
+            + Нов проект…
+          </button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(overlay);
+    overlay.querySelector("#pa-close").addEventListener("click", () => overlay.remove());
+    overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+
+    overlay.querySelectorAll(".pa-pick").forEach(btn => {
+      btn.addEventListener("click", () => {
+        addItemToProject(btn.dataset.id, item);
+        overlay.remove();
+        refresh();
+        onDone?.();
+      });
+    });
+
+    overlay.querySelector("#pa-new").addEventListener("click", () => {
+      const name = prompt("Наименование на новия проект:");
+      if (name === null) return;
+      const proj = createProject(name.trim() || "Нов проект");
+      addItemToProject(proj.id, item);
+      overlay.remove();
+      refresh();
+      onChange?.(getCurrentProject());
+      onDone?.();
+    });
+  }
+
+  return { refresh, pickAndAdd };
 }

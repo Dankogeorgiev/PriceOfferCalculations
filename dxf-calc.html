@@ -274,7 +274,7 @@
   <script type="module">
     import { analyzeDxf, partWeightKg, estimateLaser } from "./dxf-analyzer.js";
     import { renderDxfToCanvas, canvasToPng } from "./dxf-preview.js";
-    import { getCurrentProject, addItem, removeItem, clearCurrentProject } from "./project-store.js";
+    import { getCurrentProject, removeItem, clearCurrentProject } from "./project-store.js";
     import { initProjectBar } from "./project-bar.js";
 
     const dropZone   = document.getElementById("drop-zone");
@@ -401,7 +401,7 @@
     // ---- Добави към проекта ----
     document.getElementById("add-btn").addEventListener("click", () => {
       if (!geoData || !lastCalc.totalAll) return;
-      addItem({
+      bar.pickAndAdd({
         type: "dxf",
         name: currentFileName,
         notes: lastCalc.notes,
@@ -418,13 +418,15 @@
         },
         png: currentPreviewPng,
         calc: { ...lastCalc },
+      }, {
+        onDone: () => {
+          renderProjectList();
+          const btn = document.getElementById("add-btn");
+          btn.textContent = "✓ Добавено!";
+          btn.style.background = "#15803d";
+          setTimeout(() => { btn.textContent = "+ Добави към проекта"; btn.style.background = ""; }, 2000);
+        },
       });
-      renderProjectList();
-
-      const btn = document.getElementById("add-btn");
-      btn.textContent = "✓ Добавено!";
-      btn.style.background = "#15803d";
-      setTimeout(() => { btn.textContent = "+ Добави към проекта"; btn.style.background = ""; }, 1500);
     });
 
     // ---- Рендира страничния панел ----

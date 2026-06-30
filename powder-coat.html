@@ -267,7 +267,7 @@
 
   <script src="vendor/three.min.js"></script>
   <script type="module">
-    import { addItem, getCurrentProject } from "./project-store.js";
+    import { getCurrentProject } from "./project-store.js";
     import { initProjectBar } from "./project-bar.js";
     import { initProjectSidebar } from "./project-sidebar.js";
 
@@ -675,28 +675,26 @@
       const totalCost = Math.round(lastLinePiece * qty * 100) / 100;
       const partsSummary = parts.map((p,i) => `${p.name} ${p.d.join('×')}`).join(', ');
 
-      addItem({
+      bar.pickAndAdd({
         type: "paint",
         name: `Боядисване — ${current}`,
         notes: partsSummary,
         qty,
         pricePerPiece: Math.round(lastLinePiece * 10000) / 10000,
         totalCost,
-        // За sidebar/PDF:
         displaySub: `${qty} бр. × ${lastLinePiece.toFixed(3)} €`,
-        // За стария формат (PDF в dxf-calc):
         coatName: current,
         totalArea: null,
         rateM2: null,
+      }, {
+        onDone: () => {
+          sidebar.render();
+          const btn = $('add-proj-btn');
+          btn.textContent = '✓ Добавено!';
+          btn.style.background = '#15803d';
+          setTimeout(() => { btn.textContent = '+ Добави към проекта'; btn.style.background = ''; }, 2000);
+        },
       });
-
-      bar.refresh();
-      sidebar.render();
-
-      const btn = $('add-proj-btn');
-      btn.textContent = '✓ Добавено!';
-      btn.style.background = '#15803d';
-      setTimeout(() => { btn.textContent = '+ Добави към проекта'; btn.style.background = ''; }, 1500);
     });
 
     /* ---------- Старт ---------- */

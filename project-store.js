@@ -102,6 +102,15 @@ export function clearCurrentProject() {
   if (p) { p.items = []; _save(s); }
 }
 
+export function addItemToProject(projectId, item) {
+  const s = getStore();
+  const p = s.projects.find(p => p.id === projectId);
+  if (!p) return null;
+  p.items.push(item);
+  _save(s);
+  return p;
+}
+
 export function deleteProject(id) {
   const s = getStore();
   s.projects = s.projects.filter(p => p.id !== id);

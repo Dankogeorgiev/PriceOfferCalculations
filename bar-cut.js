@@ -328,7 +328,7 @@ document.getElementById("add-to-proj-btn").addEventListener("click", () => {
   const r = lastBarsResult;
   const name = r.profile || `Прът ${(r.barLen / 1000).toFixed(2)} м`;
 
-  addItem({
+  bar.pickAndAdd({
     type: "barcut",
     name,
     notes: r.notes,
@@ -343,25 +343,16 @@ document.getElementById("add-to-proj-btn").addEventListener("click", () => {
     kgPerM: r.kgPerM || 0,
     kgPerBar: r.kgPerBar || 0,
     kgTotal: r.kgTotal || 0,
+  }, {
+    onDone: () => {
+      refreshProjName();
+      sidebar.render();
+      const btn = document.getElementById("add-to-proj-btn");
+      btn.textContent = "✓ Добавено!";
+      btn.style.background = "#15803d";
+      setTimeout(() => { btn.textContent = "+ Добави към проекта"; btn.style.background = ""; }, 2000);
+    },
   });
-
-  bar.refresh();
-  refreshProjName();
-  sidebar.render();
-
-  const projName = getCurrentProject()?.name || "—";
-  const confirmEl = document.getElementById("add-proj-confirm");
-  document.getElementById("add-proj-confirm-name").textContent = projName;
-  confirmEl.style.display = "block";
-
-  const btn = document.getElementById("add-to-proj-btn");
-  btn.textContent = "✓ Добавено!";
-  btn.style.background = "#15803d";
-  setTimeout(() => {
-    btn.textContent = "+ Добави към проекта";
-    btn.style.background = "";
-    confirmEl.style.display = "none";
-  }, 3000);
 });
 
 // ---- Помощни ----
