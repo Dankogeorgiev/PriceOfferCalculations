@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SWISS Type Калкулатор</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { background: var(--bg); }
+    .container { max-width: 1200px; margin: 24px auto; padding: 0 20px; }
+    .coming-soon {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 60vh; gap: 16px; text-align: center;
+    }
+    .coming-soon-icon { font-size: 64px; }
+    .coming-soon h2 { margin: 0; font-size: 24px; color: #1F3864; }
+    .coming-soon p { color: #6b7280; max-width: 420px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="coming-soon">
+      <div class="coming-soon-icon">⚙️</div>
+      <h2>SWISS Type Калкулатор</h2>
+      <p>Калкулаторът за Swiss Type стругови операции се изгражда.<br>
+         Очаква се скоро.</p>
+    </div>
+  </div>
+  <script>
+    if (window.self !== window.top) document.documentElement.classList.add("iframe-mode");
+  </script>
+</body>
+</html>

@@ -514,14 +514,14 @@ document.getElementById("calc-add-to-proj-btn").addEventListener("click", () => 
   });
 });
 
-const IFRAME_TABS = { dxf: "frame-dxf", barcut: "frame-barcut", paint: "frame-paint", metali: "frame-metali", nesting: "frame-nesting", step: "frame-step" };
+const IFRAME_TABS = { dxf: "frame-dxf", barcut: "frame-barcut", paint: "frame-paint", metali: "frame-metali", swiss: "frame-swiss", nesting: "frame-nesting", step: "frame-step" };
 
 function activateTab(tabName) {
   document.querySelectorAll(".tab-btn[data-tab]").forEach((b) => b.classList.remove("active"));
   const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
   if (btn) btn.classList.add("active");
 
-  ["calc", "data", "dxf", "barcut", "paint", "metali", "nesting", "step"].forEach((t) => {
+  ["calc", "data", "dxf", "barcut", "paint", "metali", "swiss", "nesting", "step"].forEach((t) => {
     document.getElementById(`tab-${t}`)?.classList.toggle("hidden", t !== tabName);
   });
 
