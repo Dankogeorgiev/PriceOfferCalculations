@@ -207,7 +207,7 @@
           <div class="stat hero">
             <div class="k">Детайли на подвеска</div>
             <div class="v" id="r_per">–</div>
-            <div class="vsub" id="r_rows"></div>
+            <div id="r_rows" style="margin-top:6px;font-size:12px;line-height:1.7;color:#9fb0cf"></div>
           </div>
           <div class="stat">
             <div class="k">Цена за подвеска</div>
@@ -489,8 +489,15 @@
       lastLinePiece = linePiece;
 
       $('r_per').textContent = total || '0';
-      const used = R.rows.filter(r => !r.empty && !r.conflict).length;
-      $('r_rows').textContent = used ? used + ' реда' : 'нищо не виси';
+      const activeRows = R.rows.filter(r => !r.empty && !r.conflict);
+      if (activeRows.length) {
+        $('r_rows').innerHTML = activeRows.map((r, idx) => {
+          const pName = parts[r.p]?.name || ('детайл ' + (r.p + 1));
+          return `<span>Ред ${idx + 1}: <b style="color:#fff">${r.count} бр.</b> ${esc(pName)}</span>`;
+        }).join('<br>') + `<br><span style="border-top:1px solid #4a6080;display:block;margin-top:4px;padding-top:4px">Общо: <b style="color:#fff">${total} бр.</b></span>`;
+      } else {
+        $('r_rows').textContent = 'нищо не виси';
+      }
       $('r_hanger').textContent = costHanger.toFixed(2).replace('.', ',') + ' €';
       $('r_basis').textContent = rate + ' €/ч ÷ ' + thr + ' подв/ч';
       $('r_avg').textContent = total > 0 ? linePiece.toFixed(3).replace('.', ',') + ' €' : '–';
