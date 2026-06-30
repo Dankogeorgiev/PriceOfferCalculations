@@ -1,5 +1,6 @@
 import { addItem } from "./project-store.js";
 import { initProjectBar } from "./project-bar.js";
+import { initProjectSidebar } from "./project-sidebar.js";
 
 // --- Supabase клиент ---
 const { createClient } = supabase;
@@ -20,7 +21,11 @@ function showView(session) {
     appView.classList.remove("hidden");
     userEmail.textContent = session.user.email;
     if (!_pbInited) {
-      window._appProjectBar = initProjectBar(document.getElementById("project-bar-root"));
+      const calcSidebar = initProjectSidebar(document.getElementById("calc-proj-sidebar-root"));
+      window._appProjectBar = initProjectBar(document.getElementById("project-bar-root"), {
+        onChange: () => calcSidebar.render(),
+      });
+      window._calcSidebar = calcSidebar;
       _pbInited = true;
     }
     loadWorkshops();
@@ -475,6 +480,7 @@ document.getElementById("calc-add-to-proj-btn").addEventListener("click", () => 
     totalCost: Math.round(r.totalBGN * 100) / 100,
   }, {
     onDone: () => {
+      window._calcSidebar?.render();
       const btn = document.getElementById("calc-add-to-proj-btn");
       btn.textContent = "✓ Добавено!";
       btn.style.background = "#15803d";
