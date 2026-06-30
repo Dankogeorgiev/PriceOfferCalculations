@@ -323,13 +323,23 @@ const MARGIN_MAT_LABOR = 0.5;
 let refMat = [], refOp = [];
 let lastCalcResult = null;
 
+const DEFAULT_OPS = [
+  { id: "_dop_1", operation: "Заварка малка",    rate: 0, unit: "€/оп" },
+  { id: "_dop_2", operation: "Заварка бърза",    rate: 0, unit: "€/оп" },
+  { id: "_dop_3", operation: "Точкова заварка",  rate: 0, unit: "€/оп" },
+  { id: "_dop_4", operation: "Огъвка на преса",  rate: 0, unit: "€/оп" },
+];
+
 async function initCalculator() {
   const [m, o] = await Promise.all([
     db.from("material_weights").select("*").order("profile_type", { ascending: true }).order("size", { ascending: true }),
     db.from("operation_rates").select("*").order("operation", { ascending: true }),
   ]);
   refMat = m.data || [];
-  refOp = o.data || [];
+  // Merge DB ops with defaults (DB takes precedence for same name)
+  const dbOps = o.data || [];
+  const dbNames = new Set(dbOps.map(r => r.operation));
+  refOp = [...dbOps, ...DEFAULT_OPS.filter(d => !dbNames.has(d.operation))];
   for (let i = 0; i < 3; i++) addOpRow();
   for (let i = 0; i < 3; i++) addPurRow();
 }
@@ -453,7 +463,21 @@ function computeCalc() {
     `<tr><td><b>Себестойност</b></td><td class="right result-total">${total.toFixed(2)} €</td></tr>` +
     `</table>`;
 
-  lastCalcResult = { mat, op, pur, totalBGN: total, totalEUR: total, totalCost: total };
+  // Collect operation rows detail for PDF/project
+  const opRows = [];
+  document.querySelectorAll("#calc-op-body tr").forEach(tr => {
+    const sel  = tr.querySelector(".o-op");
+    const rec  = refOp.find(r => r.id === sel?.value);
+    const opName = rec ? rec.operation : (sel?.options[sel.selectedIndex]?.text || "");
+    if (!opName) return;
+    const rate = parseFloat(tr.querySelector(".o-rate-input")?.value) || 0;
+    const ops  = parseFloat(tr.querySelector(".o-ops")?.value) || 0;
+    const desc = tr.querySelector(".o-desc")?.value || "";
+    const cost = parseFloat(tr.dataset.cost) || 0;
+    opRows.push({ opName, rate, ops, desc, cost });
+  });
+
+  lastCalcResult = { mat, op, pur, totalBGN: total, totalEUR: total, totalCost: total, opRows };
 
   document.getElementById("calc-add-proj-bar").classList.remove("hidden");
   document.getElementById("calc-proj-summary").textContent =
@@ -470,7 +494,7 @@ document.getElementById("calc-add-to-proj-btn").addEventListener("click", () => 
   const r = lastCalcResult;
   window._appProjectBar?.pickAndAdd({
     type: "calc",
-    name: "Операции (труд)",
+    name: "Калкулатор операции",
     qty: 1,
     mat: Math.round(r.mat * 100) / 100,
     op: Math.round(r.op * 100) / 100,
@@ -478,6 +502,7 @@ document.getElementById("calc-add-to-proj-btn").addEventListener("click", () => 
     totalBGN: Math.round(r.totalBGN * 100) / 100,
     totalEUR: Math.round(r.totalEUR * 10000) / 10000,
     totalCost: Math.round(r.totalBGN * 100) / 100,
+    opRows: r.opRows || [],
   }, {
     onDone: () => {
       window._calcSidebar?.render();

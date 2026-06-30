@@ -63,33 +63,56 @@ export function generateProjectPDF(p) {
         : `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">📐</div>`;
       subLine = `${esc(item.calc?.matName || "")}, ${item.calc?.thickness || ""} мм · разрез ${fmt(item.geo?.cut_length_mm)} мм · ${item.geo?.pierces || 0} проб.`;
       qtyCol  = item.qty;
-      unitCol = `${fmt(item.unitCost)} лв`;
+      unitCol = `${fmt(item.unitCost)} €`;
     } else if (item.type === "barcut") {
       thumb   = `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🔩</div>`;
       subLine = `${item.bars} пр. × ${item.barLenM} м · kerf ${item.kerf} мм`;
       qtyCol  = item.bars;
-      unitCol = `${fmt(item.pricePerBar)} лв/пр.`;
+      unitCol = `${fmt(item.pricePerBar)} €/пр.`;
     } else if (item.type === "calc") {
       thumb   = `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🔧</div>`;
-      const purPart = item.pur > 0 ? ` · покупни ${fmt(item.pur)} лв` : "";
-      subLine = `мат. ${fmt(item.mat)} лв · труд ${fmt(item.op)} лв${purPart}`;
+      const purPart = item.pur > 0 ? ` · покупни ${fmt(item.pur)} €` : "";
+      subLine = `мат. ${fmt(item.mat)} € · труд ${fmt(item.op)} €${purPart}`;
       qtyCol  = item.qty;
       unitCol = `${fmt(item.totalEUR)} €/бр.`;
     } else {
       thumb   = `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🎨</div>`;
       subLine = `${esc(item.coatName || "")}${item.color ? ", " + esc(item.color) : ""} · ${fmt(item.totalArea)} м²`;
       qtyCol  = `${fmt(item.totalArea)} м²`;
-      unitCol = `${fmt(item.rateM2)} лв/м²`;
+      unitCol = `${fmt(item.rateM2)} €/м²`;
+    }
+    // For calc items, build an ops detail sub-table
+    let opDetail = "";
+    if (item.type === "calc" && item.opRows && item.opRows.length > 0) {
+      opDetail = `<table style="width:100%;border-collapse:collapse;margin-top:5pt;font-size:8pt">` +
+        `<thead><tr style="background:#e8edf5">` +
+        `<th style="padding:2pt 4pt;text-align:left">Операция</th>` +
+        `<th style="padding:2pt 4pt;text-align:right">Ставка €</th>` +
+        `<th style="padding:2pt 4pt;text-align:right">Бр.</th>` +
+        `<th style="padding:2pt 4pt;text-align:left">Описание</th>` +
+        `<th style="padding:2pt 4pt;text-align:right">€</th>` +
+        `</tr></thead><tbody>` +
+        item.opRows.map(r =>
+          `<tr style="border-bottom:1px solid #f0f0f0">` +
+          `<td style="padding:2pt 4pt">${esc(r.opName)}</td>` +
+          `<td style="padding:2pt 4pt;text-align:right">${fmt(r.rate)}</td>` +
+          `<td style="padding:2pt 4pt;text-align:right">${r.ops}</td>` +
+          `<td style="padding:2pt 4pt;color:#6b7280">${esc(r.desc)}</td>` +
+          `<td style="padding:2pt 4pt;text-align:right;font-weight:700">${fmt(r.cost)}</td>` +
+          `</tr>`
+        ).join("") +
+        `</tbody></table>`;
     }
     return `<tr>
       <td style="width:52pt;padding:4pt 8pt">${thumb}</td>
       <td style="padding:4pt 8pt">
         <b>${esc(item.name)}</b>${item.notes ? `<br><span style="color:#6b7280;font-size:8.5pt">${esc(item.notes)}</span>` : ""}
         <br><span style="font-size:8.5pt;color:#6b7280">${subLine}</span>
+        ${opDetail}
       </td>
       <td style="padding:4pt 8pt;text-align:center">${qtyCol}</td>
       <td style="padding:4pt 8pt;text-align:right">${unitCol}</td>
-      <td style="padding:4pt 8pt;text-align:right;font-weight:700">${fmt(item.totalCost)} лв</td>
+      <td style="padding:4pt 8pt;text-align:right;font-weight:700">${fmt(item.totalCost)} €</td>
     </tr>`;
   }).join("");
 
@@ -135,13 +158,13 @@ export function generateProjectPDF(p) {
       <th>Позиция</th>
       <th style="text-align:right">Бр.</th>
       <th style="text-align:right">Ед. цена</th>
-      <th style="text-align:right">Общо (лв)</th>
+      <th style="text-align:right">Общо (€)</th>
     </tr></thead>
     <tbody>
       ${rows}${emptyMsg}
       <tr class="total-row">
         <td colspan="4">ОБЩО</td>
-        <td>${fmt(Math.round(grand * 100) / 100)} лв</td>
+        <td>${fmt(Math.round(grand * 100) / 100)} €</td>
       </tr>
     </tbody>
   </table>
