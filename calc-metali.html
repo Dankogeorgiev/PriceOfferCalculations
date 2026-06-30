@@ -10,11 +10,11 @@
   :root{
     --ink:#1F3864; --ink-soft:#33507e; --bg:#EAEEF3; --panel:#FFFFFF; --line:#D2DAE4;
     --steel:#5B6B7F; --muted:#6B7686; --ok:#2F7A4D; --warn:#C0392B; --metal:#8893A4;
-    --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
-    --disp:'Space Grotesk',system-ui,sans-serif; --body:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --mono:'Inter','IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+    --disp:'Inter','Space Grotesk',system-ui,sans-serif; --body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;line-height:1.45}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;font-weight:400;-webkit-font-smoothing:antialiased;line-height:1.55}
   .wrap{max-width:1120px;margin:0 auto;padding:20px}
 
   /* iframe-mode: hide the top header */
@@ -22,8 +22,8 @@
   html.iframe-mode .wrap { padding-top: 12px; }
 
   header.top{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:4px 2px 18px;border-bottom:2px solid var(--ink)}
-  header.top h1{font-family:var(--disp);font-weight:700;font-size:22px;margin:0;letter-spacing:-.01em}
-  header.top .sub{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  header.top h1{font-family:var(--disp);font-weight:800;font-size:24px;margin:0;letter-spacing:-.01em}
+  header.top .sub{font-family:var(--mono);font-size:14px;color:var(--muted)}
   .outer-layout{display:grid;grid-template-columns:1fr 290px;gap:18px;align-items:start}
   @media(max-width:1000px){.outer-layout{grid-template-columns:1fr}}
   .grid{display:grid;grid-template-columns:340px 1fr;gap:18px;margin-top:18px}
@@ -31,37 +31,37 @@
   .sidebar-col{position:sticky;top:16px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:18px}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
   fieldset{border:none;margin:0 0 16px;padding:0}fieldset:last-child{margin-bottom:0}
-  legend{font-family:var(--mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);
+  legend{font-family:var(--mono);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);
     padding:0 0 9px;border-bottom:1px solid var(--line);width:100%;margin-bottom:11px}
-  .sel{width:100%;font-family:var(--body);font-size:14px;font-weight:600;color:var(--ink);background:#F8FAFC;
+  .sel{width:100%;font-family:var(--body);font-size:15px;font-weight:600;color:var(--ink);background:#F8FAFC;
     border:1px solid var(--line);border-radius:8px;padding:9px 10px;outline:none;cursor:pointer}
   .sel:focus,input:focus{border-color:var(--ink);background:#fff;box-shadow:0 0 0 3px rgba(31,56,100,.10)}
   input[type=number]{-moz-appearance:textfield}
   input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
   .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0}
-  .row label{font-size:13px;color:#33405a}
+  .row label{font-size:15px;font-weight:500;color:#33405a}
   .field{position:relative;display:flex;align-items:center}
-  .field input{width:106px;font-family:var(--mono);font-size:14px;font-weight:500;text-align:right;color:var(--ink);
-    background:#F8FAFC;border:1px solid var(--line);border-radius:7px;padding:7px 44px 7px 10px;outline:none}
-  .field .u{position:absolute;right:10px;font-family:var(--mono);font-size:11px;color:var(--muted);pointer-events:none}
+  .field input{width:120px;font-family:var(--mono);font-size:15px;font-weight:600;text-align:right;color:var(--ink);
+    background:#F8FAFC;border:1px solid var(--line);border-radius:7px;padding:8px 48px 8px 10px;outline:none}
+  .field .u{position:absolute;right:10px;font-family:var(--mono);font-size:13px;color:var(--muted);pointer-events:none}
   .warn{color:var(--warn);font-size:12px;margin-top:6px;display:none}
   .stage{display:flex;flex-direction:column;gap:16px}
   .sectionbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
   .draw{flex:0 0 200px;background:#F8FAFC;border:1px solid var(--line);border-radius:10px;height:200px;display:flex;align-items:center;justify-content:center}
   .draw svg{width:100%;height:100%}
   .formula{flex:1 1 200px;min-width:200px}
-  .formula .k{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-  .formula .f{font-family:var(--mono);font-size:14px;color:var(--ink-soft);margin-top:6px;line-height:1.7}
-  .formula .area{font-family:var(--disp);font-weight:700;font-size:21px;margin-top:12px}
+  .formula .k{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .formula .f{font-family:var(--mono);font-size:15px;color:var(--ink-soft);margin-top:6px;line-height:1.7}
+  .formula .area{font-family:var(--disp);font-weight:700;font-size:22px;margin-top:12px}
   .results{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
   @media(max-width:560px){.results{grid-template-columns:repeat(2,1fr)}}
   .stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
-  .stat .k{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-  .stat .v{font-family:var(--disp);font-weight:700;font-size:25px;line-height:1.1;margin-top:6px}
+  .stat .k{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .stat .v{font-family:var(--disp);font-weight:700;font-size:26px;line-height:1.1;margin-top:6px}
   .stat.hero{background:var(--ink)}.stat.hero .k{color:#9fb0cf}.stat.hero .v{color:#fff}
   .stat.cost .v{color:var(--ok)}
-  .stat .vsub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px}.stat.hero .vsub{color:#9fb0cf}
-  .note{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}.note b{color:var(--ink-soft);font-weight:600}
+  .stat .vsub{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:3px}.stat.hero .vsub{color:#9fb0cf}
+  .note{font-size:14px;color:var(--muted);margin-top:4px;line-height:1.5}.note b{color:var(--ink-soft);font-weight:600}
 </style>
 </head>
 <body>

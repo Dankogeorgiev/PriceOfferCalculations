@@ -8,24 +8,24 @@
   :root{
     --ink:#1F3864; --ink-soft:#33507e; --bg:#EAEEF3; --panel:#FFFFFF; --line:#D2DAE4;
     --muted:#6B7686; --warn:#C0392B;
-    --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
-    --disp:'Space Grotesk',system-ui,sans-serif; --body:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --mono:'Inter','IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+    --disp:'Inter','Space Grotesk',system-ui,sans-serif; --body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0}
-  body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;overflow:hidden}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;font-weight:500;-webkit-font-smoothing:antialiased;overflow:hidden}
   .stage{position:fixed;inset:0;background:radial-gradient(120% 120% at 50% 30%,#FFFFFF 0%,#E6EBF1 60%,#DAE0E8 100%)}
   #c{width:100%;height:100%;display:block;cursor:grab}#c:active{cursor:grabbing}
   .bar{position:fixed;top:14px;left:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
     background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:10px;padding:9px 12px;backdrop-filter:blur(4px)}
-  .bar h1{font-family:var(--disp);font-weight:700;font-size:15px;margin:0;letter-spacing:-.01em}
-  .bar .sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
-  .btn{font-family:var(--mono);font-size:12px;font-weight:600;color:#fff;background:var(--ink);border:1px solid var(--ink);
+  .bar h1{font-family:var(--disp);font-weight:800;font-size:17px;margin:0;letter-spacing:-.01em}
+  .bar .sub{font-family:var(--mono);font-size:13px;color:var(--muted)}
+  .btn{font-family:var(--body);font-size:14px;font-weight:700;color:#fff;background:var(--ink);border:1px solid var(--ink);
     border-radius:7px;padding:7px 12px;cursor:pointer}
   .btn:hover{background:#16294a}
   .btn[disabled]{opacity:.5;cursor:default}
   .info{position:fixed;left:14px;bottom:14px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:10px;
-    padding:11px 13px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);min-width:180px;backdrop-filter:blur(4px)}
+    padding:11px 13px;font-family:var(--body);font-size:14px;color:var(--ink-soft);min-width:180px;backdrop-filter:blur(4px)}
   .info .k{color:var(--muted)}
   .info .row{display:flex;justify-content:space-between;gap:18px;margin:3px 0}
   .hint{position:fixed;right:14px;bottom:14px;font-family:var(--mono);font-size:11px;color:var(--muted);

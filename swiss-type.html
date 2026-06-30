@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <style>
-    body { background: var(--bg); }
+    body { background: var(--bg); font-family: 'Inter', "Segoe UI", Roboto, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 1.55; -webkit-font-smoothing: antialiased; }
     .page-layout {
       display: grid;
       grid-template-columns: 1fr 320px;
@@ -22,12 +22,12 @@
     .sw-sidebar { position: sticky; top: 16px; }
     .container { max-width: 100%; margin: 0; padding: 0; }
 
-    .page-title { font-size: 20px; font-weight: 700; color: #1F3864; margin: 0 0 2px; }
-    .page-sub   { color: #6b7280; font-size: 13px; margin: 0 0 20px; }
+    .page-title { font-size: 22px; font-weight: 800; color: #1F3864; margin: 0 0 2px; }
+    .page-sub   { color: #6b7280; font-size: 15px; margin: 0 0 20px; }
 
     /* Параметри (скрити по подразбиране) */
     .params-toggle {
-      font-size: 12px; color: #6b7280; cursor: pointer; border: none; background: none;
+      font-size: 14px; color: #6b7280; cursor: pointer; border: none; background: none;
       padding: 0; margin-bottom: 14px; text-decoration: underline dotted;
     }
     .params-toggle:hover { color: #1F3864; }
@@ -35,18 +35,18 @@
     #params-panel.open { display: block; }
 
     .section-label {
-      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      font-size: 13px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .06em; color: #6b7280; margin: 0 0 10px;
     }
 
     /* Таблица с параметри */
     .param-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
     .param-table tr { border-bottom: 1px solid var(--border); }
-    .param-table td { padding: 6px 4px; font-size: 13px; vertical-align: middle; }
-    .param-table td:first-child { color: #374151; }
-    .param-table td.unit { color: #9ca3af; font-size: 11px; width: 70px; }
+    .param-table td { padding: 7px 5px; font-size: 15px; vertical-align: middle; }
+    .param-table td:first-child { color: #374151; font-weight: 500; }
+    .param-table td.unit { color: #9ca3af; font-size: 13px; width: 70px; }
     .param-table input[type=number] {
-      width: 90px; padding: 5px 8px; font-size: 13px;
+      width: 90px; padding: 6px 8px; font-size: 14px;
       border: 1px solid #93c5fd; border-radius: 6px;
       background: #eff6ff; text-align: right;
     }
@@ -58,7 +58,7 @@
     }
     .rate-pill {
       background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 20px;
-      padding: 4px 12px; font-size: 12px; color: #475569;
+      padding: 5px 14px; font-size: 14px; color: #475569;
     }
     .rate-pill b { color: #1d4ed8; }
 
@@ -69,8 +69,8 @@
       display: flex; align-items: center; gap: 10px;
       padding: 10px 0; border-bottom: 1px solid var(--border);
     }
-    .field-row label { flex: 1; font-size: 14px; color: #374151; }
-    .field-row .unit { font-size: 12px; color: #9ca3af; width: 40px; text-align: left; }
+    .field-row label { flex: 1; font-size: 15px; font-weight: 500; color: #374151; }
+    .field-row .unit { font-size: 13px; color: #9ca3af; width: 44px; text-align: left; }
 
     input.main-input {
       width: 110px; padding: 8px 10px; font-size: 16px; font-weight: 700;
@@ -91,18 +91,18 @@
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
       padding: 14px 16px; margin-bottom: 4px;
     }
-    .mat-block .mat-title { font-size: 12px; font-weight: 700; text-transform: uppercase;
+    .mat-block .mat-title { font-size: 13px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .05em; color: #64748b; margin-bottom: 10px; }
     .mat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-    .mat-row label { flex: 1; font-size: 13px; color: #374151; }
-    .mat-row .unit { font-size: 12px; color: #9ca3af; width: 40px; }
+    .mat-row label { flex: 1; font-size: 15px; font-weight: 500; color: #374151; }
+    .mat-row .unit { font-size: 13px; color: #9ca3af; width: 44px; }
     .mat-row input {
-      width: 110px; padding: 6px 10px; font-size: 14px;
+      width: 110px; padding: 7px 10px; font-size: 15px;
       border: 1px solid #93c5fd; border-radius: 7px;
       background: #eff6ff; text-align: right;
     }
     .mat-row input:focus { outline: 2px solid #2563eb; background: #fff; }
-    .mat-result { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    .mat-result { font-size: 14px; color: #6b7280; margin-top: 4px; }
     .mat-result b { color: #1d4ed8; }
 
     /* Разбивка */
@@ -112,7 +112,7 @@
     }
     .br-row {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 14px;
+      padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 15px;
     }
     .br-row:last-child { border-bottom: none; }
     .br-row .name { color: #374151; }
@@ -121,14 +121,14 @@
       background: #1F3864; padding: 14px 16px;
       display: flex; align-items: center; justify-content: space-between;
     }
-    .br-total .name { color: #9fb0cf; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+    .br-total .name { color: #9fb0cf; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
     .br-total .val  { color: #fff; font-size: 28px; font-weight: 800; }
 
     .br-sell {
       background: #f0fdf4; padding: 12px 16px;
       display: flex; align-items: center; justify-content: space-between; gap: 10px;
     }
-    .br-sell .name { color: #166534; font-size: 13px; font-weight: 600; }
+    .br-sell .name { color: #166534; font-size: 15px; font-weight: 600; }
     .br-sell .val  { color: #15803d; font-size: 22px; font-weight: 800; }
     .margin-row { display: flex; align-items: center; gap: 6px; }
     .margin-row input {
@@ -137,7 +137,7 @@
       background: #dcfce7; text-align: right; color: #15803d;
     }
     .margin-row input:focus { outline: none; border-color: #15803d; background: #fff; }
-    .margin-row span { font-size: 13px; color: #16a34a; font-weight: 600; }
+    .margin-row span { font-size: 15px; color: #16a34a; font-weight: 600; }
 
     /* DXF drop зона */
     .drop-zone {
@@ -148,7 +148,7 @@
     }
     .drop-zone:hover, .drop-zone.dragover { border-color: #2563eb; background: #eff6ff; }
     .drop-zone .drop-icon { font-size: 28px; margin-bottom: 4px; }
-    .drop-zone p { margin: 4px 0 0; color: #6b7280; font-size: 13px; }
+    .drop-zone p { margin: 4px 0 0; color: #6b7280; font-size: 15px; }
     .drop-zone strong { color: #2563eb; }
 
     #dxf-preview-wrap {
@@ -157,7 +157,7 @@
       padding: 12px; text-align: center;
     }
     #dxf-canvas { max-width: 100%; border-radius: 6px; border: 1px solid #e5e7eb; }
-    #dxf-filename { font-size: 12px; color: #6b7280; margin-top: 6px; }
+    #dxf-filename { font-size: 14px; color: #6b7280; margin-top: 6px; }
 
     /* Добави в проект бутон */
     .add-proj-bar {
@@ -166,7 +166,7 @@
       display: none; align-items: center; justify-content: space-between; gap: 12px;
     }
     .add-proj-bar.visible { display: flex; }
-    .add-proj-bar .summary { font-size: 13px; color: #166534; }
+    .add-proj-bar .summary { font-size: 15px; color: #166534; }
     .add-proj-bar button {
       background: #16a34a; color: #fff; border: none; border-radius: 8px;
       padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap;
