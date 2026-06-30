@@ -9,7 +9,18 @@
   <script src="config.js"></script>
   <style>
     body { background: var(--bg); }
-    .container { max-width: 680px; margin: 28px auto; padding: 0 20px; }
+    .page-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 16px;
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 20px;
+      align-items: start;
+    }
+    @media (max-width: 860px) { .page-layout { grid-template-columns: 1fr; } }
+    .sw-sidebar { position: sticky; top: 16px; }
+    .container { max-width: 100%; margin: 0; padding: 0; }
 
     .page-title { font-size: 20px; font-weight: 700; color: #1F3864; margin: 0 0 2px; }
     .page-sub   { color: #6b7280; font-size: 13px; margin: 0 0 20px; }
@@ -165,6 +176,7 @@
 </head>
 <body>
 <div id="project-bar-root"></div>
+<div class="page-layout">
 <div class="container">
   <p class="page-title">⚙️ SWISS Type · SM205 SYNTEC</p>
   <p class="page-sub">Калкулатор на себестойност на детайл</p>
@@ -290,13 +302,24 @@
     <button type="button" id="add-proj-btn">+ Добави към проекта</button>
   </div>
 
+</div><!-- /container -->
+
+<!-- ДЯСНА КОЛОНА — Проект -->
+<div class="sw-sidebar">
+  <div id="swiss-proj-sidebar-root"></div>
 </div>
+
+</div><!-- /page-layout -->
 
 <script type="module">
 import { renderDxfToCanvas, canvasToPng } from "./dxf-preview.js";
 import { initProjectBar } from "./project-bar.js";
+import { initProjectSidebar } from "./project-sidebar.js";
 
-const bar = initProjectBar(document.getElementById("project-bar-root") || document.createElement("div"));
+const sidebar = initProjectSidebar(document.getElementById("swiss-proj-sidebar-root"));
+const bar = initProjectBar(document.getElementById("project-bar-root") || document.createElement("div"), {
+  onChange: () => sidebar.render(),
+});
 
 const BGN_EUR = 1.95583;
 
@@ -511,6 +534,7 @@ document.getElementById("add-proj-btn").addEventListener("click", () => {
     notes: `Машинно: ${proc.toFixed(4)} € · Настройка: ${setup.toFixed(5)} € · Инстр: ${tool.toFixed(4)} €`,
   }, {
     onDone: () => {
+      sidebar.render();
       const btn = document.getElementById("add-proj-btn");
       btn.textContent = "✓ Добавено!";
       btn.style.background = "#15803d";
