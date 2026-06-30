@@ -572,6 +572,13 @@
       $('W').value=p.W; $('H').value=p.H; $('marginX').value=p.mX; $('marginBottom').value=p.mB;
       bars = JSON.parse(JSON.stringify(p.bars));
       bars.forEach(b => { if (b.p >= parts.length) b.p = -1; });
+      // Ако даден детайл не е зает от нито едно желязо, добавяме желязо за него
+      parts.forEach((_, pi) => {
+        if (!bars.some(b => b.p === pi)) {
+          const lastY = bars.length ? Math.max(...bars.map(b => b.y)) : 10;
+          bars.push({y: Math.min(p.H - 10, Math.round((lastY + 20) * 10) / 10), p: pi, o: 0});
+        }
+      });
       selBar = -1; resize3D(); refresh();
     }
     $('hangerSel').addEventListener('change', e => { saveCurrent(); current = e.target.value; applyPreset(current); });
@@ -601,7 +608,15 @@
       refresh();
     });
 
-    $('addPart').addEventListener('click', () => { parts.push({name:'Детайл '+(parts.length+1), d:[15,15,3]}); refresh(); });
+    $('addPart').addEventListener('click', () => {
+      const newIdx = parts.length;
+      parts.push({name:'Детайл '+(newIdx+1), d:[15,15,3]});
+      // Добави желязо за новия детайл — позиционира се под последното
+      const lastY = bars.length ? Math.max(...bars.map(b => b.y)) : 10;
+      const newY = Math.min(num('H') - 10, Math.round((lastY + 20) * 10) / 10);
+      bars.push({y: newY, p: newIdx, o: 0});
+      refresh();
+    });
     $('addBar').addEventListener('click', () => {
       const last = bars.length ? bars[bars.length-1].y : 10;
       bars.push({y:Math.min(num('H')-10, last+20), p:parts.length?0:-1, o:0}); refresh();
