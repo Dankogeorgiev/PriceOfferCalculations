@@ -248,9 +248,23 @@
       <span class="unit">сек</span>
     </div>
     <div class="field-row">
-      <label>Инструменти / консумативи</label>
-      <input type="number" class="sub-input" id="d_tool" value="0" step="0.001" min="0" />
-      <span class="unit">EUR</span>
+      <label>Бройки за заявката</label>
+      <input type="number" class="main-input" id="d_qty" value="1" min="1" step="1" style="border-color:#7c3aed;background:#f5f3ff;color:#5b21b6" />
+      <span class="unit">бр.</span>
+    </div>
+    <div class="field-row" style="background:#fafafa;border-radius:8px;padding:10px 12px;margin:4px 0;border:1px solid #e5e7eb;flex-wrap:wrap;gap:6px">
+      <div style="flex:1;min-width:160px">
+        <div style="font-size:13px;color:#374151;font-weight:600">Инструменти / консумативи</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:2px">Въведи общата сума за заявката → разпределя се на детайл</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <input type="number" class="sub-input" id="d_tool_total" value="0" step="0.01" min="0" placeholder="Общо €" style="width:100px" />
+        <span style="font-size:12px;color:#6b7280">общо за заявка</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <span style="font-size:12px;color:#6b7280">= на детайл:</span>
+        <span id="d_tool_per" style="font-size:14px;font-weight:700;color:#7c3aed;min-width:70px;text-align:right">—</span>
+      </div>
     </div>
   </div>
 
@@ -277,13 +291,48 @@
 
   <!-- Разбивка + Себестойност + Продажна цена -->
   <div class="breakdown">
-    <div class="br-row"><span class="name">Материал</span><span class="val" id="b_mat">—</span></div>
-    <div class="br-row"><span class="name">Машинно време (обработка)</span><span class="val" id="b_proc">—</span></div>
-    <div class="br-row"><span class="name">Спомагателно (настройка)</span><span class="val" id="b_setup">—</span></div>
-    <div class="br-row"><span class="name">Инструменти / консумативи</span><span class="val" id="b_tool">—</span></div>
+    <!-- Заглавен ред -->
+    <div class="br-row" style="background:#f8fafc;padding:6px 16px">
+      <span class="name" style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em">Разход</span>
+      <div style="display:flex;gap:16px">
+        <span style="font-size:11px;color:#9ca3af;text-align:right;min-width:90px">на детайл</span>
+        <span style="font-size:11px;color:#9ca3af;text-align:right;min-width:90px">на заявката</span>
+      </div>
+    </div>
+    <div class="br-row">
+      <span class="name">Материал</span>
+      <div style="display:flex;gap:16px">
+        <span class="val" id="b_mat">—</span>
+        <span class="val" id="b_mat_total" style="color:#7c3aed">—</span>
+      </div>
+    </div>
+    <div class="br-row">
+      <span class="name">Машинно време (обработка)</span>
+      <div style="display:flex;gap:16px">
+        <span class="val" id="b_proc">—</span>
+        <span class="val" id="b_proc_total" style="color:#7c3aed">—</span>
+      </div>
+    </div>
+    <div class="br-row">
+      <span class="name">Спомагателно (настройка)</span>
+      <div style="display:flex;gap:16px">
+        <span class="val" id="b_setup">—</span>
+        <span class="val" id="b_setup_total" style="color:#7c3aed">—</span>
+      </div>
+    </div>
+    <div class="br-row">
+      <span class="name">Инструменти / консумативи</span>
+      <div style="display:flex;gap:16px">
+        <span class="val" id="b_tool">—</span>
+        <span class="val" id="b_tool_total_show" style="color:#7c3aed">—</span>
+      </div>
+    </div>
     <div class="br-total">
       <span class="name">Себестойност</span>
-      <span class="val" id="b_cost">—</span>
+      <div style="display:flex;gap:16px;align-items:baseline">
+        <span class="val" id="b_cost" style="font-size:22px">—</span>
+        <span id="b_cost_total" style="color:#9fb0cf;font-size:14px;font-weight:700;min-width:90px;text-align:right">—</span>
+      </div>
     </div>
     <div class="br-sell">
       <span class="name">Продажна цена</span>
@@ -292,7 +341,10 @@
         <input type="number" id="d_margin" placeholder="%" step="1" min="0" />
         <span>%</span>
       </div>
-      <span class="val" id="b_price">—</span>
+      <div style="display:flex;gap:16px;align-items:baseline">
+        <span class="val" id="b_price">—</span>
+        <span id="b_price_total" style="color:#15803d;font-size:14px;font-weight:700;min-width:90px;text-align:right">—</span>
+      </div>
     </div>
   </div>
 
@@ -370,20 +422,34 @@ function calc() {
   document.getElementById("m_cost").textContent   = matCost.toFixed(4) + " €";
 
   // --- Детайл ---
-  const secs   = g("d_secs");
-  const tool   = g("d_tool");
-  const margin = g("d_margin") / 100;
+  const secs       = g("d_secs");
+  const qty        = Math.max(1, Math.round(g("d_qty") || 1));
+  const toolTotal  = g("d_tool_total");       // обща сума инструменти за заявката
+  const toolPer    = toolTotal / qty;          // на детайл
+  const margin     = g("d_margin") / 100;
 
-  const procCost = secs * totalS;
-  const cost     = matCost + procCost + setupPart + tool;
+  document.getElementById("d_tool_per").textContent = toolPer.toFixed(4) + " €";
+
+  const procCost  = secs * totalS;
+  const cost      = matCost + procCost + setupPart + toolPer;
   const sellPrice = margin > 0 ? cost * (1 + margin) : null;
 
+  // На детайл
   document.getElementById("b_mat").textContent   = matCost.toFixed(4) + " €";
   document.getElementById("b_proc").textContent  = procCost.toFixed(4) + " €";
   document.getElementById("b_setup").textContent = setupPart.toFixed(5) + " €";
-  document.getElementById("b_tool").textContent  = tool.toFixed(4) + " €";
+  document.getElementById("b_tool").textContent  = toolPer.toFixed(4) + " €";
   document.getElementById("b_cost").textContent  = cost.toFixed(4) + " €";
   document.getElementById("b_price").textContent = sellPrice !== null ? sellPrice.toFixed(4) + " €" : "—";
+
+  // На заявката (× qty)
+  const T = v => (v * qty).toFixed(2) + " €";
+  document.getElementById("b_mat_total").textContent       = T(matCost);
+  document.getElementById("b_proc_total").textContent      = T(procCost);
+  document.getElementById("b_setup_total").textContent     = T(setupPart);
+  document.getElementById("b_tool_total_show").textContent = toolTotal.toFixed(2) + " €";
+  document.getElementById("b_cost_total").textContent      = T(cost);
+  document.getElementById("b_price_total").textContent     = sellPrice !== null ? T(sellPrice) : "—";
 }
 
 function toggleParams() {
@@ -514,6 +580,7 @@ document.getElementById("add-proj-btn").addEventListener("click", () => {
   const name    = document.getElementById("d_name").value.trim() || currentFileName || "SWISS Type детайл";
   const cost    = parseFloat(document.getElementById("b_cost").textContent) || 0;
   const price   = parseFloat(document.getElementById("b_price").textContent) || 0;
+  const qty     = Math.max(1, Math.round(parseFloat(document.getElementById("d_qty").value) || 1));
   const mat     = parseFloat(document.getElementById("b_mat").textContent) || 0;
   const proc    = parseFloat(document.getElementById("b_proc").textContent) || 0;
   const setup   = parseFloat(document.getElementById("b_setup").textContent) || 0;
@@ -523,7 +590,7 @@ document.getElementById("add-proj-btn").addEventListener("click", () => {
     type: "swiss",
     name,
     png: currentPng,
-    qty: 1,
+    qty,
     mat,
     proc,
     setup,
@@ -531,7 +598,7 @@ document.getElementById("add-proj-btn").addEventListener("click", () => {
     totalCost: cost,
     totalEUR: cost,
     sellPrice: price || cost,
-    notes: `Машинно: ${proc.toFixed(4)} € · Настройка: ${setup.toFixed(5)} € · Инстр: ${tool.toFixed(4)} €`,
+    notes: `${qty} бр. · Машинно: ${proc.toFixed(4)} € · Настройка: ${setup.toFixed(5)} € · Инстр: ${tool.toFixed(4)} €`,
   }, {
     onDone: () => {
       sidebar.render();
