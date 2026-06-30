@@ -24,10 +24,10 @@
       width: 100%; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
     }
     .pc-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 7px 0; }
-    .pc-row label { font-size: 13px; color: #33405a; }
+    .pc-row label { font-size: 15px; color: #33405a; }
     .pc-field { position: relative; display: flex; align-items: center; }
     .pc-field input {
-      width: 86px; font-family: 'Courier New', monospace; font-size: 13px; font-weight: 600;
+      width: 86px; font-family: 'Courier New', monospace; font-size: 15px; font-weight: 600;
       text-align: right; color: var(--text); background: #f8fafc;
       border: 1px solid var(--border); border-radius: 7px; padding: 6px 28px 6px 9px;
     }
@@ -54,7 +54,7 @@
       background: transparent; color: var(--text); outline: none; padding: 2px;
     }
     .pc-item input.idim {
-      width: 42px; flex: 0 0 auto; font-family: monospace; font-size: 12px;
+      width: 42px; flex: 0 0 auto; font-family: monospace; font-size: 14px;
       text-align: right; border: 1px solid var(--border); border-radius: 5px;
       padding: 4px 5px; background: #fff; outline: none;
     }
@@ -62,11 +62,11 @@
     .pc-item input.bar-n { width: 36px; background: #f0fdf4; border-color: #bbf7d0; }
     .pc-item input.bar-n:focus { border-color: #16a34a; }
     .pc-item select {
-      flex: 1 1 0; min-width: 0; font-size: 12px; border: 1px solid var(--border);
+      flex: 1 1 0; min-width: 0; font-size: 14px; border: 1px solid var(--border);
       border-radius: 5px; padding: 4px 5px; background: #fff; color: var(--text); outline: none;
     }
     .pc-item .ro {
-      flex: 0 0 auto; font-family: monospace; font-size: 12px; color: var(--text);
+      flex: 0 0 auto; font-family: monospace; font-size: 14px; color: var(--text);
       background: #fff; border: 1px solid var(--border); border-radius: 5px; padding: 4px 7px; cursor: pointer;
     }
     .pc-item .ro:hover { background: #1F3864; color: #fff; }
@@ -79,11 +79,11 @@
     .baridx { font-family: monospace; font-size: 11px; color: var(--muted); width: 14px; text-align: center; flex: 0 0 auto; }
     .addbar { display: flex; gap: 7px; margin-top: 9px; align-items: center; flex-wrap: wrap; }
     .addbar input {
-      width: 48px; font-family: monospace; font-size: 12px; text-align: right;
+      width: 48px; font-family: monospace; font-size: 14px; text-align: right;
       border: 1px solid var(--border); border-radius: 6px; padding: 5px 6px; background: #fff; outline: none;
     }
     .pc-btn {
-      font-size: 12px; font-weight: 700; color: #1F3864; background: #eff6ff;
+      font-size: 14px; font-weight: 700; color: #1F3864; background: #eff6ff;
       border: 1px solid #bfdbfe; border-radius: 7px; padding: 6px 10px; cursor: pointer; white-space: nowrap;
     }
     .pc-btn:hover { background: #1F3864; color: #fff; border-color: #1F3864; }
@@ -91,7 +91,7 @@
     /* ---- 3D stage ---- */
     .pc-stage { display: flex; flex-direction: column; min-width: 0; }
     .viewbar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
-    .viewbar .sel-info { font-family: monospace; font-size: 12px; color: var(--muted); }
+    .viewbar .sel-info { font-family: monospace; font-size: 14px; color: var(--muted); }
     .draw { position: relative; background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; height: 480px; }
     #canvasHost { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
     #canvasHost.carry { cursor: ew-resize; }
@@ -109,7 +109,7 @@
     .stat.hero .v { color: #fff; }
     .stat.hero .vsub { color: #9fb0cf; }
     table.bd { width: 100%; border-collapse: collapse; margin-top: 12px; background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-    table.bd th, table.bd td { text-align: right; padding: 8px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
+    table.bd th, table.bd td { text-align: right; padding: 8px 12px; font-size: 15px; border-bottom: 1px solid var(--border); }
     table.bd th { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; background: #f6f8fb; }
     table.bd td:first-child, table.bd th:first-child { text-align: left; }
     table.bd tr:last-child td { border-bottom: none; }
@@ -122,9 +122,9 @@
       border: 1px solid #bbf7d0; border-radius: 10px;
       display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
     }
-    .add-proj-bar .apb-info { font-size: 13px; color: #166534; flex: 1; min-width: 160px; }
+    .add-proj-bar .apb-info { font-size: 15px; color: #166534; flex: 1; min-width: 160px; }
     .add-proj-bar .apb-field { display: flex; align-items: center; gap: 6px; }
-    .add-proj-bar .apb-field label { font-size: 13px; font-weight: 600; color: #166534; white-space: nowrap; }
+    .add-proj-bar .apb-field label { font-size: 15px; font-weight: 600; color: #166534; white-space: nowrap; }
     .add-proj-bar .apb-field input {
       width: 80px; padding: 6px 8px; border: 1px solid #86efac; border-radius: 7px;
       font-size: 14px; font-weight: 700; background: #fff; color: #166534;
@@ -135,9 +135,10 @@
     }
     .add-proj-btn:hover { background: #15803d; }
 
-    .pc-note { font-size: 12px; color: var(--muted); margin-top: 12px; line-height: 1.5; }
+    .pc-note { font-size: 14px; color: var(--muted); margin-top: 12px; line-height: 1.5; }
     .pc-note b { color: #33507e; font-weight: 600; }
   </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
   <script>if (window.self !== window.top) document.documentElement.classList.add('iframe-mode');</script>
