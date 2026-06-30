@@ -37,8 +37,13 @@ const SIDEBAR_CSS = `
   .ps-badge { display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 5px;
               border-radius: 4px; margin-right: 3px; vertical-align: middle; }
   .ps-price { font-size: 13px; font-weight: 800; color: #1d4ed8; white-space: nowrap; }
-  .ps-del { background: none; border: none; color: #d1d5db; font-size: 15px; cursor: pointer; padding: 0 2px; flex-shrink: 0; line-height: 1; }
-  .ps-del:hover { color: #dc2626; }
+  .ps-del {
+    background: #fef2f2; border: 1px solid #fecaca; color: #f87171;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    padding: 4px 8px; border-radius: 6px; flex-shrink: 0; line-height: 1;
+    transition: background .12s, color .12s;
+  }
+  .ps-del:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
   .ps-total { margin-top: 10px; padding-top: 8px; border-top: 2px solid #e5e7eb;
               display: flex; justify-content: space-between; align-items: baseline; }
   .ps-total .ps-tot-lbl { font-size: 12px; color: #6b7280; font-weight: 600; }
@@ -140,22 +145,25 @@ export function initProjectSidebar(containerEl) {
           <div class="ps-sub">${sub}</div>
           ${item.notes ? `<div class="ps-sub" style="font-style:italic">${esc(item.notes)}</div>` : ""}
         </div>
-        <div class="ps-price">${fmt(item.totalCost)} лв</div>
-        <button class="ps-del" data-idx="${i}" title="Премахни позицията">✕</button>
+        <div class="ps-price">${fmt(item.totalCost)} €</div>
+        <button class="ps-del" data-idx="${i}" data-name="${esc(item.name)}" title="Премахни позицията">🗑 Махни</button>
       </div>`;
     }).join("");
     listEl.appendChild(emptyEl);
 
     const grand = items.reduce((s, it) => s + (it.totalCost || 0), 0);
-    totVal.textContent = fmt(Math.round(grand * 100) / 100) + " лв";
+    totVal.textContent = fmt(Math.round(grand * 100) / 100) + " €";
     totalEl.style.display = "";
     pdfBtn.disabled = false;
     clearBtn.style.display = "";
   }
 
   containerEl.querySelector("#ps-list").addEventListener("click", e => {
-    const idx = e.target.getAttribute("data-idx");
-    if (idx === null) return;
+    const btn = e.target.closest(".ps-del");
+    if (!btn) return;
+    const idx  = btn.getAttribute("data-idx");
+    const name = btn.getAttribute("data-name") || "тази позиция";
+    if (!confirm(`Махни „${name}" от проекта?`)) return;
     removeItem(Number(idx));
     render();
   });
