@@ -75,6 +75,13 @@ export function generateProjectPDF(p) {
       subLine = `мат. ${fmt(item.mat)} € · труд ${fmt(item.op)} €${purPart}`;
       qtyCol  = item.qty;
       unitCol = `${fmt(item.totalEUR)} €/бр.`;
+    } else if (item.type === "swiss") {
+      thumb   = item.png
+        ? `<img src="${item.png}" style="width:48pt;height:36pt;object-fit:contain;border:1px solid #e5e7eb;border-radius:4pt;display:block"/>`
+        : `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">⚙️</div>`;
+      subLine = `мат. ${fmt(item.mat)} € · машинно ${fmt(item.proc)} € · настройка ${fmt(item.setup)} € · инстр. ${fmt(item.tool)} €`;
+      qtyCol  = item.qty || 1;
+      unitCol = `${fmt(item.totalEUR)} €/бр.`;
     } else {
       thumb   = `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🎨</div>`;
       subLine = `${esc(item.coatName || "")}${item.color ? ", " + esc(item.color) : ""} · ${fmt(item.totalArea)} м²`;

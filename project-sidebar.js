@@ -119,8 +119,12 @@ export function initProjectSidebar(containerEl) {
       } else if (item.type === "calc") {
         icon  = "🔧";
         badge = `<span class="ps-badge" style="background:#eff6ff;color:#1d4ed8">КАЛК</span>`;
-        const purLine = item.pur > 0 ? ` + покупни ${fmt(item.pur)} лв` : "";
-        sub   = `мат. ${fmt(item.mat)} + труд ${fmt(item.op)} лв${purLine}`;
+        const purLine = item.pur > 0 ? ` + покупни ${fmt(item.pur)} €` : "";
+        sub   = `мат. ${fmt(item.mat)} + труд ${fmt(item.op)} €${purLine}`;
+      } else if (item.type === "swiss") {
+        icon  = item.png ? `<img src="${item.png}" alt="">` : "⚙️";
+        badge = `<span class="ps-badge" style="background:#fef3c7;color:#92400e">SWISS</span>`;
+        sub   = `мат. ${fmt(item.mat)} € · машинно ${fmt(item.proc)} €`;
       } else {
         icon  = "🎨";
         badge = `<span class="ps-badge" style="background:#fae8ff;color:#7e22ce">БОЯ</span>`;

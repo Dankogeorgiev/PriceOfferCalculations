@@ -127,9 +127,44 @@
     }
     .margin-row input:focus { outline: none; border-color: #15803d; background: #fff; }
     .margin-row span { font-size: 13px; color: #16a34a; font-weight: 600; }
+
+    /* DXF drop зона */
+    .drop-zone {
+      border: 2px dashed #93c5fd; border-radius: 10px;
+      background: #f8faff; padding: 20px; text-align: center;
+      cursor: pointer; transition: border-color .15s, background .15s;
+      margin-top: 16px;
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: #2563eb; background: #eff6ff; }
+    .drop-zone .drop-icon { font-size: 28px; margin-bottom: 4px; }
+    .drop-zone p { margin: 4px 0 0; color: #6b7280; font-size: 13px; }
+    .drop-zone strong { color: #2563eb; }
+
+    #dxf-preview-wrap {
+      margin-top: 12px; display: none;
+      background: #fff; border: 1px solid var(--border); border-radius: 10px;
+      padding: 12px; text-align: center;
+    }
+    #dxf-canvas { max-width: 100%; border-radius: 6px; border: 1px solid #e5e7eb; }
+    #dxf-filename { font-size: 12px; color: #6b7280; margin-top: 6px; }
+
+    /* Добави в проект бутон */
+    .add-proj-bar {
+      margin-top: 14px; padding: 14px 16px;
+      background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;
+      display: none; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .add-proj-bar.visible { display: flex; }
+    .add-proj-bar .summary { font-size: 13px; color: #166534; }
+    .add-proj-bar button {
+      background: #16a34a; color: #fff; border: none; border-radius: 8px;
+      padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap;
+    }
+    .add-proj-bar button:hover { background: #15803d; }
   </style>
 </head>
 <body>
+<div id="project-bar-root"></div>
 <div class="container">
   <p class="page-title">⚙️ SWISS Type · SM205 SYNTEC</p>
   <p class="page-sub">Калкулатор на себестойност на детайл</p>
@@ -207,6 +242,27 @@
     </div>
   </div>
 
+  <!-- Наименование на детайла -->
+  <div class="field-row" style="padding:10px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px">
+    <label style="flex:1;font-size:14px;color:#374151">Наименование на детайла</label>
+    <input type="text" id="d_name" placeholder="напр. Вал Ø20×50" style="flex:2;padding:7px 10px;font-size:14px;border:1px solid #d1d5db;border-radius:7px" />
+  </div>
+
+  <!-- DXF визуализация -->
+  <div class="drop-zone" id="dxf-drop">
+    <div class="drop-icon">📐</div>
+    <p><strong>Пусни DXF файл тук</strong> или кликни за избор</p>
+    <p>Визуализация на детайла — прикрепя се към проекта</p>
+  </div>
+  <input type="file" id="dxf-file-input" accept=".dxf" style="display:none" />
+  <p id="dxf-error" style="color:#dc2626;font-size:13px;margin:4px 0 0"></p>
+
+  <div id="dxf-preview-wrap">
+    <canvas id="dxf-canvas" width="500" height="300"></canvas>
+    <div id="dxf-filename"></div>
+    <button type="button" id="dxf-clear" class="ghost" style="margin-top:8px;font-size:12px;padding:4px 10px">✕ Премахни чертеж</button>
+  </div>
+
   <!-- Разбивка + Себестойност + Продажна цена -->
   <div class="breakdown">
     <div class="br-row"><span class="name">Материал</span><span class="val" id="b_mat">—</span></div>
@@ -228,9 +284,20 @@
     </div>
   </div>
 
+  <!-- Добави в проект -->
+  <div class="add-proj-bar" id="add-proj-bar">
+    <div class="summary" id="add-proj-summary">—</div>
+    <button type="button" id="add-proj-btn">+ Добави към проекта</button>
+  </div>
+
 </div>
 
-<script>
+<script type="module">
+import { renderDxfToCanvas, canvasToPng } from "./dxf-preview.js";
+import { initProjectBar } from "./project-bar.js";
+
+const bar = initProjectBar(document.getElementById("project-bar-root") || document.createElement("div"));
+
 const BGN_EUR = 1.95583;
 
 function g(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
@@ -346,7 +413,7 @@ async function loadFromSupabase() {
   calc();
 }
 
-document.querySelectorAll("input").forEach(el => el.addEventListener("input", calc));
+document.querySelectorAll("input").forEach(el => el.addEventListener("input", () => { calc(); updateAddBar(); }));
 
 // Зарежда Supabase ако е в iframe (сесията е в localStorage)
 if (typeof supabase !== "undefined" && typeof SUPABASE_URL !== "undefined") {
@@ -354,6 +421,103 @@ if (typeof supabase !== "undefined" && typeof SUPABASE_URL !== "undefined") {
 } else {
   calc();
 }
+
+// ---- DXF визуализация ----
+let currentPng = "";
+let currentFileName = "";
+
+const dropZone  = document.getElementById("dxf-drop");
+const fileInput = document.getElementById("dxf-file-input");
+const canvas    = document.getElementById("dxf-canvas");
+const previewWrap = document.getElementById("dxf-preview-wrap");
+const dxfError  = document.getElementById("dxf-error");
+
+dropZone.addEventListener("click", () => fileInput.click());
+dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("dragover"); });
+dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+dropZone.addEventListener("drop", e => {
+  e.preventDefault(); dropZone.classList.remove("dragover");
+  if (e.dataTransfer.files[0]) loadDxf(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener("change", () => { if (fileInput.files[0]) loadDxf(fileInput.files[0]); });
+
+document.getElementById("dxf-clear").addEventListener("click", () => {
+  currentPng = ""; currentFileName = "";
+  previewWrap.style.display = "none";
+  dropZone.style.display = "";
+  dxfError.textContent = "";
+  fileInput.value = "";
+  updateAddBar();
+});
+
+async function loadDxf(file) {
+  dxfError.textContent = "";
+  if (!file.name.toLowerCase().endsWith(".dxf")) {
+    dxfError.textContent = "Моля качи .dxf файл."; return;
+  }
+  currentFileName = file.name.replace(/\.dxf$/i, "");
+  const text = await file.text();
+  try {
+    const { analyzeDxf } = await import("./dxf-analyzer.js");
+    const geo = analyzeDxf(text);
+    renderDxfToCanvas(geo.entities, canvas, { lineWidth: 1.5 });
+    currentPng = canvasToPng(canvas);
+    document.getElementById("dxf-filename").textContent = "✓ " + file.name;
+    previewWrap.style.display = "block";
+    dropZone.style.display = "none";
+    updateAddBar();
+  } catch(err) {
+    dxfError.textContent = "Грешка при четене на DXF: " + err.message;
+  }
+}
+
+// ---- Добави в проект ----
+let lastCost = 0;
+
+function updateAddBar() {
+  const cost = parseFloat(document.getElementById("b_cost").textContent) || 0;
+  lastCost = cost;
+  if (cost <= 0) return;
+  const addBar = document.getElementById("add-proj-bar");
+  const name = document.getElementById("d_name").value.trim() || currentFileName || "SWISS Type детайл";
+  const price = parseFloat(document.getElementById("b_price").textContent) || 0;
+  addBar.classList.add("visible");
+  document.getElementById("add-proj-summary").innerHTML =
+    `<b>${name}</b> · Себестойност: <b>${cost.toFixed(4)} €</b>` +
+    (price > 0 ? ` · Продажна: <b>${price.toFixed(4)} €</b>` : "");
+}
+
+document.getElementById("add-proj-btn").addEventListener("click", () => {
+  const name    = document.getElementById("d_name").value.trim() || currentFileName || "SWISS Type детайл";
+  const cost    = parseFloat(document.getElementById("b_cost").textContent) || 0;
+  const price   = parseFloat(document.getElementById("b_price").textContent) || 0;
+  const mat     = parseFloat(document.getElementById("b_mat").textContent) || 0;
+  const proc    = parseFloat(document.getElementById("b_proc").textContent) || 0;
+  const setup   = parseFloat(document.getElementById("b_setup").textContent) || 0;
+  const tool    = parseFloat(document.getElementById("b_tool").textContent) || 0;
+
+  bar.pickAndAdd({
+    type: "swiss",
+    name,
+    png: currentPng,
+    qty: 1,
+    mat,
+    proc,
+    setup,
+    tool,
+    totalCost: cost,
+    totalEUR: cost,
+    sellPrice: price || cost,
+    notes: `Машинно: ${proc.toFixed(4)} € · Настройка: ${setup.toFixed(5)} € · Инстр: ${tool.toFixed(4)} €`,
+  }, {
+    onDone: () => {
+      const btn = document.getElementById("add-proj-btn");
+      btn.textContent = "✓ Добавено!";
+      btn.style.background = "#15803d";
+      setTimeout(() => { btn.textContent = "+ Добави към проекта"; btn.style.background = ""; }, 2000);
+    }
+  });
+});
 
 if (window.self !== window.top) document.documentElement.classList.add("iframe-mode");
 </script>
