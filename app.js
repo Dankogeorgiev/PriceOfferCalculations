@@ -379,12 +379,12 @@ function addOpRow() {
   const opts = `<option value="">— Избери операция (труд) —</option>` +
     refOp.map((r) => `<option value="${r.id}">${esc(r.operation)}${r.machine ? " / " + esc(r.machine) : ""}</option>`).join("");
   tr.innerHTML =
-    `<td><select class="o-op">${opts}</select></td>` +
-    `<td><input type="number" step="any" class="o-rate-input" placeholder="0.00" style="width:80px;text-align:right" /> <span class="o-rate-unit" style="font-size:11px;color:#6b7280"></span></td>` +
-    `<td><input type="number" step="any" class="o-ops" value="1" /></td>` +
-    `<td><input type="text" class="o-desc" placeholder="описание…" style="width:100%;min-width:90px" /></td>` +
-    `<td class="right o-cost">0.00</td>` +
-    `<td><button type="button" class="ghost danger o-del">✕</button></td>`;
+    `<td style="min-width:200px;width:35%"><select class="o-op" style="min-width:180px">${opts}</select></td>` +
+    `<td style="width:110px;white-space:nowrap"><input type="number" step="any" class="o-rate-input" placeholder="0.00" style="width:72px;text-align:right" /> <span class="o-rate-unit" style="font-size:11px;color:#6b7280"></span></td>` +
+    `<td style="width:80px"><input type="number" step="any" class="o-ops" value="1" style="width:60px" /></td>` +
+    `<td><input type="text" class="o-desc" placeholder="описание…" style="width:100%;min-width:80px" /></td>` +
+    `<td class="right o-cost" style="width:70px">0.00</td>` +
+    `<td style="width:36px"><button type="button" class="ghost danger o-del">✕</button></td>`;
   document.getElementById("calc-op-body").appendChild(tr);
   ["input", "change"].forEach((ev) => tr.addEventListener(ev, () => recalcOp(tr)));
   tr.querySelector(".o-del").addEventListener("click", () => tr.remove());
