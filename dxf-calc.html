@@ -209,7 +209,7 @@
             <input type="number" id="p-density" value="7850" min="100" />
           </div>
           <div class="param-field">
-            <label>Цена/кг (лв)</label>
+            <label>Цена/кг (€)</label>
             <input type="number" id="p-price-kg" value="1.80" min="0" step="0.01" />
           </div>
         </div>
@@ -226,7 +226,7 @@
             <input type="number" id="p-pierce-time" value="0.5" min="0" step="0.1" />
           </div>
           <div class="param-field">
-            <label>Ставка лазер (лв/час)</label>
+            <label>Ставка лазер (€/час)</label>
             <input type="number" id="p-laser-rate" value="60" min="0" />
           </div>
           <div class="param-field">
@@ -262,7 +262,7 @@
         </div>
         <div class="project-total" id="project-total" style="display:none">
           <span class="lbl">Общо</span>
-          <span class="val" id="project-total-val">0.00 лв</span>
+          <span class="val" id="project-total-val">0.00 €</span>
         </div>
         <button class="offer-btn" id="offer-btn" disabled>Генерирай оферта PDF</button>
         <button class="clear-btn" id="clear-btn" style="display:none">Изчисти проекта</button>
@@ -384,16 +384,16 @@
 
       document.getElementById("calc-result-grid").innerHTML = `
         <div class="result-box blue"><div class="r-val">${fmt(weight)} кг</div><div class="r-lbl">Тегло / дет.</div></div>
-        <div class="result-box green"><div class="r-val">${fmt(matCost)} лв</div><div class="r-lbl">Материал / дет.</div></div>
-        <div class="result-box orange"><div class="r-val">${fmt(laser.cost)} лв</div><div class="r-lbl">Лазер / дет.</div></div>
-        <div class="result-box blue"><div class="r-val">${fmt(totalUnit)} лв</div><div class="r-lbl">Общо / дет.</div></div>
+        <div class="result-box green"><div class="r-val">${fmt(matCost)} €</div><div class="r-lbl">Материал / дет.</div></div>
+        <div class="result-box orange"><div class="r-val">${fmt(laser.cost)} €</div><div class="r-lbl">Лазер / дет.</div></div>
+        <div class="result-box blue"><div class="r-val">${fmt(totalUnit)} €</div><div class="r-lbl">Общо / дет.</div></div>
         <div class="result-box green" style="border-width:2px">
-          <div class="r-val" style="font-size:26px">${fmt(totalAll)} лв</div>
+          <div class="r-val" style="font-size:26px">${fmt(totalAll)} €</div>
           <div class="r-lbl">Общо за ${qty} бр.</div>
         </div>
       `;
       document.getElementById("result-detail").textContent =
-        `Разрез: ${fmt(geoData.cut_length_mm)} мм · ${geoData.pierces} проб. · ${feed} мм/мин · ${laserRate} лв/ч · ${thickness} мм · ${getDensity()} кг/м³`;
+        `Разрез: ${fmt(geoData.cut_length_mm)} мм · ${geoData.pierces} проб. · ${feed} мм/мин · ${laserRate} €/ч · ${thickness} мм · ${getDensity()} кг/м³`;
       document.getElementById("result-section").style.display = "";
       document.getElementById("result-section").scrollIntoView({ behavior: "smooth" });
     });
@@ -456,20 +456,20 @@
         if (item.type === "dxf") {
           icon  = `<img class="pi-thumb" src="${item.png}" alt="${esc(item.name)}" />`;
           badge = `<span class="pi-badge dxf">DXF</span>`;
-          sub   = `${item.qty} бр. × ${fmt(item.unitCost)} лв`;
+          sub   = `${item.qty} бр. × ${fmt(item.unitCost)} €`;
         } else if (item.type === "barcut") {
           icon  = `<div class="pi-thumb-bar">🔩</div>`;
           badge = `<span class="pi-badge bar">ПРЪТ</span>`;
-          sub   = `${item.bars} пр. × ${fmt(item.pricePerBar)} лв`;
+          sub   = `${item.bars} пр. × ${fmt(item.pricePerBar)} €`;
         } else if (item.type === "calc") {
           icon  = `<div class="pi-thumb-bar">🔧</div>`;
           badge = `<span class="pi-badge" style="background:#eff6ff;color:#1d4ed8">КАЛК</span>`;
-          const purLine = item.pur > 0 ? ` + покупни ${fmt(item.pur)} лв` : "";
-          sub   = `мат. ${fmt(item.mat)} лв + труд ${fmt(item.op)} лв${purLine}`;
+          const purLine = item.pur > 0 ? ` + покупни ${fmt(item.pur)} €` : "";
+          sub   = `мат. ${fmt(item.mat)} € + труд ${fmt(item.op)} €${purLine}`;
         } else {
           icon  = `<div class="pi-thumb-bar">🎨</div>`;
           badge = `<span class="pi-badge" style="background:#fae8ff;color:#7e22ce">БОЯ</span>`;
-          sub   = item.displaySub || `${fmt(item.totalArea)} м² · ${fmt(item.rateM2)} лв/м²`;
+          sub   = item.displaySub || `${fmt(item.totalArea)} м² · ${fmt(item.rateM2)} €/м²`;
         }
         return `<div class="project-item">
           ${icon}
@@ -478,7 +478,7 @@
             <div class="pi-sub">${sub}</div>
             ${item.notes ? `<div class="pi-sub" style="font-style:italic">${esc(item.notes)}</div>` : ""}
           </div>
-          <div class="pi-price">${fmt(item.totalCost)} лв</div>
+          <div class="pi-price">${fmt(item.totalCost)} €</div>
           <button class="pi-del" data-idx="${i}" title="Премахни">✕</button>
         </div>`;
       }).join("");
@@ -488,7 +488,7 @@
 
       const grand = items.reduce((s, it) => s + (it.totalCost || 0), 0);
       totalEl.style.display = "";
-      totalValEl.textContent = fmt(Math.round(grand * 100) / 100) + " лв";
+      totalValEl.textContent = fmt(Math.round(grand * 100) / 100) + " €";
       offerBtn.disabled = false;
       clearBtn.style.display = "";
     }
@@ -526,22 +526,22 @@
           thumb   = `<img src="${item.png}" style="width:48pt;height:36pt;object-fit:contain;border:1px solid #e5e7eb;border-radius:4pt;display:block"/>`;
           subLine = `${esc(item.calc?.matName || "")}, ${item.calc?.thickness || ""} мм · разрез ${fmt(item.geo?.cut_length_mm)} мм · ${item.geo?.pierces || 0} проб.`;
           qtyCol  = item.qty;
-          unitCol = `${fmt(item.unitCost)} лв`;
+          unitCol = `${fmt(item.unitCost)} €`;
         } else if (item.type === "barcut") {
           thumb   = `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🔩</div>`;
           subLine = `${item.bars} пр. × ${item.barLenM} м · kerf ${item.kerf} мм`;
           qtyCol  = item.bars;
-          unitCol = `${fmt(item.pricePerBar)} лв/пр.`;
+          unitCol = `${fmt(item.pricePerBar)} €/пр.`;
         } else if (item.type === "calc") {
           thumb   = `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🔧</div>`;
-          subLine = `мат. ${fmt(item.mat)} лв · труд ${fmt(item.op)} лв · лазер ${fmt(item.laser)} лв`;
+          subLine = `мат. ${fmt(item.mat)} € · труд ${fmt(item.op)} € · лазер ${fmt(item.laser)} €`;
           qtyCol  = item.qty;
           unitCol = `${fmt(item.totalEUR)} €/бр.`;
         } else {
           thumb   = `<div style="width:48pt;height:36pt;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4pt;font-size:22pt">🎨</div>`;
           subLine = `${esc(item.coatName || "")}${item.color ? ", " + esc(item.color) : ""} · ${fmt(item.totalArea)} м²`;
           qtyCol  = `${fmt(item.totalArea)} м²`;
-          unitCol = `${fmt(item.rateM2)} лв/м²`;
+          unitCol = `${fmt(item.rateM2)} €/м²`;
         }
         return `<tr>
           <td style="width:52pt;padding:4pt 8pt">${thumb}</td>
@@ -551,7 +551,7 @@
           </td>
           <td style="padding:4pt 8pt;text-align:center">${qtyCol}</td>
           <td style="padding:4pt 8pt;text-align:right">${unitCol}</td>
-          <td style="padding:4pt 8pt;text-align:right;font-weight:700">${fmt(item.totalCost)} лв</td>
+          <td style="padding:4pt 8pt;text-align:right;font-weight:700">${fmt(item.totalCost)} €</td>
         </tr>`;
       }).join("");
 
@@ -593,13 +593,13 @@
       <th>Позиция</th>
       <th style="text-align:right">Бр.</th>
       <th style="text-align:right">Ед. цена</th>
-      <th style="text-align:right">Общо (лв)</th>
+      <th style="text-align:right">Общо (€)</th>
     </tr></thead>
     <tbody>
       ${rows}
       <tr class="total-row">
         <td colspan="4">ОБЩО</td>
-        <td>${fmt(Math.round(grand * 100) / 100)} лв</td>
+        <td>${fmt(Math.round(grand * 100) / 100)} €</td>
       </tr>
     </tbody>
   </table>

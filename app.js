@@ -432,12 +432,12 @@ function computeCalc() {
   const totalEUR = totalBGN / BGN_EUR;
   document.getElementById("calc-breakdown").innerHTML =
     `<table class="data-table">` +
-    `<tr><td>Материали</td><td class="right">${mat.toFixed(2)} лв</td></tr>` +
-    `<tr><td>Операции (труд)</td><td class="right">${op.toFixed(2)} лв</td></tr>` +
-    `<tr><td>Покупни изделия</td><td class="right">${pur.toFixed(2)} лв</td></tr>` +
-    `<tr><td>Всичко + надценка 50%</td><td class="right">${totalBGN.toFixed(2)} лв</td></tr>` +
+    `<tr><td>Материали</td><td class="right">${mat.toFixed(2)} €</td></tr>` +
+    `<tr><td>Операции (труд)</td><td class="right">${op.toFixed(2)} €</td></tr>` +
+    `<tr><td>Покупни изделия</td><td class="right">${pur.toFixed(2)} €</td></tr>` +
+    `<tr><td>Всичко + надценка 50%</td><td class="right">${totalBGN.toFixed(2)} €</td></tr>` +
     `<tr><td><b>Цена (1 бр.)</b></td><td class="right result-total">${totalEUR.toFixed(2)} €</td></tr>` +
-    `<tr><td class="muted">(= ${totalBGN.toFixed(2)} лв)</td><td></td></tr>` +
+    `<tr><td class="muted">(= ${totalBGN.toFixed(2)} €)</td><td></td></tr>` +
     `</table>`;
 
   lastCalcResult = { mat, op, pur, totalBGN, totalEUR };

@@ -58,7 +58,7 @@
           <p class="calc-sub">Избери профил и размер — теглото се смята автоматично.</p>
           <table class="data-table">
             <thead><tr>
-              <th>Профил</th><th>Размер</th><th>Кол-во (m/m²)</th><th>Бр.</th><th>Цена/кг</th><th class="right">Тегло кг</th><th class="right">лв</th><th></th>
+              <th>Профил</th><th>Размер</th><th>Кол-во (m/m²)</th><th>Бр.</th><th>Цена/кг</th><th class="right">Тегло кг</th><th class="right">€</th><th></th>
             </tr></thead>
             <tbody id="calc-mat-body"></tbody>
           </table>
@@ -69,7 +69,7 @@
           <h3>Операции (труд)</h3>
           <table class="data-table">
             <thead><tr>
-              <th>Операция</th><th class="right">Ставка</th><th>Бр. операции</th><th>Описание</th><th class="right">лв</th><th></th>
+              <th>Операция</th><th class="right">Ставка</th><th>Бр. операции</th><th>Описание</th><th class="right">€</th><th></th>
             </tr></thead>
             <tbody id="calc-op-body"></tbody>
           </table>
@@ -80,7 +80,7 @@
           <h3>Покупни изделия</h3>
           <table class="data-table">
             <thead><tr>
-              <th>Наименование</th><th>Бр.</th><th class="right">Ед. цена лв</th><th class="right">лв</th><th></th>
+              <th>Наименование</th><th>Бр.</th><th class="right">Ед. цена €</th><th class="right">€</th><th></th>
             </tr></thead>
             <tbody id="calc-pur-body"></tbody>
           </table>
@@ -177,8 +177,8 @@
         <form id="oprate-form" class="row-form">
           <input type="text" id="op-operation" placeholder="Операция" required />
           <input type="text" id="op-machine" placeholder="Машина" />
-          <input type="number" step="any" id="op-rate" placeholder="Ставка (лв)" />
-          <input type="text" id="op-unit" placeholder="Мярка (лв/оп, лв/мин)" />
+          <input type="number" step="any" id="op-rate" placeholder="Ставка (€)" />
+          <input type="text" id="op-unit" placeholder="Мярка (€/оп, €/мин)" />
           <button type="submit">+ Добави</button>
         </form>
         <p id="oprate-error" class="error"></p>
@@ -200,8 +200,8 @@
           <input type="text" id="lz-material" placeholder="Материал (Стомана/Неръждавейка)" required />
           <input type="number" step="any" id="lz-thickness" placeholder="Дебелина мм" />
           <input type="number" step="any" id="lz-speed" placeholder="Скорост м/мин" />
-          <input type="number" step="any" id="lz-meter" placeholder="Цена/метър лв" />
-          <input type="number" step="any" id="lz-contour" placeholder="Цена/контур лв" />
+          <input type="number" step="any" id="lz-meter" placeholder="Цена/метър €" />
+          <input type="number" step="any" id="lz-contour" placeholder="Цена/контур €" />
           <button type="submit">+ Добави</button>
         </form>
         <p id="laser-error" class="error"></p>
