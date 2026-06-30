@@ -375,7 +375,7 @@ function addOpRow() {
     refOp.map((r) => `<option value="${r.id}">${esc(r.operation)}${r.machine ? " / " + esc(r.machine) : ""}</option>`).join("");
   tr.innerHTML =
     `<td><select class="o-op">${opts}</select></td>` +
-    `<td class="right o-rate">—</td>` +
+    `<td><input type="number" step="any" class="o-rate-input" placeholder="0.00" style="width:80px;text-align:right" /> <span class="o-rate-unit" style="font-size:11px;color:#6b7280"></span></td>` +
     `<td><input type="number" step="any" class="o-ops" value="1" /></td>` +
     `<td><input type="text" class="o-desc" placeholder="описание…" style="width:100%;min-width:90px" /></td>` +
     `<td class="right o-cost">0.00</td>` +
@@ -388,13 +388,24 @@ function addOpRow() {
 
 function recalcOp(tr) {
   const rec = refOp.find((r) => r.id === tr.querySelector(".o-op").value);
-  const rate = rec ? Number(rec.rate || 0) : 0;
-  const ops = parseFloat(tr.querySelector(".o-ops").value) || 0;
+  const rateInput = tr.querySelector(".o-rate-input");
+  const unitSpan  = tr.querySelector(".o-rate-unit");
+  // При смяна на операцията — попълни ставката автоматично, но само ако полето е празно
+  if (rec && rateInput.dataset.userEdited !== "1") {
+    rateInput.value = Number(rec.rate || 0);
+    rateInput.dataset.userEdited = "0";
+  }
+  if (rec) unitSpan.textContent = rec.unit || "€";
+  const rate = parseFloat(rateInput.value) || 0;
+  const ops  = parseFloat(tr.querySelector(".o-ops").value) || 0;
   const cost = rate * ops;
-  tr.querySelector(".o-rate").textContent = rec ? rate + " " + esc(rec.unit || "") : "—";
   tr.querySelector(".o-cost").textContent = cost.toFixed(2);
   tr.dataset.cost = cost;
 }
+// Маркира ръчна редакция на ставката
+document.getElementById("calc-op-body").addEventListener("input", e => {
+  if (e.target.classList.contains("o-rate-input")) e.target.dataset.userEdited = "1";
+});
 
 function addPurRow() {
   const tr = document.createElement("tr");
@@ -425,26 +436,23 @@ function sumRows(sel) {
 }
 
 function computeCalc() {
-  const mat = sumRows("#calc-mat-body");
-  const op  = sumRows("#calc-op-body");
-  const pur = sumRows("#calc-pur-body");
-  const totalBGN = (mat + op + pur) * (1 + MARGIN_MAT_LABOR);
-  const totalEUR = totalBGN / BGN_EUR;
+  const mat   = sumRows("#calc-mat-body");
+  const op    = sumRows("#calc-op-body");
+  const pur   = sumRows("#calc-pur-body");
+  const total = mat + op + pur;
   document.getElementById("calc-breakdown").innerHTML =
     `<table class="data-table">` +
     `<tr><td>Материали</td><td class="right">${mat.toFixed(2)} €</td></tr>` +
     `<tr><td>Операции (труд)</td><td class="right">${op.toFixed(2)} €</td></tr>` +
     `<tr><td>Покупни изделия</td><td class="right">${pur.toFixed(2)} €</td></tr>` +
-    `<tr><td>Всичко + надценка 50%</td><td class="right">${totalBGN.toFixed(2)} €</td></tr>` +
-    `<tr><td><b>Цена (1 бр.)</b></td><td class="right result-total">${totalEUR.toFixed(2)} €</td></tr>` +
-    `<tr><td class="muted">(= ${totalBGN.toFixed(2)} €)</td><td></td></tr>` +
+    `<tr><td><b>Себестойност</b></td><td class="right result-total">${total.toFixed(2)} €</td></tr>` +
     `</table>`;
 
-  lastCalcResult = { mat, op, pur, totalBGN, totalEUR };
+  lastCalcResult = { mat, op, pur, totalBGN: total, totalEUR: total, totalCost: total };
 
   document.getElementById("calc-add-proj-bar").classList.remove("hidden");
   document.getElementById("calc-proj-summary").textContent =
-    `Мат. ${mat.toFixed(2)} + Труд ${op.toFixed(2)} + Покупни ${pur.toFixed(2)} → ${totalEUR.toFixed(2)} € / бр.`;
+    `Мат. ${mat.toFixed(2)} + Труд ${op.toFixed(2)} + Покупни ${pur.toFixed(2)} = ${total.toFixed(2)} €`;
 }
 
 document.getElementById("calc-mat-add").addEventListener("click", addMatRow);

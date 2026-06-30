@@ -156,6 +156,52 @@ export function generateProjectPDF(p) {
   if (win) { win.document.write(html); win.document.close(); }
 }
 
+// ---- Експорт на проект като Excel (CSV UTF-8 BOM) ----
+export function exportProjectExcel(p) {
+  const items = p?.items || [];
+  const grand = items.reduce((s, it) => s + (it.totalCost || 0), 0);
+  const BOM = "﻿";
+  const rows = [
+    ["Проект", p.name || ""],
+    ["Дата", new Date().toLocaleDateString("bg-BG")],
+    [],
+    ["№", "Позиция", "Бележки", "Бр.", "Ед. цена €", "Общо €"],
+  ];
+  items.forEach((item, i) => {
+    let qty = "", unit = "", notes = item.notes || "";
+    if (item.type === "dxf") {
+      qty  = item.qty || 1;
+      unit = fmt(item.unitCost);
+      notes = notes || `${item.calc?.matName || ""} ${item.calc?.thickness || ""}мм`;
+    } else if (item.type === "barcut") {
+      qty  = item.bars || 1;
+      unit = fmt(item.pricePerBar);
+      notes = notes || `${item.bars} пр. × ${item.barLenM}м`;
+    } else if (item.type === "calc") {
+      qty  = item.qty || 1;
+      unit = fmt(item.totalEUR || item.totalCost);
+      notes = notes || `мат. ${fmt(item.mat)} + труд ${fmt(item.op)}`;
+    } else {
+      qty  = item.qty || "";
+      unit = fmt(item.pricePerPiece || 0);
+    }
+    rows.push([i + 1, item.name || "", notes, qty, unit, fmt(item.totalCost)]);
+  });
+  rows.push([]);
+  rows.push(["", "", "", "", "ОБЩО:", fmt(grand)]);
+
+  const csv = BOM + rows.map(r =>
+    r.map(cell => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(";")
+  ).join("\r\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  const safe = (p.name || "проект").replace(/[^а-яА-Яa-zA-Z0-9_\- ]/g, "").trim() || "проект";
+  a.href = url; a.download = `${safe}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ---- Сваляне на проект като JSON файл ----
 function downloadProjectJSON(p) {
   const blob = new Blob([JSON.stringify(p, null, 2)], { type: "application/json" });
@@ -180,6 +226,7 @@ function openProjectsModal(currentId, onSwitch) {
 
   const ACT_BTN = `padding:4px 10px;border-radius:6px;border:1px solid #a5b4fc;font-size:11px;font-weight:700;cursor:pointer;background:#fff;color:#3730a3;white-space:nowrap;`;
   const DL_BTN  = `padding:4px 10px;border-radius:6px;border:1px solid #d1d5db;font-size:11px;font-weight:700;cursor:pointer;background:#fff;color:#374151;white-space:nowrap;`;
+  const XL_BTN  = `padding:4px 10px;border-radius:6px;border:1px solid #bbf7d0;font-size:11px;font-weight:700;cursor:pointer;background:#f0fdf4;color:#15803d;white-space:nowrap;`;
 
   const rows = projects.map(p => {
     const total = (p.items || []).reduce((s, it) => s + (it.totalCost || 0), 0);
@@ -205,8 +252,9 @@ function openProjectsModal(currentId, onSwitch) {
         </td>
         <td style="padding:6px 12px;white-space:nowrap;text-align:right">
           <button class="pb-open-btn" data-id="${esc(p.id)}" style="${ACT_BTN}">Отвори</button>
+          <button class="pb-xl-btn"  data-id="${esc(p.id)}" style="${XL_BTN};margin-left:4px;${!hasItems ? "opacity:.45;cursor:not-allowed;" : ""}" ${!hasItems ? "disabled" : ""}>📊 Excel</button>
           <button class="pb-pdf-btn" data-id="${esc(p.id)}" style="${ACT_BTN};margin-left:4px;${!hasItems ? "opacity:.45;cursor:not-allowed;" : ""}" ${!hasItems ? "disabled" : ""}>📄 PDF</button>
-          <button class="pb-dl-btn" data-id="${esc(p.id)}" style="${DL_BTN};margin-left:4px">⬇ Файл</button>
+          <button class="pb-dl-btn"  data-id="${esc(p.id)}" style="${DL_BTN};margin-left:4px">⬇ JSON</button>
         </td>
       </tr>`;
   }).join("");
@@ -244,6 +292,13 @@ function openProjectsModal(currentId, onSwitch) {
   overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
 
   overlay.querySelector("#pb-modal-tbody").addEventListener("click", e => {
+    // Excel бутон
+    const xlBtn = e.target.closest(".pb-xl-btn");
+    if (xlBtn && !xlBtn.disabled) {
+      const proj = getProjects().find(p => p.id === xlBtn.dataset.id);
+      if (proj) exportProjectExcel(proj);
+      return;
+    }
     // PDF бутон
     const pdfBtn = e.target.closest(".pb-pdf-btn");
     if (pdfBtn && !pdfBtn.disabled) {
@@ -276,6 +331,7 @@ export function initProjectBar(containerEl, { onChange } = {}) {
     <button id="pb-rename" style="${BTN_STYLE}" title="Преименувай проекта">✏ Преименувай</button>
     <button id="pb-new"    style="${BTN_STYLE}">+ Нов проект</button>
     <button id="pb-delete" style="${DEL_STYLE}" title="Изтрий проекта">🗑</button>
+    <button id="pb-excel"  style="${BTN_STYLE};border-color:#bbf7d0;color:#15803d;background:#f0fdf4">📊 Excel</button>
     <button id="pb-list"   style="${BTN_STYLE};margin-left:4px">📋 Всички проекти</button>
     <span id="pb-count" style="${COUNT_STYLE}"></span>
   `;
@@ -285,7 +341,8 @@ export function initProjectBar(containerEl, { onChange } = {}) {
   const btnNew = containerEl.querySelector("#pb-new");
   const btnRen = containerEl.querySelector("#pb-rename");
   const btnDel = containerEl.querySelector("#pb-delete");
-  const btnList = containerEl.querySelector("#pb-list");
+  const btnExcel = containerEl.querySelector("#pb-excel");
+  const btnList  = containerEl.querySelector("#pb-list");
 
   function refresh() {
     const projects = getProjects();
@@ -335,6 +392,11 @@ export function initProjectBar(containerEl, { onChange } = {}) {
     deleteProject(current.id);
     refresh();
     onChange?.(getCurrentProject());
+  });
+
+  btnExcel.addEventListener("click", () => {
+    const current = getCurrentProject();
+    if (current) exportProjectExcel(current);
   });
 
   btnList.addEventListener("click", () => {
