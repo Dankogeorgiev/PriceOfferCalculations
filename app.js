@@ -377,7 +377,7 @@ function addOpRow() {
     `<td><select class="o-op">${opts}</select></td>` +
     `<td class="right o-rate">—</td>` +
     `<td><input type="number" step="any" class="o-ops" value="1" /></td>` +
-    `<td><input type="number" step="any" class="o-qty" value="1" /></td>` +
+    `<td><input type="text" class="o-desc" placeholder="описание…" style="width:100%;min-width:90px" /></td>` +
     `<td class="right o-cost">0.00</td>` +
     `<td><button type="button" class="ghost danger o-del">✕</button></td>`;
   document.getElementById("calc-op-body").appendChild(tr);
@@ -390,8 +390,7 @@ function recalcOp(tr) {
   const rec = refOp.find((r) => r.id === tr.querySelector(".o-op").value);
   const rate = rec ? Number(rec.rate || 0) : 0;
   const ops = parseFloat(tr.querySelector(".o-ops").value) || 0;
-  const qty = parseFloat(tr.querySelector(".o-qty").value) || 0;
-  const cost = rate * ops * qty;
+  const cost = rate * ops;
   tr.querySelector(".o-rate").textContent = rec ? rate + " " + esc(rec.unit || "") : "—";
   tr.querySelector(".o-cost").textContent = cost.toFixed(2);
   tr.dataset.cost = cost;
