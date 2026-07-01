@@ -390,8 +390,8 @@ async function initCalculator() {
   const dbOps = o.data || [];
   const dbNames = new Set(dbOps.map(r => r.operation));
   refOp = [...dbOps, ...DEFAULT_OPS.filter(d => !dbNames.has(d.operation))];
-  for (let i = 0; i < 3; i++) addOpRow();
-  for (let i = 0; i < 3; i++) addPurRow();
+  for (let i = 0; i < 5; i++) addOpRow();
+  for (let i = 0; i < 1; i++) addPurRow();
 }
 
 function uniq(a) { return [...new Set(a)]; }
